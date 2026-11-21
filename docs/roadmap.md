@@ -15,10 +15,12 @@ This roadmap separates implemented source from verified release behavior. A dire
 ### Mintosh-owned native source
 - [~] LibSys POSIX utilities (filesystem, descriptors, Unix sockets, runtime paths and syslog; broader API and tests remain)
 - [~] Darl local daemon (basic health/version protocol; authorization, structured requests and durable state remain)
-- [~] launch7762 native service supervisor (process lifecycle, protected definitions and restart backoff; per-service users, dependencies and resource limits remain)
+- [~] launch7762 system supervisor and Launch Client per-user supervisor (protected definitions, direct argv execution, peer credentials, bounded restart and clean shutdown; dependency graphs and resource limits remain)
 - [~] launch511 command execution helper (direct argv execution; policy and privilege model remain)
 - [~] CSF client library (Darl request transport only; higher-level system APIs remain)
 - [~] Foundation library (strings, byte buffers, arrays, dictionaries, URL parsing, errors, lexical paths and bounded atomic file I/O; date/time, localization, serialization and broader filesystem APIs remain)
+- [~] GVD task management and dispatch (process scheduling controls and bounded worker queue; cancellation, priorities and cross-process task policy remain)
+- [~] IOPS power services (power, thermal and CPU governor inventory/control; battery policy daemon and power event API remain)
 - [~] I/O+ inventory (structured sysfs device properties and kernel uevent stream; driver capability probing and stable device identity remain)
 - [~] HP ProBook compatibility baseline (multi-generation x86-64 driver profile, vendor firmware packages and DMI diagnostics; model-by-model hardware certification remains)
 - [~] Kexts Linux module frontend (list/load/unload wrapper; signed module policy and lifecycle integration remain)

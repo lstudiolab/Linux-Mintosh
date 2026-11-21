@@ -130,7 +130,7 @@ install: all
 	install -d $(BINDIR) $(LIBDIR) $(INCLUDEDIR)
 	install -m 0755 $(addprefix $(BUILD)/,$(PROGRAMS)) $(BINDIR)/
 	install -m 0644 $(BUILD)/libcsf.a $(BUILD)/libfoundation.a $(BUILD)/libgvd.a $(LIBDIR)/
-	install -m 0644 ../LibSys/include/libsys.h ../CSF/include/csf.h ../Foundation/include/Foundation.h $(INCLUDEDIR)/
+	install -m 0644 ../LibSys/include/libsys.h ../CSF/include/csf.h ../Foundation/include/Foundation.h ../GVD/include/GVD.h $(INCLUDEDIR)/
 
 clean:
 	rm -rf $(BUILD)

@@ -16,11 +16,14 @@ Mintosh is a Linux distribution, not a replacement kernel. The upstream Linux ke
 Native source code lives under `Sources/`. The current core is compiled inside the Debian target root filesystem, so its binaries link against the target userspace rather than the build host.
 
 - **Darl**: local Unix-socket system foundation API for status and version queries.
-- **launch7762**: native service supervisor. It reads protected `/etc/mintosh/services/*.service` definitions, starts enabled processes with direct `execve`, tracks child exits, applies capped exponential restart backoff and authorizes control operations with Unix peer credentials.
+- **launch7762 / Launch Background**: system-wide native service supervisor. It reads protected `/etc/mintosh/services/*.service` definitions, starts enabled processes with direct `execve`, tracks child exits, applies capped exponential restart backoff and authorizes control operations with Unix peer credentials.
+- **Launch Client**: per-user background service supervisor with user-owned service definitions and a private user control socket.
 - **launch511**: standalone command execution helper. launch7762 executes validated service argument vectors directly and does not route service commands through a shell.
 - **LibSys**: shared POSIX utilities, bounded Unix-socket line framing with deadlines, file-descriptor helpers, runtime paths and syslog integration.
 - **CSF**: C client API for the Darl local service endpoint.
-- **Foundation**: reusable string, byte-data and lexical path primitives with alias-safe append operations.
+- **Foundation**: C17 strings, byte data, arrays, dictionaries, URL parsing, error values, lexical paths and bounded atomic file I/O.
+- **GVD**: process scheduling inspection/control plus a bounded pthread task-dispatch library for native userspace.
+- **IOPS**: power-supply and thermal inventory, CPU frequency governor inspection/control and ACPI platform-profile management.
 - **I/O+**: structured kernel, CPU, memory, DMI, block, network, USB, graphics and power inventory, plus a read-only kernel uevent monitor.
 - **HP Compatibility**: DMI-based HP/ProBook identification and diagnostics; x86-64 kernel builds enable a broad HP laptop, graphics, wireless, audio, storage and input driver profile.
 - **Kexts**: kernel module operations delegated to Linux modprobe/kmod.
