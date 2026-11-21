@@ -25,6 +25,7 @@ if [ "$1" = "-J" ]; then
 {"blockdevices":[
  {"name":"sda","size":"500G","model":"Internal SSD","type":"disk","rm":false},
  {"name":"sdb","size":"32G","model":"Mintosh Installer USB","type":"disk","rm":false},
+ {"name":"sde","size":"16G","model":"Second Mintosh boot medium","type":"disk","rm":false},
  {"name":"sdc","size":"64G","model":"Backup USB","type":"disk","rm":true},
  {"name":"sr0","size":"700M","model":"Optical drive","type":"rom","rm":true}
 ]}
@@ -37,9 +38,9 @@ chmod 0755 "$TMP/bin/blkid" "$TMP/bin/lsblk"
 PATH="$TMP/bin:$PATH"
 source "$ROOT/scripts/installer-disk-safety.sh"
 mintosh_discover_protected_disks
-[[ "${#MINTOSH_PROTECTED_DISKS[@]}" -eq 1 ]]
-[[ "${MINTOSH_PROTECTED_DISKS[0]}" == /dev/sdb ]]
+[[ "${#MINTOSH_PROTECTED_DISKS[@]}" -eq 2 ]]
 mintosh_disk_is_protected /dev/sdb
+mintosh_disk_is_protected /dev/sde
 ! mintosh_disk_is_protected /dev/sda
 DISKS=$(mintosh_list_installable_disks)
 [[ "$DISKS" == "/dev/sda 500G Internal SSD" ]]
