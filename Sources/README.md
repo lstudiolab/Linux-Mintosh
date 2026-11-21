@@ -1,33 +1,29 @@
 # Mintosh native source tree
 
-Every source file is named for the responsibility it implements. Executable entry points are separated from protocol handling, process management, filesystem operations, hardware discovery and reusable library code.
+Mintosh-owned native userspace is implemented in ISO C17. Every source file is named for its responsibility. Executable entry points are separated from protocol handling, process management, filesystem operations, hardware discovery and reusable library code.
 
 ## Source layout
 
-- `Darl/`: daemon lifecycle and request/response protocol.
-- `Launch7762/`: service configuration parsing, process lifecycle, restart policy, control protocol, Unix socket and daemon entry point.
+- `Darl/`: system foundation daemon and local protocol.
+- `Launch7762/`: service configuration, process lifecycle, restart policy, control protocol and Unix socket.
 - `Launch511/`: command argument handling and process execution.
-- `LibSys/`: filesystem, file-descriptor I/O, Unix-domain socket transport, runtime paths and system logging.
-- `CSF/`: client request API for Darl.
-- `Foundation/`: reusable string and path primitives.
-- `IOPlus/`: kernel information, sysfs inventory, memory information and command entry point.
+- `LibSys/`: POSIX filesystem, descriptors, Unix sockets, line framing, runtime paths and system logging.
+- `CSF/`: C client API for Darl.
+- `Foundation/`: strings, byte buffers, generic arrays, error values, lexical paths and bounded atomic file I/O.
+- `IOPlus/`: kernel, memory and sysfs hardware inventory.
+- `HPCompatibility/`: HP/ProBook identity and driver diagnostics.
 - `Kexts/`: Linux kernel module operations through kmod.
-- `Security/`: file permission inspection and audit command.
-- `SystemLogging/`: log writer and CLI.
-- `MintoshCtl/`: Darl client, service-manager client and CLI.
-- `PackageManager/`: native mstore command interface, package-name validation and APT execution.
+- `Security/`: baseline permission and service-definition audit.
+- `SystemLogging/`: journald/syslog integration.
+- `MintoshCtl/`: system and service control client.
+- `PackageManager/`: native mstore interface to signed Debian APT repositories.
 
 ## Build and test
 
-    make -C Sources/MintoshCore clean all
+    make -C Sources/MintoshCore clean all test-foundation
+
     sh Sources/MintoshCore/tests/smoke.sh
 
-The smoke test compiles every component, exercises Darl over its Unix-domain socket, and starts/stops real child processes through launch7762. It verifies failure-based restart behavior and rejects group/world-writable service definitions. Tests use temporary runtime and service directories; production defaults remain `/run/mintosh` and `/etc/mintosh/services`.
+The smoke suite compiles native components, exercises the Darl and service-manager IPC paths, starts and stops child processes, and tests Foundation, filesystem, package-validation and security boundaries. Tests use disposable temporary directories.
 
-## Runtime interfaces
-
-- Darl: `/run/mintosh/darl.sock`; supports `PING`, `VERSION` and `STATUS`.
-- launch7762: `/run/mintosh/launch.sock`; supports `LIST`, `START NAME`, `STOP NAME` and `RESTART NAME`.
-- Service definitions: `/etc/mintosh/services/*.service`; fields are `ExecStart`, `Enabled` and `Restart`. Restart policies are `no`, `on-failure` and `always`.
-
-systemd remains PID 1 in this release and supervises launch7762. launch7762 supervises Mintosh-managed services. Linux module loading is delegated to kmod; this source does not claim to implement kernel drivers.
+See [the C17 implementation standard](../docs/c-language-standard.md).
