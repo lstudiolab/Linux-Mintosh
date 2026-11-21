@@ -12,6 +12,6 @@
 - `sudo mstore update`: refresh signed repository metadata.
 - `sudo mstore upgrade`: upgrade installed packages.
 
-Package arguments are validated before they reach APT. Mutating operations require root privileges; use `sudo` explicitly. Package downloads, dependency resolution, signature verification and installation are handled by APT/dpkg.
+Package arguments are validated before they reach APT. Mutating operations require root privileges; use `sudo` explicitly. The frontend invokes fixed system utility paths rather than resolving package tools through the caller's `PATH`. Package downloads, dependency resolution, signature verification and installation are handled by APT/dpkg.
 
-The initial catalog is the configured Debian Trixie repository. A Mintosh-operated repository and graphical application catalog are separate future work.
+The initial catalog is the configured Debian Trixie repository. A Mintosh-operated repository, signed Mintosh release metadata and graphical application catalog are separate future work.

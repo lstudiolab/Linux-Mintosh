@@ -12,7 +12,8 @@
 static int valid_service_name(const char *name) {
     if (!name[0]) return 0;
     for (const unsigned char *p = (const unsigned char *)name; *p; ++p)
-        if (!isalnum(*p) && *p != '-' && *p != '_') return 0;
+        if (!((*p >= 'a' && *p <= 'z') || (*p >= 'A' && *p <= 'Z') ||
+              (*p >= '0' && *p <= '9') || *p == '-' || *p == '_')) return 0;
     return 1;
 }
 
@@ -57,6 +58,7 @@ static int load_service(MintoshServiceManager *manager, const char *directory,
     if (descriptor < 0) return -1;
     struct stat metadata;
     if (fstat(descriptor, &metadata) < 0 || !S_ISREG(metadata.st_mode) ||
+        metadata.st_size < 0 || metadata.st_size > 65536 ||
         (metadata.st_mode & 0022) != 0 || !trusted_owner(metadata.st_uid)) {
         close(descriptor);
         errno = EPERM;
@@ -68,6 +70,7 @@ static int load_service(MintoshServiceManager *manager, const char *directory,
     MintoshService service = {0};
     memcpy(service.name, name, name_length + 1);
     service.restart_policy = MINTOSH_RESTART_NEVER;
+    unsigned int seen = 0;
     int valid = 1;
     char line[768];
     while (fgets(line, sizeof line, file)) {
@@ -77,26 +80,34 @@ static int load_service(MintoshServiceManager *manager, const char *directory,
         *separator++ = '\0';
         line[strcspn(line, "\r\n")] = '\0';
         separator[strcspn(separator, "\r\n")] = '\0';
+        unsigned int key = 0;
         if (strcmp(line, "ExecStart") == 0) {
-            if (!separator[0] || strlen(separator) >= sizeof service.command) valid = 0;
+            key = 1u;
+            if (!separator[0] || separator[0] != '/' ||
+                strlen(separator) >= sizeof service.command) valid = 0;
             else snprintf(service.command, sizeof service.command, "%s", separator);
         } else if (strcmp(line, "Enabled") == 0) {
+            key = 2u;
             if (strcmp(separator, "yes") == 0) service.enabled = 1;
             else if (strcmp(separator, "no") != 0) valid = 0;
         } else if (strcmp(line, "Restart") == 0) {
+            key = 4u;
             if (parse_restart_policy(separator, &service.restart_policy) < 0) valid = 0;
         }
+        if (key && (seen & key)) valid = 0;
+        seen |= key;
         if (!valid) break;
     }
     if (ferror(file)) valid = 0;
     fclose(file);
-    if (!valid || !service.command[0]) return -1;
+    if (!valid || !(seen & 1u) || !service.command[0]) return -1;
     if (manager->count >= MINTOSH_SERVICE_LIMIT) return -1;
     manager->services[manager->count++] = service;
     return 1;
 }
 
 int ms_services_load(MintoshServiceManager *manager, const char *directory) {
+    if (!manager || !directory || !directory[0]) { errno = EINVAL; return -1; }
     struct stat metadata;
     if (lstat(directory, &metadata) < 0) return -1;
     if (!S_ISDIR(metadata.st_mode) || (metadata.st_mode & 0022) != 0 ||
@@ -121,6 +132,7 @@ int ms_services_load(MintoshServiceManager *manager, const char *directory) {
 }
 
 MintoshService *ms_services_find(MintoshServiceManager *manager, const char *name) {
+    if (!manager || !name) return NULL;
     for (size_t index = 0; index < manager->count; ++index)
         if (strcmp(manager->services[index].name, name) == 0) return &manager->services[index];
     return NULL;

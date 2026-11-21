@@ -1,13 +1,12 @@
 #!/bin/sh
-set -eux
+set -eu
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../../.." && pwd)
 make -C "$ROOT/Sources/MintoshCore" clean all test-foundation
 B="$ROOT/Sources/MintoshCore/build"
 RUNTIME=$(mktemp -d)
 export MINTOSH_RUN_DIR="$RUNTIME"
 export MINTOSH_SERVICE_DIR="$RUNTIME/services"
-export MINTOSH_LAUNCH511="$ROOT/Sources/MintoshCore/build/launch511"
-mkdir -p "$MINTOSH_SERVICE_DIR"
+mkdir -m 0755 "$MINTOSH_SERVICE_DIR"
 cleanup() {
     if [ -n "${LAUNCH_PID:-}" ]; then
         kill "$LAUNCH_PID" 2>/dev/null || true
@@ -22,7 +21,7 @@ cleanup() {
 trap cleanup EXIT INT TERM
 
 "$B/darl" --version | grep -q 'Darl 0.2.0'
-"$B/launch7762" --version | grep -q '0.1.0'
+"$B/launch7762" --version | grep -q '0.2.0'
 set +e
 "$B/launch511" >/dev/null 2>&1
 LAUNCH511_STATUS=$?
@@ -53,16 +52,21 @@ while [ ! -S "$RUNTIME/darl.sock" ]; do
 done
 "$B/mintoshctl" status | grep -q 'Darl=running'
 "$B/mintoshctl" version | grep -q 'Mintosh 0.1.0'
-SOCKET_MODE=$(stat -c '%a' "$RUNTIME/darl.sock")
-[ "$SOCKET_MODE" = "660" ]
+[ "$(stat -c '%a' "$RUNTIME/darl.sock")" = "660" ]
 
 cat > "$MINTOSH_SERVICE_DIR/test-service.service" <<EOF
 ExecStart=/bin/sleep 30
 Enabled=yes
 Restart=no
 EOF
+cat > "$RUNTIME/retry-service.sh" <<EOF
+#!/bin/sh
+echo x >> "$RUNTIME/restarts"
+exit 1
+EOF
+chmod 0755 "$RUNTIME/retry-service.sh"
 cat > "$MINTOSH_SERVICE_DIR/retry-service.service" <<EOF
-ExecStart=printf x >> $RUNTIME/restarts; exit 1
+ExecStart=/bin/sh $RUNTIME/retry-service.sh
 Enabled=yes
 Restart=on-failure
 EOF
@@ -72,6 +76,11 @@ Enabled=yes
 Restart=always
 EOF
 chmod 0666 "$MINTOSH_SERVICE_DIR/unsafe.service"
+cat > "$MINTOSH_SERVICE_DIR/shell-string.service" <<EOF
+ExecStart=echo x; /bin/sh -c id
+Enabled=yes
+Restart=no
+EOF
 
 "$B/launch7762" &
 LAUNCH_PID=$!
@@ -83,17 +92,22 @@ while [ ! -S "$RUNTIME/launch.sock" ]; do
 done
 sleep 0.3
 "$B/mintoshctl" services | grep -q 'test-service running'
-if "$B/mintoshctl" services | grep -q '^unsafe '; then
+if "$B/mintoshctl" services | grep -Eq '^(unsafe|shell-string) '; then
     echo "launch7762 loaded an unsafe service definition" >&2
     exit 1
 fi
-SOCKET_MODE=$(stat -c '%a' "$RUNTIME/launch.sock")
-[ "$SOCKET_MODE" = "660" ]
+[ "$(stat -c '%a' "$RUNTIME/launch.sock")" = "660" ]
 
 attempt=0
 while [ ! -f "$RUNTIME/restarts" ] || [ "$(wc -c < "$RUNTIME/restarts")" -lt 2 ]; do
     attempt=$((attempt + 1))
-    [ "$attempt" -lt 60 ] || { echo "on-failure service was not restarted" >&2; exit 1; }
+    [ "$attempt" -lt 100 ] || { echo "on-failure service was not restarted" >&2; exit 1; }
+    sleep 0.1
+done
+attempt=0
+while ! "$B/mintoshctl" services | grep -q 'retry-service running'; do
+    attempt=$((attempt + 1))
+    [ "$attempt" -lt 40 ] || { echo "restarted service did not return to running state" >&2; exit 1; }
     sleep 0.1
 done
 "$B/mintoshctl" stop retry-service | grep -q 'OK'

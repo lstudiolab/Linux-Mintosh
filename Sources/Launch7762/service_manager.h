@@ -21,6 +21,7 @@ typedef struct {
     MintoshRestartPolicy restart_policy;
     int restart_pending;
     int kill_sent;
+    unsigned int restart_count;
     pid_t process_id;
     struct timespec restart_at;
     struct timespec stop_deadline;
@@ -38,5 +39,6 @@ void ms_service_stop(MintoshService *service);
 void ms_services_reap(MintoshServiceManager *manager, int shutting_down);
 void ms_services_stop_all(MintoshServiceManager *manager);
 void ms_services_list(const MintoshServiceManager *manager, int descriptor);
-void ms_services_control(MintoshServiceManager *manager, int descriptor, const char *request);
+void ms_services_control(MintoshServiceManager *manager, int descriptor,
+                         const char *request, int privileged);
 #endif

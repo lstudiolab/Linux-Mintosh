@@ -9,18 +9,37 @@
 #include <string.h>
 #include <sys/select.h>
 #include <sys/socket.h>
+#include <sys/time.h>
 #include <unistd.h>
 
 static volatile sig_atomic_t shutdown_requested;
 static void request_shutdown(int signal_number) { (void)signal_number; shutdown_requested = 1; }
 
 static void handle_client(MintoshServiceManager *manager, int descriptor) {
-    char request[256] = {0};
-    ssize_t length = read(descriptor, request, sizeof request - 1);
-    if (length <= 0) return;
-    request[strcspn(request, "\r\n")] = '\0';
-    if (strcmp(request, "LIST") == 0) ms_services_list(manager, descriptor);
-    else ms_services_control(manager, descriptor, request);
+    struct timeval timeout = {.tv_sec = 2, .tv_usec = 0};
+    (void)setsockopt(descriptor, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof timeout);
+    struct ucred peer = {0};
+    socklen_t peer_size = sizeof peer;
+    int has_credentials = getsockopt(descriptor, SOL_SOCKET, SO_PEERCRED,
+                                     &peer, &peer_size) == 0;
+    char request[256];
+    size_t used = 0;
+    while (used + 1 < sizeof request) {
+        char byte;
+        ssize_t count = read(descriptor, &byte, 1);
+        if (count < 0 && errno == EINTR) continue;
+        if (count <= 0 || byte == '\n' || byte == '\r') break;
+        request[used++] = byte;
+    }
+    request[used] = '\0';
+    if (!used) return;
+    if (strcmp(request, "LIST") == 0) {
+        ms_services_list(manager, descriptor);
+        return;
+    }
+    int privileged = has_credentials &&
+        (peer.uid == 0 || peer.uid == geteuid());
+    ms_services_control(manager, descriptor, request, privileged);
 }
 
 static int running_services(const MintoshServiceManager *manager) {
@@ -30,7 +49,7 @@ static int running_services(const MintoshServiceManager *manager) {
 }
 
 int main(int argc, char **argv) {
-    if (argc > 1 && strcmp(argv[1], "--version") == 0) { puts("launch7762 0.1.0"); return 0; }
+    if (argc > 1 && strcmp(argv[1], "--version") == 0) { puts("launch7762 0.2.0"); return 0; }
     if (ms_mkdir_p(ms_runtime_directory(), 0755) < 0) { perror("launch7762: runtime directory"); return 1; }
     const char *service_directory = getenv("MINTOSH_SERVICE_DIR");
     if (!service_directory || !service_directory[0]) service_directory = "/etc/mintosh/services";

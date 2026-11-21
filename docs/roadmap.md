@@ -1,6 +1,6 @@
 # Mintosh development roadmap
 
-This roadmap distinguishes source implementation from release verification. A directory or build target is not considered complete until its implementation and tests exist.
+This roadmap separates implemented source from verified release behavior. A directory, binary, or successful compilation is not proof that a subsystem is complete.
 
 ## Release 0.1.0 — Developer Preview
 
@@ -10,20 +10,20 @@ This roadmap distinguishes source implementation from release verification. A di
 - [x] x86_64 and ARM64 kernel build mappings
 - [x] Local release-manifest validation
 - [ ] Reproducible-build verification across clean hosts
+- [ ] ARM64 root filesystem, boot image and installer
 
 ### Mintosh-owned native source
-- [x] LibSys shared POSIX utility library
-- [x] Darl local foundation daemon and Unix-socket API
-- [x] launch7762 native child-process service supervisor
-- [x] launch7762 restart policies, stop escalation and protected service definitions
-- [x] launch511 command execution helper
-- [x] CSF client library
-- [x] Foundation string and path primitives
-- [x] I/O+ hardware inventory over sysfs/procfs
-- [x] Kexts kernel-module control frontend
-- [x] System Logging syslog frontend
-- [x] Security basic critical-file permission audit
-- [x] mstore package manager frontend for signed Debian package repositories
+- [~] LibSys POSIX utilities (filesystem, descriptors, Unix sockets, runtime paths and syslog; broader API and tests remain)
+- [~] Darl local daemon (basic health/version protocol; authorization, structured requests and durable state remain)
+- [~] launch7762 native service supervisor (process lifecycle, protected definitions and restart backoff; per-service users, dependencies and resource limits remain)
+- [~] launch511 command execution helper (direct argv execution; policy and privilege model remain)
+- [~] CSF client library (Darl request transport only; higher-level system APIs remain)
+- [~] Foundation library (string and lexical path primitives; collections, data, URL, filesystem and error APIs remain)
+- [~] I/O+ inventory (basic procfs/sysfs enumeration; structured device properties and hotplug events remain)
+- [~] Kexts Linux module frontend (list/load/unload wrapper; signed module policy and lifecycle integration remain)
+- [~] System Logging syslog frontend (write path exists; structured querying, rotation policy and retention remain)
+- [~] Security baseline audit (critical account-file ownership/mode checks; policy engine, capabilities and sandboxing remain)
+- [~] mstore APT frontend (Debian signed repository transport; Mintosh catalog, transaction UI and rollback remain)
 - [ ] Mintosh-signed package repository and curated catalog
 - [ ] AppKit native GUI framework
 - [ ] Tarts widget toolkit
@@ -40,14 +40,28 @@ This roadmap distinguishes source implementation from release verification. A di
 - [x] sudo user creation and root-account lock
 - [ ] Hardware matrix beyond QEMU
 - [ ] Network smoke test in CI
+- [ ] End-to-end service control and package transaction tests in installed rootfs
 
 ### Boot and installer
 - [x] Custom initramfs assembly
 - [x] GRUB BIOS/UEFI ISO assembly
 - [x] Live environment and text installer
 - [x] Passing QEMU boot test on the release commit
+- [ ] Installer destructive-operation test suite
 - [ ] Physical-machine installation test
 - [ ] ARM64 bootable image and installer
+
+## Foundation completion gates
+
+The graphical desktop does not start until the following are complete:
+
+1. Every native component has a documented API, explicit ownership and privilege model, and unit/integration tests.
+2. Service supervision has safe argv execution, peer-credential authorization, bounded restart behavior, clean shutdown and rootfs integration.
+3. Package operations have transaction validation, trusted repository configuration, failure recovery and tests.
+4. Security checks cover account files, service definitions, executable ownership, module loading and privileged IPC.
+5. I/O+ reports structured hardware data and handles device changes without requiring a reboot.
+6. The installer passes destructive-path tests in disposable virtual disks, preserves existing partitions in alongside mode, and verifies firmware boot entries before reboot.
+7. QEMU boot, network and service tests pass for each advertised architecture.
 
 ## Later releases
 
@@ -71,7 +85,6 @@ This roadmap distinguishes source implementation from release verification. A di
 - [ ] Partition resize support with safety checks
 - [ ] Optional disk encryption
 - [ ] Secure Boot signing
-- [ ] ARM64 installer media
 - [ ] Published release checksums and signed artifacts
 
 ## Architecture rule
