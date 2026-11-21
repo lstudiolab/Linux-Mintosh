@@ -40,6 +40,10 @@ mintosh_prepare_erase_layout() {
     local disk=$1 firmware=$2 confirmation=$3
     [[ "$confirmation" == "ERASE" ]] || return 64
     [[ "$firmware" == "0" || "$firmware" == "1" ]] || return 64
+    if declare -F mintosh_disk_is_protected >/dev/null &&
+       mintosh_disk_is_protected "$disk"; then
+        return 64
+    fi
     parted -s "$disk" mklabel gpt || return 1
     if [[ "$firmware" == "1" ]]; then
         parted -s "$disk" mkpart ESP fat32 1MiB 1025MiB || return 1
