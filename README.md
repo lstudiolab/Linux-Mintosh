@@ -45,7 +45,7 @@ After boot, use:
     gvdctl list
     iopsctl status
     dmctl list
-    fmsctl index /home
+    sudo fmsctl index /home
     fmsctl search documents
     kextctl status
     kextctl list
