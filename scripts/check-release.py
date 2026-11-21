@@ -9,9 +9,11 @@ from urllib.parse import urlparse
 ROOT = Path(__file__).resolve().parents[1]
 manifest_path = ROOT / "configs" / "release.json"
 
+
 def fail(message: str) -> None:
     print(f"release manifest: {message}", file=sys.stderr)
     raise SystemExit(1)
+
 
 try:
     data = json.loads(manifest_path.read_text(encoding="utf-8"))
@@ -22,7 +24,8 @@ if data.get("distribution") != "Mintosh":
     fail("distribution must be Mintosh")
 
 version = data.get("release", "")
-if not re.fullmatch(r"0|[1-9][0-9]*\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)", version):
+semver = r"(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)"
+if not isinstance(version, str) or not re.fullmatch(semver, version):
     fail("release must use semantic versioning (MAJOR.MINOR.PATCH)")
 
 suite = data.get("debian_suite")
@@ -39,7 +42,7 @@ if not set(architectures).issubset({"x86_64", "arm64"}):
 
 kernel = data.get("kernel", {})
 kernel_version = kernel.get("version", "")
-if not re.fullmatch(r"[0-9]+\.[0-9]+\.[0-9]+", kernel_version):
+if not isinstance(kernel_version, str) or not re.fullmatch(r"[0-9]+\.[0-9]+\.[0-9]+", kernel_version):
     fail("kernel.version must be an exact upstream version")
 if kernel.get("archive") != f"linux-{kernel_version}.tar.xz":
     fail("kernel.archive must match kernel.version")
@@ -50,7 +53,7 @@ if parsed.scheme != "https" or parsed.hostname != "cdn.kernel.org":
 if not parsed.path.endswith(f"/{kernel['archive']}"):
     fail("kernel.source filename must match kernel.archive")
 checksum = kernel.get("sha256", "")
-if not re.fullmatch(r"[0-9a-f]{64}", checksum):
+if not isinstance(checksum, str) or not re.fullmatch(r"[0-9a-f]{64}", checksum):
     fail("kernel.sha256 must contain exactly 64 lowercase hexadecimal characters")
 if kernel.get("license") != "GPL-2.0-only":
     fail("kernel.license must identify the upstream kernel license")
