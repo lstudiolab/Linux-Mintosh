@@ -46,12 +46,27 @@ set -e
 "$B/gvdctl" list --json | python3 -c 'import json,sys; value=json.load(sys.stdin); assert isinstance(value,list) and value'
 "$B/iopsctl" --version | grep -q '0.1.0'
 "$B/iopsctl" status --json | python3 -c 'import json,sys; value=json.load(sys.stdin); assert {"power_supplies","thermal_zones","cpu_governors","platform_profile"} <= value.keys()'
+"$B/fmsctl" --version | grep -q '0.1.0'
+"$B/dmctl" --version | grep -q '0.1.0'
+"$B/dmctl" list --json | python3 -c 'import json,sys; value=json.load(sys.stdin); assert isinstance(value,list)'
+mkdir -p "$RUNTIME/fms-tree/subdir"
+printf 'Mintosh metadata search fixture\\n' > "$RUNTIME/fms-tree/subdir/mintosh-search-fixture.txt"
+MINTOSH_FMS_DB="$RUNTIME/fms.db" "$B/fmsctl" index "$RUNTIME/fms-tree" | grep -q 'Indexed 1 files'
+MINTOSH_FMS_DB="$RUNTIME/fms.db" "$B/fmsctl" search mintosh --json | python3 -c 'import json,sys; value=json.load(sys.stdin); assert len(value)==1 and value[0]["path"].endswith("mintosh-search-fixture.txt")'
 "$B/ioplus" --json | python3 -c 'import json,sys; value=json.load(sys.stdin); assert {"kernel","cpu_model","memory_kib","firmware","devices"} <= value.keys(); assert {"block","network","usb","graphics","power"} <= value["devices"].keys()' 
 set +e
 "$B/ioplus" --json unexpected >/dev/null 2>&1
 IOPLUS_INVALID_STATUS=$?
 set -e
 [ "$IOPLUS_INVALID_STATUS" -eq 64 ]
+set +e
+"$B/dmctl" mount /dev/not-a-block /mnt >/dev/null 2>&1
+DM_INVALID_MOUNT_STATUS=$?
+"$B/dmctl" unmount /etc >/dev/null 2>&1
+DM_UNSAFE_UNMOUNT_STATUS=$?
+set -e
+[ "$DM_INVALID_MOUNT_STATUS" -eq 64 ]
+[ "$DM_UNSAFE_UNMOUNT_STATUS" -eq 64 ]
 "$B/kextctl" --version | grep -q '0.1.0'
 "$B/mintosh-log" --version | grep -q '0.1.0'
 "$B/security-audit" --version | grep -q '0.3.0'
