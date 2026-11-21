@@ -117,7 +117,8 @@ $(BUILD)/libsys-filesystem-tests: ../LibSys/tests/filesystem_tests.c ../LibSys/f
 $(BUILD)/package-validation-tests: ../PackageManager/tests/package_validation_tests.c ../PackageManager/package_validation.c | $(BUILD)
 	$(CC) $(CPPFLAGS) $(CFLAGS) $^ -o $@
 
-$(BUILD)/kext-policy-tests: ../Kexts/tests/module_policy_tests.c ../Kexts/module_policy.c | $(BUILD)\n\t$(CC) $(CPPFLAGS) $(CFLAGS) -I../Kexts $^ -o $@\n\n$(BUILD)/security-tests: ../Security/tests/security_tests.c ../Security/permission_check.c | $(BUILD)
+$(BUILD)/kext-policy-tests: ../Kexts/tests/module_policy_tests.c ../Kexts/module_policy.c | $(BUILD)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -I../Kexts $^ -o $@\n\n$(BUILD)/security-tests: ../Security/tests/security_tests.c ../Security/permission_check.c | $(BUILD)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -I../Security $^ -o $@
 
 $(BUILD)/service-control-tests: ../Launch7762/tests/service_control_tests.c ../Launch7762/service_control.c ../LibSys/file_descriptor.c | $(BUILD)
