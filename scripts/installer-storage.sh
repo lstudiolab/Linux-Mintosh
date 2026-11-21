@@ -35,3 +35,19 @@ if best is None or best[0] < minimum:
 print(f"{best[1]:.2f}MiB {best[2]:.2f}MiB")
 PY
 }
+
+mintosh_prepare_erase_layout() {
+    local disk=$1 firmware=$2 confirmation=$3
+    [[ "$confirmation" == "ERASE" ]] || return 64
+    [[ "$firmware" == "0" || "$firmware" == "1" ]] || return 64
+    parted -s "$disk" mklabel gpt || return 1
+    if [[ "$firmware" == "1" ]]; then
+        parted -s "$disk" mkpart ESP fat32 1MiB 1025MiB || return 1
+        parted -s "$disk" set 1 esp on || return 1
+        parted -s "$disk" mkpart primary ext4 1025MiB 100% || return 1
+    else
+        parted -s "$disk" mkpart BIOSBOOT 1MiB 3MiB || return 1
+        parted -s "$disk" set 1 bios_grub on || return 1
+        parted -s "$disk" mkpart primary ext4 3MiB 100% || return 1
+    fi
+}
