@@ -48,7 +48,7 @@ int main(int argc, char **argv) {
         return 64;
     }
     if (strcmp(argv[1], "search") == 0 && argc == 3) {
-        char *arguments[] = {"apt-cache", "search", "--names-only", "--", argv[2], NULL};
+        char *arguments[] = {"apt-cache", "--names-only", "search", "--", argv[2], NULL};
         return mstore_execute(arguments);
     }
     if (strcmp(argv[1], "info") == 0 && argc == 3) {
