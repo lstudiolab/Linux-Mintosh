@@ -51,7 +51,7 @@ After boot, use:
     kextctl list
     security-audit
 
-`make verify` also compiles the native core and runs its CLI smoke tests.
+`make verify` also validates required boot/module-signing kernel options, compiles the native core and runs its regression/CLI smoke tests. The manual GitHub Actions workflow **Mintosh QEMU boot verification** builds the pinned kernel and ISO, then boots the image under QEMU.
 
 ## Build stages
 
@@ -59,7 +59,7 @@ After boot, use:
 - `make verify`: validate release metadata, shell syntax, and native source build/tests.
 - `make host-deps`: install Debian/Ubuntu build dependencies.
 - `make kernel-fetch`: download and verify the pinned upstream Linux source.
-- `make kernel-config`: configure the kernel for Mintosh.
+- `make kernel-config`: configure the kernel for Mintosh and verify boot-critical, virtualization and enforced module-signing options.
 - `make kernel`: compile the kernel and modules.
 - `make rootfs`: bootstrap the Debian-based base and compile/install native Mintosh components.
 - `make iso`: create BIOS/UEFI GRUB installer media.
@@ -76,4 +76,4 @@ See [installation](docs/installation.md), [architecture](docs/architecture.md), 
 
 ## Current limitations
 
-The graphical desktop (AppKit, Tarts, GT, Window Server, Dock and Finder), graphical application catalog, Mintosh update service, Secure Boot, disk encryption, automatic partition resizing and ARM64 installer are not implemented yet. The QEMU boot script and CI workflow exist; a successful run is required before calling a release boot-verified.
+The graphical desktop (AppKit, Tarts, GT, Window Server, Dock and Finder), graphical application catalog, Mintosh update service, Secure Boot, disk encryption, automatic partition resizing and ARM64 installer are not implemented yet. The QEMU boot script and manual CI workflow exist, but a successful run on the current release commit is still required before calling the image boot-verified.
