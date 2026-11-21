@@ -32,6 +32,10 @@ static int parse_restart_policy(const char *value, MintoshRestartPolicy *policy)
     return -1;
 }
 
+static int trusted_owner(uid_t owner) {
+    return owner == 0 || owner == geteuid();
+}
+
 static int load_service(MintoshServiceManager *manager, const char *directory,
                         const char *filename) {
     size_t filename_length = strlen(filename);
@@ -53,8 +57,7 @@ static int load_service(MintoshServiceManager *manager, const char *directory,
     if (descriptor < 0) return -1;
     struct stat metadata;
     if (fstat(descriptor, &metadata) < 0 || !S_ISREG(metadata.st_mode) ||
-        (metadata.st_mode & 0022) != 0 ||
-        (metadata.st_uid != 0 && metadata.st_uid != geteuid())) {
+        (metadata.st_mode & 0022) != 0 || !trusted_owner(metadata.st_uid)) {
         close(descriptor);
         errno = EPERM;
         return -1;
@@ -94,6 +97,13 @@ static int load_service(MintoshServiceManager *manager, const char *directory,
 }
 
 int ms_services_load(MintoshServiceManager *manager, const char *directory) {
+    struct stat metadata;
+    if (lstat(directory, &metadata) < 0) return -1;
+    if (!S_ISDIR(metadata.st_mode) || (metadata.st_mode & 0022) != 0 ||
+        !trusted_owner(metadata.st_uid)) {
+        errno = EPERM;
+        return -1;
+    }
     DIR *stream = opendir(directory);
     if (!stream) return -1;
     struct dirent *entry;

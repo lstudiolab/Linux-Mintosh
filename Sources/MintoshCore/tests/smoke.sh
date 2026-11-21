@@ -1,7 +1,7 @@
 #!/bin/sh
 set -eu
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../../.." && pwd)
-make -C "$ROOT/Sources/MintoshCore" clean all
+make -C "$ROOT/Sources/MintoshCore" clean all test-foundation
 B="$ROOT/Sources/MintoshCore/build"
 RUNTIME=$(mktemp -d)
 export MINTOSH_RUN_DIR="$RUNTIME"
@@ -21,13 +21,16 @@ cleanup() {
 }
 trap cleanup EXIT INT TERM
 
-"$B/darl" --version | grep -q '0.1.0'
+"$B/darl" --version | grep -q 'Darl 0.2.0'
 "$B/launch7762" --version | grep -q '0.1.0'
 set +e
 "$B/launch511" >/dev/null 2>&1
 LAUNCH511_STATUS=$?
+"$B/kextctl" load --help >/dev/null 2>&1
+KEXT_INVALID_STATUS=$?
 set -e
 [ "$LAUNCH511_STATUS" -eq 64 ]
+[ "$KEXT_INVALID_STATUS" -eq 64 ]
 "$B/ioplus" --version | grep -q '0.1.0'
 "$B/kextctl" --version | grep -q '0.1.0'
 "$B/mintosh-log" --version | grep -q '0.1.0'
@@ -40,7 +43,6 @@ MSTORE_INVALID_STATUS=$?
 set -e
 [ "$MSTORE_INVALID_STATUS" -eq 64 ]
 
-# Exercise the real Darl Unix-socket protocol as an unprivileged user.
 "$B/darl" &
 Darl_PID=$!
 attempt=0
@@ -51,8 +53,9 @@ while [ ! -S "$RUNTIME/darl.sock" ]; do
 done
 "$B/mintoshctl" status | grep -q 'Darl=running'
 "$B/mintoshctl" version | grep -q 'Mintosh 0.1.0'
+SOCKET_MODE=$(stat -c '%a' "$RUNTIME/darl.sock")
+[ "$SOCKET_MODE" = "660" ]
 
-# Exercise service parsing, process lifecycle, restart policy and socket control.
 cat > "$MINTOSH_SERVICE_DIR/test-service.service" <<EOF
 ExecStart=/bin/sleep 30
 Enabled=yes
@@ -84,8 +87,9 @@ if "$B/mintoshctl" services | grep -q '^unsafe '; then
     echo "launch7762 loaded an unsafe service definition" >&2
     exit 1
 fi
+SOCKET_MODE=$(stat -c '%a' "$RUNTIME/launch.sock")
+[ "$SOCKET_MODE" = "660" ]
 
-# A failed service with on-failure policy must be restarted.
 attempt=0
 while [ ! -f "$RUNTIME/restarts" ] || [ "$(wc -c < "$RUNTIME/restarts")" -lt 2 ]; do
     attempt=$((attempt + 1))
@@ -97,4 +101,4 @@ done
 cleanup
 unset Darl_PID LAUNCH_PID
 trap - EXIT INT TERM
-echo "Mintosh native build, Darl protocol, service security and supervision tests passed."
+echo "Mintosh native build, Foundation, Darl protocol, service security and supervision tests passed."

@@ -57,6 +57,17 @@ $(BUILD)/libfoundation.a: ../Foundation/string.c ../Foundation/path.c | $(BUILD)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c ../Foundation/path.c -o $(BUILD)/foundation-path.o
 	$(AR) rcs $@ $(BUILD)/foundation-string.o $(BUILD)/foundation-path.o
 
+$(BUILD)/foundation-tests: ../Foundation/tests/foundation_tests.c ../Foundation/string.c ../Foundation/path.c | $(BUILD)
+	$(CC) $(CPPFLAGS) $(CFLAGS) $^ -o $@
+
+$(BUILD)/package-validation-tests: ../PackageManager/tests/package_validation_tests.c ../PackageManager/package_validation.c | $(BUILD)
+	$(CC) $(CPPFLAGS) $(CFLAGS) $^ -o $@
+
+test-foundation: $(BUILD)/foundation-tests $(BUILD)/package-validation-tests
+	$(BUILD)/foundation-tests
+	$(BUILD)/package-validation-tests
+	@echo 'Foundation and package validation tests passed.'
+
 install: all
 	install -d $(BINDIR) $(LIBDIR) $(INCLUDEDIR)
 	install -m 0755 $(addprefix $(BUILD)/,$(PROGRAMS)) $(BINDIR)/
@@ -66,4 +77,4 @@ install: all
 clean:
 	rm -rf $(BUILD)
 
-.PHONY: all install clean
+.PHONY: all install clean test-foundation
