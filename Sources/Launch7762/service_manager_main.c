@@ -23,6 +23,12 @@ static void handle_client(MintoshServiceManager *manager, int descriptor) {
     else ms_services_control(manager, descriptor, request);
 }
 
+static int running_services(const MintoshServiceManager *manager) {
+    for (size_t index = 0; index < manager->count; ++index)
+        if (manager->services[index].process_id > 0) return 1;
+    return 0;
+}
+
 int main(int argc, char **argv) {
     if (argc > 1 && strcmp(argv[1], "--version") == 0) { puts("launch7762 0.1.0"); return 0; }
     if (ms_mkdir_p(ms_runtime_directory(), 0755) < 0) { perror("launch7762: runtime directory"); return 1; }
@@ -46,12 +52,25 @@ int main(int argc, char **argv) {
             int client = accept4(server, NULL, NULL, SOCK_CLOEXEC);
             if (client >= 0) { handle_client(&manager, client); close(client); }
         } else if (ready < 0 && errno != EINTR) break;
-        ms_services_reap(&manager, shutdown_requested);
+        ms_services_reap(&manager, 0);
     }
     ms_services_stop_all(&manager);
-    for (int attempt = 0; attempt < 20; ++attempt) {
+    for (int attempt = 0; attempt < 60 && running_services(&manager); ++attempt) {
         ms_services_reap(&manager, 1);
         usleep(100000);
+    }
+    if (running_services(&manager)) {
+        for (size_t index = 0; index < manager.count; ++index) {
+            MintoshService *service = &manager.services[index];
+            if (service->process_id > 0) {
+                (void)kill(-service->process_id, SIGKILL);
+                (void)kill(service->process_id, SIGKILL);
+            }
+        }
+        for (int attempt = 0; attempt < 10 && running_services(&manager); ++attempt) {
+            ms_services_reap(&manager, 1);
+            usleep(100000);
+        }
     }
     close(server);
     unlink(ms_launch_socket_path());

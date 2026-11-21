@@ -45,12 +45,24 @@ done
 "$B/mintoshctl" status | grep -q 'MOSF=running'
 "$B/mintoshctl" version | grep -q 'Mintosh 0.1.0'
 
-# Exercise service configuration, process start and the control socket.
+# Exercise service parsing, process lifecycle, restart policy and socket control.
 cat > "$MINTOSH_SERVICE_DIR/test-service.service" <<EOF
 ExecStart=/bin/sleep 30
 Enabled=yes
 Restart=no
 EOF
+cat > "$MINTOSH_SERVICE_DIR/retry-service.service" <<EOF
+ExecStart=printf x >> $RUNTIME/restarts; exit 1
+Enabled=yes
+Restart=on-failure
+EOF
+cat > "$MINTOSH_SERVICE_DIR/unsafe.service" <<EOF
+ExecStart=/bin/sleep 30
+Enabled=yes
+Restart=always
+EOF
+chmod 0666 "$MINTOSH_SERVICE_DIR/unsafe.service"
+
 "$B/launch7762" &
 LAUNCH_PID=$!
 attempt=0
@@ -59,10 +71,23 @@ while [ ! -S "$RUNTIME/launch.sock" ]; do
     [ "$attempt" -lt 50 ] || { echo "launch7762 socket did not appear" >&2; exit 1; }
     sleep 0.1
 done
-sleep 0.2
+sleep 0.3
 "$B/mintoshctl" services | grep -q 'test-service running'
+if "$B/mintoshctl" services | grep -q '^unsafe '; then
+    echo "launch7762 loaded an unsafe service definition" >&2
+    exit 1
+fi
+
+# A failed service with on-failure policy must be restarted.
+attempt=0
+while [ ! -f "$RUNTIME/restarts" ] || [ "$(wc -c < "$RUNTIME/restarts")" -lt 2 ]; do
+    attempt=$((attempt + 1))
+    [ "$attempt" -lt 60 ] || { echo "on-failure service was not restarted" >&2; exit 1; }
+    sleep 0.1
+done
+"$B/mintoshctl" stop retry-service | grep -q 'OK'
 "$B/mintoshctl" stop test-service | grep -q 'OK'
 cleanup
 unset MOSF_PID LAUNCH_PID
 trap - EXIT INT TERM
-echo "Mintosh native build, MOSF protocol and service-manager integration tests passed."
+echo "Mintosh native build, MOSF protocol, service security and supervision tests passed."

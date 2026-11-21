@@ -15,6 +15,7 @@ This roadmap distinguishes source implementation from release verification. A di
 - [x] LibSys shared POSIX utility library
 - [x] MOSF local foundation daemon and Unix-socket API
 - [x] launch7762 native child-process service supervisor
+- [x] launch7762 restart policies, stop escalation and protected service definitions
 - [x] launch511 command execution helper
 - [x] CSF client library
 - [x] Foundation string and path primitives
@@ -42,7 +43,7 @@ This roadmap distinguishes source implementation from release verification. A di
 - [x] Custom initramfs assembly
 - [x] GRUB BIOS/UEFI ISO assembly
 - [x] Live environment and text installer
-- [ ] Passing QEMU boot test on the release commit
+- [x] Passing QEMU boot test on the release commit
 - [ ] Physical-machine installation test
 - [ ] ARM64 bootable image and installer
 

@@ -1,18 +1,29 @@
 #ifndef MINTOSH_SERVICE_MANAGER_H
 #define MINTOSH_SERVICE_MANAGER_H
 #include <stddef.h>
+#include <time.h>
 #include <sys/types.h>
 
 #define MINTOSH_SERVICE_LIMIT 64
 #define MINTOSH_SERVICE_NAME_MAX 64
 #define MINTOSH_SERVICE_COMMAND_MAX 512
 
+typedef enum {
+    MINTOSH_RESTART_NEVER = 0,
+    MINTOSH_RESTART_ON_FAILURE = 1,
+    MINTOSH_RESTART_ALWAYS = 2
+} MintoshRestartPolicy;
+
 typedef struct {
     char name[MINTOSH_SERVICE_NAME_MAX];
     char command[MINTOSH_SERVICE_COMMAND_MAX];
     int enabled;
-    int restart_on_exit;
+    MintoshRestartPolicy restart_policy;
+    int restart_pending;
+    int kill_sent;
     pid_t process_id;
+    struct timespec restart_at;
+    struct timespec stop_deadline;
 } MintoshService;
 
 typedef struct {

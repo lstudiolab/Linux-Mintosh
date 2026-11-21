@@ -11,8 +11,10 @@ void ms_services_list(const MintoshServiceManager *manager, int descriptor) {
     char line[192];
     for (size_t index = 0; index < manager->count; ++index) {
         const MintoshService *service = &manager->services[index];
-        snprintf(line, sizeof line, "%s %s pid=%ld\n", service->name,
-                 service->process_id > 0 ? "running" : "stopped", (long)service->process_id);
+        const char *state = service->process_id > 0 ? "running" :
+                            service->restart_pending ? "restarting" : "stopped";
+        snprintf(line, sizeof line, "%s %s pid=%ld\n",
+                 service->name, state, (long)service->process_id);
         send_text(descriptor, line);
     }
     send_text(descriptor, "END\n");
@@ -29,14 +31,17 @@ void ms_services_control(MintoshServiceManager *manager, int descriptor, const c
         service->enabled = 1;
         send_text(descriptor, ms_service_start(service) == 0 ? "OK\n" : "ERROR start failed\n");
     } else if (strcmp(action, "STOP") == 0) {
-        ms_service_stop(service); send_text(descriptor, "OK\n");
+        ms_service_stop(service);
+        send_text(descriptor, "OK\n");
     } else if (strcmp(action, "RESTART") == 0) {
         service->enabled = 1;
         if (service->process_id > 0) {
-            /* The reaper observes the exit and applies the configured restart policy. */
-            ms_service_stop(service);
-            service->enabled = 1;
-            send_text(descriptor, "OK restart scheduled by service policy\n");
+            service->restart_pending = 1;
+            service->restart_at = (struct timespec){0};
+            service->stop_deadline = (struct timespec){0};
+            (void)kill(-service->process_id, SIGTERM);
+            (void)kill(service->process_id, SIGTERM);
+            send_text(descriptor, "OK restart scheduled\n");
         } else {
             send_text(descriptor, ms_service_start(service) == 0 ? "OK\n" : "ERROR restart failed\n");
         }
