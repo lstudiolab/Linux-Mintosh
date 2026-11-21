@@ -47,7 +47,7 @@ if mintosh_find_largest_free_region "$IMAGE" 50000 >/dev/null 2>&1; then
 fi
 
 NO_CONFIRM_IMAGE="$TMP/no-confirm.img"
-truncate -s 8G "$NO_CONFIRM_IMAGE"
+truncate -s 64M "$NO_CONFIRM_IMAGE"
 BEFORE_HASH=$(sha256sum "$NO_CONFIRM_IMAGE" | cut -d' ' -f1)
 if mintosh_prepare_erase_layout "$NO_CONFIRM_IMAGE" 1 NO; then
     echo "Erase layout accepted without the exact ERASE confirmation." >&2
