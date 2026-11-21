@@ -30,7 +30,7 @@ $(BUILD)/launch7762: ../Launch7762/service_manager_main.c ../Launch7762/service_
 $(BUILD)/launch511: ../Launch511/command_runner.c ../Launch511/command_arguments.c ../Launch511/command_exec.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $^ -o $@
 
-$(BUILD)/ioplus: ../IOPlus/hardware_inventory.c ../IOPlus/kernel_information.c ../IOPlus/sysfs_inventory.c ../IOPlus/memory_information.c
+$(BUILD)/ioplus: ../IOPlus/hardware_inventory.c ../IOPlus/kernel_information.c ../IOPlus/sysfs_inventory.c ../IOPlus/memory_information.c ../IOPlus/json_inventory.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $^ -o $@
 
 $(BUILD)/kextctl: ../Kexts/module_manager.c ../Kexts/module_command.c
@@ -67,14 +67,18 @@ $(BUILD)/libsys-tests: ../LibSys/tests/line_reader_tests.c ../LibSys/line_reader
 $(BUILD)/package-validation-tests: ../PackageManager/tests/package_validation_tests.c ../PackageManager/package_validation.c | $(BUILD)
 	$(CC) $(CPPFLAGS) $(CFLAGS) $^ -o $@
 
+$(BUILD)/security-tests: ../Security/tests/security_tests.c ../Security/permission_check.c | $(BUILD)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -I../Security $^ -o $@
+
 $(BUILD)/service-control-tests: ../Launch7762/tests/service_control_tests.c ../Launch7762/service_control.c ../LibSys/file_descriptor.c | $(BUILD)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -I../Launch7762 $^ -o $@
 
-test-foundation: $(BUILD)/foundation-tests $(BUILD)/package-validation-tests $(BUILD)/service-control-tests $(BUILD)/libsys-tests
+test-foundation: $(BUILD)/foundation-tests $(BUILD)/package-validation-tests $(BUILD)/service-control-tests $(BUILD)/libsys-tests $(BUILD)/security-tests
 	$(BUILD)/foundation-tests
 	$(BUILD)/package-validation-tests
 	$(BUILD)/service-control-tests
 	$(BUILD)/libsys-tests
+	$(BUILD)/security-tests
 	@echo 'Foundation, package validation and service control tests passed.'
 
 install: all
