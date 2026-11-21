@@ -1,5 +1,6 @@
 #include "module_policy.h"
 #include <assert.h>
+#include <stddef.h>
 int main(void) {
     assert(kexts_signature_value_enforced("Y\n") == 1);
     assert(kexts_signature_value_enforced("1") == 1);
