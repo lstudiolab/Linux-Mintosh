@@ -7,7 +7,7 @@ mkdir -p "$TMP/bin"
 cat > "$TMP/bin/blkid" <<'SH'
 #!/bin/sh
 if [ "${MINTOSH_TEST_NO_LABEL:-0}" = 1 ]; then exit 2; fi
-[ "$1" = "-t" ] && [ "$2" = "LABEL=MINTOSH" ] && [ "$3" = "-o" ] && [ "$4" = "device" ] || exit 64
+[ "$1" = "-c" ] && [ "$2" = "/dev/null" ] && [ "$3" = "-t" ] && [ "$4" = "LABEL=MINTOSH" ] && [ "$5" = "-o" ] && [ "$6" = "device" ] || exit 64
 printf '%s\n' /dev/sdb1
 SH
 cat > "$TMP/bin/lsblk" <<'SH'
