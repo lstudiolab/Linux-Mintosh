@@ -2,12 +2,15 @@ SHELL := /bin/sh
 ARCH ?= x86_64
 JOBS ?= $(shell getconf _NPROCESSORS_ONLN 2>/dev/null || echo 2)
 KERNEL_DIR := kernel/linux
-KERNEL_OUT := out/kernel
+KERNEL_OUT := out/kernel/$(ARCH)
 ROOTFS := out/rootfs
 ISO_ROOT := out/iso
 ISO := out/mintosh-$(ARCH).iso
 KERNEL_ARCH_x86_64 := x86
 KERNEL_ARCH_arm64 := arm64
+KERNEL_DEFCONFIG_x86_64 := x86_64_defconfig
+KERNEL_DEFCONFIG_arm64 := defconfig
+KERNEL_DEFCONFIG := $(KERNEL_DEFCONFIG_$(ARCH))
 KERNEL_ARCH := $(KERNEL_ARCH_$(ARCH))
 ifeq ($(ARCH),arm64)
 CROSS_COMPILE ?= aarch64-linux-gnu-
@@ -53,7 +56,7 @@ kernel-fetch: check-host
 kernel-config: check-host
 	@test -d "$(KERNEL_DIR)" || { echo 'Run make kernel-fetch first.' >&2; exit 1; }
 	@mkdir -p "$(KERNEL_OUT)"
-	$(MAKE) -C "$(KERNEL_DIR)" O="$(CURDIR)/$(KERNEL_OUT)" ARCH="$(KERNEL_ARCH)" CROSS_COMPILE="$(CROSS_COMPILE)" defconfig
+	$(MAKE) -C "$(KERNEL_DIR)" O="$(CURDIR)/$(KERNEL_OUT)" ARCH="$(KERNEL_ARCH)" CROSS_COMPILE="$(CROSS_COMPILE)" $(KERNEL_DEFCONFIG)
 	@"$(KERNEL_DIR)/scripts/config" --file "$(KERNEL_OUT)/.config" \
 	  --enable MODULES --enable BLK_DEV_INITRD --enable DEVTMPFS --enable DEVTMPFS_MOUNT \
 	  --enable EXT4_FS --enable VIRTIO --enable VIRTIO_PCI --enable VIRTIO_BLK \
