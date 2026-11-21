@@ -55,16 +55,18 @@ $(BUILD)/libcsf.a: ../CSF/darl_request.c $(LIBSYS_OBJECTS) | $(BUILD)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c ../CSF/darl_request.c -o $(BUILD)/csf-darl-request.o
 	$(AR) rcs $@ $(BUILD)/csf-darl-request.o $(LIBSYS_OBJECTS)
 
-$(BUILD)/libfoundation.a: ../Foundation/string.c ../Foundation/path.c ../Foundation/data.c ../Foundation/array.c ../Foundation/error.c ../Foundation/filesystem.c | $(BUILD)
+$(BUILD)/libfoundation.a: ../Foundation/string.c ../Foundation/path.c ../Foundation/data.c ../Foundation/array.c ../Foundation/dictionary.c ../Foundation/url.c ../Foundation/error.c ../Foundation/filesystem.c | $(BUILD)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c ../Foundation/string.c -o $(BUILD)/foundation-string.o
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c ../Foundation/path.c -o $(BUILD)/foundation-path.o
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c ../Foundation/data.c -o $(BUILD)/foundation-data.o
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c ../Foundation/array.c -o $(BUILD)/foundation-array.o
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c ../Foundation/dictionary.c -o $(BUILD)/foundation-dictionary.o
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c ../Foundation/url.c -o $(BUILD)/foundation-url.o
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c ../Foundation/error.c -o $(BUILD)/foundation-error.o
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c ../Foundation/filesystem.c -o $(BUILD)/foundation-filesystem.o
-	$(AR) rcs $@ $(BUILD)/foundation-string.o $(BUILD)/foundation-path.o $(BUILD)/foundation-data.o $(BUILD)/foundation-array.o $(BUILD)/foundation-error.o $(BUILD)/foundation-filesystem.o
+	$(AR) rcs $@ $(BUILD)/foundation-string.o $(BUILD)/foundation-path.o $(BUILD)/foundation-data.o $(BUILD)/foundation-array.o $(BUILD)/foundation-dictionary.o $(BUILD)/foundation-url.o $(BUILD)/foundation-error.o $(BUILD)/foundation-filesystem.o
 
-$(BUILD)/foundation-tests: ../Foundation/tests/foundation_tests.c ../Foundation/string.c ../Foundation/path.c ../Foundation/data.c ../Foundation/array.c ../Foundation/error.c ../Foundation/filesystem.c | $(BUILD)
+$(BUILD)/foundation-tests: ../Foundation/tests/foundation_tests.c ../Foundation/string.c ../Foundation/path.c ../Foundation/data.c ../Foundation/array.c ../Foundation/dictionary.c ../Foundation/url.c ../Foundation/error.c ../Foundation/filesystem.c | $(BUILD)
 	$(CC) $(CPPFLAGS) $(CFLAGS) $^ -o $@
 
 $(BUILD)/libsys-tests: ../LibSys/tests/line_reader_tests.c ../LibSys/line_reader.c | $(BUILD)
