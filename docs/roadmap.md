@@ -18,7 +18,7 @@ This roadmap separates implemented source from verified release behavior. A dire
 - [~] Darl local daemon (basic health/version protocol; authorization, structured requests and durable state remain)
 - [~] launch7762 system supervisor and Launch Client per-user supervisor (protected definitions, direct argv execution, peer credentials, bounded restart and clean shutdown; dependency graphs and resource limits remain)
 - [~] launch511 command execution helper (direct argv execution; policy and privilege model remain)
-- [~] CSF client library (Darl request transport only; higher-level system APIs remain)
+- [~] CSF system framework (Darl status/version and launch7762 service list/control APIs; structured IPC, notifications and asynchronous requests remain)
 - [~] Foundation library (strings, byte buffers, arrays, dictionaries, URL parsing, errors, lexical paths and bounded atomic file I/O; date/time, localization, serialization and broader filesystem APIs remain)
 - [~] GVD task management and dispatch (bounded worker queue, process inventory, nice values and non-realtime scheduler policies; cancellation, cgroup resource controls and cross-process task policy remain)
 - [~] IOPS power services (battery/thermal telemetry, CPU governor and platform profile controls; vendor-specific policy daemon, suspend integration and power event API remain)
