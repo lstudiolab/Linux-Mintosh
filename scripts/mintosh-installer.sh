@@ -182,8 +182,7 @@ fi
 chroot "$TARGET" update-initramfs -c -k all >>"$LOG" 2>&1 || chroot "$TARGET" update-initramfs -u -k all >>"$LOG" 2>&1
 chroot "$TARGET" update-grub >>"$LOG" 2>&1 || fail "Could not generate the boot menu."
 sync
-dialog --title "Installation complete" --yesno "Mintosh has been installed on $DISK.\n\nRemove the USB installer and restart.\n\nRestart now?" 12 72
-if [[ $? -eq 0 ]]; then
+if dialog --title "Installation complete" --yesno "Mintosh has been installed on $DISK.\n\nRemove the USB installer and restart.\n\nRestart now?" 12 72; then
   cleanup
   trap - EXIT
   reboot
