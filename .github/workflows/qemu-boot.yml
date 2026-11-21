@@ -1,0 +1,30 @@
+name: Mintosh QEMU boot verification
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  qemu-boot:
+    name: Build image and verify live boot
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+      - name: Install build dependencies
+        run: make host-deps
+      - name: Verify native foundation
+        run: make verify
+      - name: Fetch and configure pinned Linux kernel
+        run: |
+          make kernel-fetch
+          make kernel-config
+      - name: Build kernel and installer image
+        run: |
+          make kernel JOBS=2
+          make iso JOBS=2
+      - name: Boot installer image in QEMU
+        run: make test-qemu
