@@ -1,5 +1,6 @@
 #define _GNU_SOURCE
 #include <dirent.h>
+#include <limits.h>
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -21,8 +22,8 @@ static int read_value(const char *path, char *buffer, size_t capacity) {
 static void json_string(const char *value) {
     putchar('"');
     for (const unsigned char *cursor = (const unsigned char *)value; *cursor; ++cursor) {
-        if (*cursor == '"' || *cursor == '\\\\') { putchar('\\\\'); putchar(*cursor); }
-        else if (*cursor < 0x20) printf("\\\\u%04x", *cursor);
+        if (*cursor == '"' || *cursor == '\\') { putchar('\\'); putchar(*cursor); }
+        else if (*cursor < 0x20) printf("\\u%04x", *cursor);
         else putchar(*cursor);
     }
     putchar('"');
@@ -52,8 +53,10 @@ static int list_disks(int json) {
         snprintf(path, sizeof path, "/sys/class/block/%s/partition", entry->d_name);
         int is_partition = read_value(path, partition, sizeof partition) == 0;
         char *end = NULL;
+        errno = 0;
         unsigned long long count = strtoull(sectors, &end, 10);
-        unsigned long long bytes = end && !*end ? count * 512ULL : 0;
+        unsigned long long bytes = !errno && end && !*end &&
+            count <= ULLONG_MAX / 512ULL ? count * 512ULL : 0;
         if (json) {
             if (!first) putchar(',');
             fputs("{\"name\":", stdout); json_string(entry->d_name);
@@ -87,6 +90,11 @@ static int safe_device_path(const char *path) {
     return stat(path, &metadata) == 0 && S_ISBLK(metadata.st_mode);
 }
 
+static int allowed_mount_target(const char *path) {
+    return strcmp(path, "/mnt") == 0 || strncmp(path, "/mnt/", 5) == 0 ||
+           strcmp(path, "/media") == 0 || strncmp(path, "/media/", 7) == 0;
+}
+
 static int run_mount(int argc, char **argv) {
     if (argc != 4 || !safe_device_path(argv[2])) {
         fputs("usage: dmctl mount /dev/BLOCK_DEVICE /existing/directory\n", stderr);
@@ -94,6 +102,10 @@ static int run_mount(int argc, char **argv) {
     }
     char target[4096];
     if (!realpath(argv[3], target)) { perror("dmctl: resolve mount target"); return 1; }
+    if (!allowed_mount_target(target)) {
+        fputs("dmctl: mount targets are restricted to /mnt and /media\n", stderr);
+        return 64;
+    }
     struct stat metadata;
     if (stat(target, &metadata) < 0 || !S_ISDIR(metadata.st_mode)) {
         fputs("dmctl: mount target must be an existing directory\n", stderr);
@@ -116,6 +128,10 @@ static int run_unmount(int argc, char **argv) {
     }
     char target[4096];
     if (!realpath(argv[2], target)) { perror("dmctl: resolve mount point"); return 1; }
+    if (!allowed_mount_target(target)) {
+        fputs("dmctl: unmount targets are restricted to /mnt and /media\n", stderr);
+        return 64;
+    }
     if (geteuid() != 0) {
         fputs("dmctl: unmounting filesystems requires root privileges\n", stderr);
         return 2;
