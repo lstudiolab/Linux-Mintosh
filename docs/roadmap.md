@@ -15,7 +15,7 @@ This roadmap separates implemented source from verified release behavior. A dire
 
 ### Mintosh-owned native source
 - [~] LibSys POSIX utilities (filesystem, descriptors, Unix sockets, runtime paths and syslog; broader API and tests remain)
-- [~] Darl local daemon (basic health/version protocol; authorization, structured requests and durable state remain)
+- [~] Darl local daemon (bounded health/version protocol and service-group socket permissions; structured IPC, authorization scopes and durable state remain)
 - [~] launch7762 system supervisor and Launch Client per-user supervisor (protected definitions, direct argv execution, peer credentials, bounded restart and clean shutdown; dependency graphs and resource limits remain)
 - [~] launch511 command execution helper (direct argv execution; policy and privilege model remain)
 - [~] CSF system framework (Darl status/version and launch7762 service list/control APIs; structured IPC, notifications and asynchronous requests remain)
@@ -26,9 +26,9 @@ This roadmap separates implemented source from verified release behavior. A dire
 - [~] FMS metadata search (atomic SQLite file index and bounded search; incremental indexing, content search and query service remain)
 - [~] DM disk manager (sysfs disk inventory and restricted mount/unmount operations; filesystem health, encryption and partition planning remain)
 - [~] HP ProBook compatibility baseline (multi-generation x86-64 driver profile, vendor firmware packages and DMI diagnostics; model-by-model hardware certification remains)
-- [~] Kexts Linux module frontend (list/load/unload wrapper; signed module policy and lifecycle integration remain)
+- [~] Kexts Linux module frontend (safe module names, fixed-path modprobe and kernel-enforced signatures; trusted third-party signing and lifecycle integration remain)
 - [~] System Logging syslog frontend (write path exists; structured querying, rotation policy and retention remain)
-- [~] Security baseline audit (critical account files, protected service definitions and installed executable ownership/modes; policy engine, capabilities and sandboxing remain)
+- [~] Security baseline audit (account files, service definitions, runtime sockets, FMS database permissions and enforced module signatures; policy engine, capabilities and sandboxing remain)
 - [~] mstore APT frontend (Debian signed repository transport; Mintosh catalog, transaction UI and rollback remain)
 - [ ] Mintosh-signed package repository and curated catalog
 - [ ] AppKit native GUI framework
