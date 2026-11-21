@@ -21,7 +21,11 @@ This roadmap separates implemented source from verified release behavior. A dire
 - [~] Foundation library (strings, byte buffers, arrays, dictionaries, URL parsing, errors, lexical paths and bounded atomic file I/O; date/time, localization, serialization and broader filesystem APIs remain)
 - [~] GVD task management and dispatch (process scheduling controls and bounded worker queue; cancellation, priorities and cross-process task policy remain)
 - [~] IOPS power services (power, thermal and CPU governor inventory/control; battery policy daemon and power event API remain)
-- [~] I/O+ inventory (structured sysfs device properties and kernel uevent stream; driver capability probing and stable device identity remain)
+- [~] I/O+ inventory and kernel uevent monitor (structured device data and live hotplug events; driver capability probing and stable device identity remain)
+- [~] GVD task manager (process inventory, safe nice values and non-realtime scheduler policies; cgroup resource controls and lifecycle integration remain)
+- [~] FMS metadata search (atomic SQLite file index and bounded search; incremental indexing, content search and query service remain)
+- [~] DM disk manager (sysfs disk inventory and restricted mount/unmount operations; filesystem health, encryption and partition planning remain)
+- [~] IOPS power services (battery/thermal telemetry and validated CPU/platform profile controls; vendor-specific power policy and suspend integration remain)
 - [~] HP ProBook compatibility baseline (multi-generation x86-64 driver profile, vendor firmware packages and DMI diagnostics; model-by-model hardware certification remains)
 - [~] Kexts Linux module frontend (list/load/unload wrapper; signed module policy and lifecycle integration remain)
 - [~] System Logging syslog frontend (write path exists; structured querying, rotation policy and retention remain)
@@ -63,7 +67,7 @@ The graphical desktop does not start until the following are complete:
 2. Service supervision has safe argv execution, peer-credential authorization, bounded restart behavior, clean shutdown and rootfs integration.
 3. Package operations have transaction validation, trusted repository configuration, failure recovery and tests.
 4. Security checks cover account files, service definitions, executable ownership, module loading and privileged IPC.
-5. I/O+ reports structured hardware data and handles device changes without requiring a reboot.
+5. I/O+ reports structured hardware data and handles device changes without requiring a reboot; GVD, FMS, DM and IOPS expose tested native APIs with explicit privilege boundaries.
 6. The installer passes destructive-path tests in disposable virtual disks, preserves existing partitions in alongside mode, and verifies firmware boot entries before reboot.
 7. QEMU boot, network and service tests pass for each advertised architecture.
 
