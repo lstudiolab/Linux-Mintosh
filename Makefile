@@ -50,7 +50,7 @@ check-release:
 
 check-scripts:
 	@bash -n scripts/mintosh-installer.sh
-	@for f in scripts/*.sh; do case "$$f" in scripts/mintosh-installer.sh) ;; *) sh -n "$$f" || exit 1 ;; esac; done
+	@for f in scripts/*.sh; do case "$f" in scripts/mintosh-installer.sh) ;; *) sh -n "$f" || exit 1 ;; esac; done
 	@python3 -c 'import ast,pathlib; ast.parse(pathlib.Path("scripts/check-release.py").read_text(encoding="utf-8"))'
 	@sh -n scripts/configure-hp-probook.sh
 	@echo 'Shell and Python scripts are syntactically valid.'
@@ -96,9 +96,11 @@ kernel-config: check-host
 	  --enable SECCOMP --enable SECCOMP_FILTER --set-str LOCALVERSION -mintosh
 	$(MAKE) -C "$(KERNEL_DIR)" O="$(CURDIR)/$(KERNEL_OUT)" ARCH="$(KERNEL_ARCH)" CROSS_COMPILE="$(CROSS_COMPILE)" olddefconfig
 	@if [ "$(ARCH)" = x86_64 ]; then sh scripts/configure-hp-probook.sh "$(KERNEL_DIR)" "$(KERNEL_OUT)"; fi
+	@sh scripts/verify-kernel-config.sh "$(KERNEL_OUT)/.config"
 
 kernel: check-host
 	@test -f "$(KERNEL_OUT)/.config" || { echo 'Run make kernel-config first.' >&2; exit 1; }
+	@sh scripts/verify-kernel-config.sh "$(KERNEL_OUT)/.config"
 	$(MAKE) -C "$(KERNEL_DIR)" O="$(CURDIR)/$(KERNEL_OUT)" ARCH="$(KERNEL_ARCH)" CROSS_COMPILE="$(CROSS_COMPILE)" -j"$(JOBS)" $(KERNEL_IMAGE) modules
 	@echo 'Kernel build completed: $(KERNEL_OUT)'
 
