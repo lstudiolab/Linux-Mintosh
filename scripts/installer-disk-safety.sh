@@ -6,7 +6,7 @@ MINTOSH_PROTECTED_DISKS=()
 mintosh_discover_protected_disks() {
     local source parent name disk
     local -a sources=()
-    mapfile -t sources < <(blkid -t "LABEL=$MINTOSH_LIVE_LABEL" -o device 2>/dev/null | sort -u)
+    mapfile -t sources < <(blkid -c /dev/null -t "LABEL=$MINTOSH_LIVE_LABEL" -o device 2>/dev/null | sort -u)
     (("${#sources[@]}" > 0)) || return 1
 
     MINTOSH_PROTECTED_DISKS=()
