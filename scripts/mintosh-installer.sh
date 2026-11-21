@@ -157,7 +157,9 @@ PASSWORD2=$(dialog --stdout --insecure --title "$TITLE" --passwordbox "Enter the
 [[ "$PASSWORD" == "$PASSWORD2" ]] || fail "Passwords do not match."
 
 for dir in dev proc sys run; do mount --rbind "/$dir" "$TARGET/$dir"; mount --make-rslave "$TARGET/$dir"; done
-chroot "$TARGET" usermod -l "$USERNAME" mintosh >>"$LOG" 2>&1 || fail "Could not configure the user account."
+if [[ "$USERNAME" != "mintosh" ]]; then
+  chroot "$TARGET" usermod -l "$USERNAME" mintosh >>"$LOG" 2>&1 || fail "Could not configure the user account."
+fi
 chroot "$TARGET" usermod -d "/home/$USERNAME" -m "$USERNAME" >>"$LOG" 2>&1 || fail "Could not configure the home directory."
 printf '%s:%s\n' "$USERNAME" "$PASSWORD" | chroot "$TARGET" chpasswd || fail "Could not set the account password."
 chroot "$TARGET" usermod -aG sudo "$USERNAME" >>"$LOG" 2>&1 || fail "Could not configure administrator permissions."
@@ -165,13 +167,9 @@ unset PASSWORD PASSWORD2
 
 if (( UEFI )); then
   dialog --title "$TITLE" --infobox "Installing UEFI bootloader..." 5 58
-  chroot "$TARGET" apt-get update >>"$LOG" 2>&1 || fail "Network/package index update failed. Connect to the internet and retry."
-  DEBIAN_FRONTEND=noninteractive chroot "$TARGET" apt-get install -y grub-efi-amd64 os-prober efibootmgr initramfs-tools >>"$LOG" 2>&1 || fail "Could not install UEFI bootloader packages."
   chroot "$TARGET" grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=Mintosh --recheck >>"$LOG" 2>&1 || fail "UEFI bootloader installation failed."
 else
   dialog --title "$TITLE" --infobox "Installing BIOS bootloader..." 5 58
-  chroot "$TARGET" apt-get update >>"$LOG" 2>&1 || fail "Network/package index update failed. Connect to the internet and retry."
-  DEBIAN_FRONTEND=noninteractive chroot "$TARGET" apt-get install -y grub-pc os-prober initramfs-tools >>"$LOG" 2>&1 || fail "Could not install BIOS bootloader packages."
   chroot "$TARGET" grub-install --target=i386-pc "$DISK" >>"$LOG" 2>&1 || fail "BIOS bootloader installation failed."
 fi
 
