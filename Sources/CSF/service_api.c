@@ -29,15 +29,18 @@ int csf_service_control(const char *action, const char *name) {
         errno = EINVAL;
         return -1;
     }
+    const char *protocol_action = strcmp(action, "start") == 0 ? "START" :
+                                  strcmp(action, "stop") == 0 ? "STOP" : "RESTART";
     char request[128], response[256] = {0};
-    int length = snprintf(request, sizeof request, "%s %s", action, name);
+    int length = snprintf(request, sizeof request, "%s %s", protocol_action, name);
     if (length < 0 || (size_t)length >= sizeof request) {
         errno = EOVERFLOW;
         return -1;
     }
     if (ms_send_command(ms_launch_socket_path(), request,
                         response, sizeof response) < 0) return -1;
-    if (strncmp(response, "OK ", 3) != 0) {
+    if (strncmp(response, "OK", 2) != 0 ||
+        (response[2] != '\\0' && response[2] != ' ' && response[2] != '\\n')) {
         errno = EPERM;
         return -1;
     }
