@@ -51,7 +51,7 @@ check-release:
 check-scripts:
 	@bash -n scripts/mintosh-installer.sh
 	@for f in scripts/*.sh; do case "$$f" in scripts/mintosh-installer.sh) ;; *) sh -n "$$f" || exit 1 ;; esac; done
-	@python3 -m py_compile scripts/check-release.py
+	@python3 -c 'import ast,pathlib; ast.parse(pathlib.Path("scripts/check-release.py").read_text(encoding="utf-8"))'
 	@echo 'Shell and Python scripts are syntactically valid.'
 
 verify: check-release check-scripts
