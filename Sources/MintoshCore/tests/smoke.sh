@@ -42,6 +42,10 @@ set -e
 "$B/hp-compat" --version | grep -q '0.1.0'
 "$B/hp-compat" --json | python3 -c 'import json,sys; value=json.load(sys.stdin); assert {"vendor","product","board","bios_version","is_hp","is_probook"} <= value.keys()'
 "$B/ioplus" --version | grep -q '0.2.0'
+"$B/gvdctl" --version | grep -q '0.1.0'
+"$B/gvdctl" list --json | python3 -c 'import json,sys; value=json.load(sys.stdin); assert isinstance(value,list) and value'
+"$B/iopsctl" --version | grep -q '0.1.0'
+"$B/iopsctl" status --json | python3 -c 'import json,sys; value=json.load(sys.stdin); assert {"power_supplies","thermal_zones","cpu_governors","platform_profile"} <= value.keys()'
 "$B/ioplus" --json | python3 -c 'import json,sys; value=json.load(sys.stdin); assert {"kernel","cpu_model","memory_kib","firmware","devices"} <= value.keys(); assert {"block","network","usb","graphics","power"} <= value["devices"].keys()' 
 set +e
 "$B/ioplus" --json unexpected >/dev/null 2>&1
