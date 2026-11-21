@@ -10,20 +10,41 @@ int mf_array_init(MFArray *array, size_t element_size) {
 }
 
 int mf_array_append(MFArray *array, const void *element) {
-    if (!array || !element || !array->element_size) return -1;
-    if (array->count >= SIZE_MAX / array->element_size) return -1;
+    if (!array || !element || !array->element_size ||
+        array->count > array->capacity ||
+        array->count > SIZE_MAX / array->element_size ||
+        (array->capacity && !array->elements)) return -1;
+
+    size_t used = array->count * array->element_size;
+    size_t source_offset = 0;
+    int source_aliases_array = 0;
+    if (array->elements && used) {
+        uintptr_t base = (uintptr_t)array->elements;
+        uintptr_t source = (uintptr_t)element;
+        if (source >= base && source - base < used) {
+            source_offset = (size_t)(source - base);
+            if (array->element_size > used - source_offset) return -1;
+            source_aliases_array = 1;
+        }
+    }
+
+    if (array->count == SIZE_MAX / array->element_size) return -1;
     if (array->count == array->capacity) {
         size_t capacity = array->capacity ? array->capacity : 8;
         if (capacity > SIZE_MAX / 2) capacity = array->count + 1;
         else capacity *= 2;
-        if (capacity > SIZE_MAX / array->element_size) return -1;
+        if (capacity <= array->count ||
+            capacity > SIZE_MAX / array->element_size) return -1;
         void *updated = realloc(array->elements, capacity * array->element_size);
         if (!updated) return -1;
         array->elements = updated;
         array->capacity = capacity;
     }
-    memcpy((unsigned char *)array->elements + array->count * array->element_size,
-           element, array->element_size);
+
+    const void *source = source_aliases_array
+        ? (const unsigned char *)array->elements + source_offset : element;
+    memmove((unsigned char *)array->elements + used, source,
+            array->element_size);
     ++array->count;
     return 0;
 }
