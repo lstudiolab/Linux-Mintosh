@@ -50,7 +50,7 @@ check-release:
 
 check-scripts:
 	@bash -n scripts/mintosh-installer.sh
-	@for f in scripts/*.sh; do case "$f" in scripts/mintosh-installer.sh) ;; *) sh -n "$f" || exit 1 ;; esac; done
+	@for f in scripts/*.sh; do case "$f" in scripts/mintosh-installer.sh|scripts/installer-disk-safety.sh|scripts/test-installer-disk-safety.sh) bash -n "$f" || exit 1 ;; *) sh -n "$f" || exit 1 ;; esac; done
 	@python3 -c 'import ast,pathlib; ast.parse(pathlib.Path("scripts/check-release.py").read_text(encoding="utf-8"))'
 	@sh -n scripts/configure-hp-probook.sh
 	@echo 'Shell and Python scripts are syntactically valid.'
