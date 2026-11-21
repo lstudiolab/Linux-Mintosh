@@ -62,8 +62,12 @@ mkdir -p "$ROOTFS/usr/src/mintosh" "$ROOTFS/etc/mintosh/services"
 cp -a "$ROOT/Sources" "$ROOTFS/usr/src/mintosh/"
 chroot "$ROOTFS" make -C /usr/src/mintosh/Sources/MintoshCore install
 rm -rf "$ROOTFS/usr/src/mintosh"
+chroot "$ROOTFS" apt-get purge --yes gcc make libc6-dev
+chroot "$ROOTFS" apt-get autoremove --yes
+chroot "$ROOTFS" apt-get clean
 install -m 0644 "$ROOT/Sources/Services/launch7762.service" "$ROOTFS/etc/systemd/system/launch7762.service"
 install -m 0644 "$ROOT/Sources/Services/mintosh-ready.service" "$ROOTFS/etc/systemd/system/mintosh-ready.service"
+install -m 0644 "$ROOT/Sources/Services/ioplus-events.service" "$ROOTFS/etc/systemd/system/ioplus-events.service"
 install -m 0644 "$ROOT/Sources/Services/darl.service" "$ROOTFS/etc/mintosh/services/darl.service"
 cat > "$ROOTFS/etc/systemd/system/mintosh-installer.service" <<'EOF'
 [Unit]
@@ -105,7 +109,7 @@ ln -snf /usr/share/zoneinfo/UTC "$ROOTFS/etc/localtime"
 : > "$ROOTFS/etc/machine-id"
 mkdir -p "$ROOTFS/var/lib/dbus"
 ln -snf /etc/machine-id "$ROOTFS/var/lib/dbus/machine-id"
-systemctl --root="$ROOTFS" enable systemd-networkd.service systemd-resolved.service serial-getty@ttyS0.service launch7762.service mintosh-ready.service mintosh-installer.service
+systemctl --root="$ROOTFS" enable systemd-networkd.service systemd-resolved.service serial-getty@ttyS0.service launch7762.service mintosh-ready.service mintosh-installer.service ioplus-events.service
 ln -snf /run/systemd/resolve/stub-resolv.conf "$ROOTFS/etc/resolv.conf"
 rm -rf "$ROOTFS/var/lib/apt/lists/"*
 echo "Mintosh root filesystem created at out/rootfs."

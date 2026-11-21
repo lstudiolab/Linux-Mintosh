@@ -33,7 +33,12 @@ set -e
 "$B/hp-compat" --version | grep -q '0.1.0'
 "$B/hp-compat" --json | python3 -c 'import json,sys; value=json.load(sys.stdin); assert {"vendor","product","board","bios_version","is_hp","is_probook"} <= value.keys()'
 "$B/ioplus" --version | grep -q '0.2.0'
-"$B/ioplus" --json | python3 -c 'import json,sys; value=json.load(sys.stdin); assert {"kernel","memory_kib","devices"} <= value.keys()'
+"$B/ioplus" --json | python3 -c 'import json,sys; value=json.load(sys.stdin); assert {"kernel","cpu_model","memory_kib","firmware","devices"} <= value.keys(); assert {"block","network","usb","graphics","power"} <= value["devices"].keys()' 
+set +e
+"$B/ioplus" --json unexpected >/dev/null 2>&1
+IOPLUS_INVALID_STATUS=$?
+set -e
+[ "$IOPLUS_INVALID_STATUS" -eq 64 ]
 "$B/kextctl" --version | grep -q '0.1.0'
 "$B/mintosh-log" --version | grep -q '0.1.0'
 "$B/security-audit" --version | grep -q '0.3.0'

@@ -14,16 +14,16 @@ int main(int argc, char **argv) {
         puts("I/O+ 0.2.0");
         return 0;
     }
-    if (argc > 1 && strcmp(argv[1], "--json") == 0) {
+    if (argc == 2 && strcmp(argv[1], "--json") == 0) {
         ioplus_print_json();
         return 0;
     }
-    if (argc > 1 && strcmp(argv[1], "--help") == 0) {
+    if (argc == 2 && strcmp(argv[1], "--help") == 0) {
         puts("Usage: ioplus [--json|watch|--version|--help]");
         return 0;
     }
     if (argc > 1) {
-        fputs("Usage: ioplus [--json] [--version] [--help]\n", stderr);
+        fputs("Usage: ioplus [--json|watch|--version|--help]\n", stderr);
         return 64;
     }
     ioplus_print_kernel();

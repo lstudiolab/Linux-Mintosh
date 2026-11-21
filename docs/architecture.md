@@ -21,7 +21,7 @@ Native source code lives under `Sources/`. The current core is compiled inside t
 - **LibSys**: shared POSIX utilities, bounded Unix-socket line framing with deadlines, file-descriptor helpers, runtime paths and syslog integration.
 - **CSF**: C client API for the Darl local service endpoint.
 - **Foundation**: reusable string, byte-data and lexical path primitives with alias-safe append operations.
-- **I/O+**: live hardware inventory using Linux sysfs and procfs.
+- **I/O+**: structured kernel, CPU, memory, DMI, block, network, USB, graphics and power inventory, plus a read-only kernel uevent monitor.
 - **HP Compatibility**: DMI-based HP/ProBook identification and diagnostics; x86-64 kernel builds enable a broad HP laptop, graphics, wireless, audio, storage and input driver profile.
 - **Kexts**: kernel module operations delegated to Linux modprobe/kmod.
 - **Security**: basic permissions audit for critical account files.
