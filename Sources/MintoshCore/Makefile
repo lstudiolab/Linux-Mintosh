@@ -11,7 +11,7 @@ BUILD = build
 
 LIBSYS_SOURCES = ../LibSys/filesystem.c ../LibSys/file_descriptor.c ../LibSys/unix_socket.c ../LibSys/line_reader.c ../LibSys/system_log.c ../LibSys/runtime_paths.c
 LIBSYS_OBJECTS = $(patsubst ../LibSys/%.c,$(BUILD)/libsys-%.o,$(LIBSYS_SOURCES))
-PROGRAMS = darl launch7762 launch-client launch511 ioplus iopsctl gvdctl hp-compat kextctl mintosh-log security-audit mintoshctl mstore
+PROGRAMS = darl launch7762 launch-client launch511 ioplus iopsctl gvdctl fmsctl dmctl hp-compat kextctl mintosh-log security-audit mintoshctl mstore
 
 all: $(addprefix $(BUILD)/,$(PROGRAMS)) $(BUILD)/libcsf.a $(BUILD)/libfoundation.a $(BUILD)/libgvd.a
 
@@ -41,6 +41,12 @@ $(BUILD)/gvdctl: ../GVD/task_manager.c ../GVD/task_policy.c | $(BUILD)
 
 $(BUILD)/iopsctl: ../IOPS/power_manager.c ../IOPS/power_control.c | $(BUILD)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -I../IOPS $^ -o $@
+
+$(BUILD)/fmsctl: ../FMS/fmsctl.c | $(BUILD)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -I../FMS $^ -lsqlite3 -o $@
+
+$(BUILD)/dmctl: ../DM/dmctl.c | $(BUILD)
+	$(CC) $(CPPFLAGS) $(CFLAGS) $^ -o $@
 
 $(BUILD)/ioplus: ../IOPlus/hardware_inventory.c ../IOPlus/kernel_information.c ../IOPlus/sysfs_inventory.c ../IOPlus/memory_information.c ../IOPlus/json_inventory.c ../IOPlus/uevent_parser.c ../IOPlus/uevent_monitor.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $^ -o $@
