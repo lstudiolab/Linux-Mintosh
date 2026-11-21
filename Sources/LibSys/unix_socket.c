@@ -19,12 +19,15 @@ int ms_send_command(const char *socket_path, const char *command, char *reply, s
         ms_write_all(descriptor, "\n", 1) < 0) {
         int saved_errno = errno; close(descriptor); errno = saved_errno; return -1;
     }
-    ssize_t received;
-    do { received = read(descriptor, reply, capacity - 1); } while (received < 0 && errno == EINTR);
-    int saved_errno = errno;
+    size_t total = 0;
+    while (total < capacity - 1) {
+        ssize_t received = read(descriptor, reply + total, capacity - 1 - total);
+        if (received < 0 && errno == EINTR) continue;
+        if (received < 0) { int saved_errno = errno; close(descriptor); errno = saved_errno; return -1; }
+        if (received == 0) break;
+        total += (size_t)received;
+    }
     close(descriptor);
-    errno = saved_errno;
-    if (received < 0) return -1;
-    reply[received] = '\0';
-    return (int)received;
+    reply[total] = '\0';
+    return (int)total;
 }
