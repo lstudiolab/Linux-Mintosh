@@ -40,7 +40,7 @@ int csf_service_control(const char *action, const char *name) {
     if (ms_send_command(ms_launch_socket_path(), request,
                         response, sizeof response) < 0) return -1;
     if (strncmp(response, "OK", 2) != 0 ||
-        (response[2] != '\\0' && response[2] != ' ' && response[2] != '\\n')) {
+        (response[2] != '\0' && response[2] != ' ' && response[2] != '\n')) {
         errno = EPERM;
         return -1;
     }
