@@ -1,0 +1,4 @@
+Name=MOSF
+ExecStart=/usr/bin/mosf
+Enabled=yes
+Restart=always
