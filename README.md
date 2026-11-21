@@ -1,48 +1,70 @@
 # Mintosh
 
-Mintosh is a Linux-based operating system project. It uses the upstream Linux kernel and is being developed into an installable desktop operating system.
+Mintosh is a Linux-based operating system project built around the upstream Linux kernel, systemd, GNU userspace, and a custom installation flow.
 
-## Current milestone: Mintosh Base
+## Current milestone: bootable Mintosh installer
 
-The repository now contains the first complete base-system build pipeline:
+The x86_64 image now builds a live Mintosh environment with a text-based installer. It supports:
 
-- Release-pinned upstream Linux kernel source and x86_64 kernel configuration.
-- Debian Trixie root filesystem with systemd as PID 1.
-- GNU core utilities, Bash, util-linux, procps, essential libraries, and administration tools.
-- systemd-networkd DHCP configuration and systemd-resolved.
-- Local user and sudo-group creation with locked-by-default credentials.
-- A full-rootfs initramfs, GRUB BIOS/UEFI ISO, and QEMU boot smoke test.
+- GRUB boot from BIOS and UEFI USB media.
+- Live boot without modifying internal disks.
+- Install alongside an existing OS using already-unallocated disk space.
+- Erase a selected disk after two explicit confirmations.
+- Persistent ext4 root filesystem.
+- UEFI EFI System Partition reuse for dual boot, without formatting it.
+- GRUB installation and OS probing for supported existing systems, including Windows.
+- User account and password setup.
+- QEMU serial-console boot smoke test.
 
-The first image is a RAM-backed live boot image. It is a bootable base-system milestone, not yet a disk installer or desktop release.
-
-## Quick start
+## Build the installer
 
 On a Debian/Ubuntu x86_64 build host:
 
+    git clone https://github.com/lstudiolab/Linux-Mintosh.git
+    cd Linux-Mintosh
     make host-deps
-    export MINTOSH_PASSWORD='choose-a-local-password'
     make kernel-fetch
     make kernel-config
     make kernel
     make iso
-    make test-qemu
 
-The image is written to out/mintosh-x86_64.iso. Run it interactively with make qemu.
+The installer image is created at:
 
-If MINTOSH_PASSWORD is omitted, the mintosh account is created with a locked password. Root login is locked.
+    out/mintosh-x86_64.iso
 
-## Build targets
+Write the ISO to a USB drive using Rufus, balenaEtcher, or GNOME Disks. On Linux, an explicit-confirmation writer is included:
 
-Run make help for the full target list. The main stages are kernel-fetch, kernel-config, kernel, rootfs, initramfs, iso, qemu, and test-qemu.
+    make usb USB=/dev/sdX
+
+Use the whole USB device (for example /dev/sdb), not a partition (for example /dev/sdb1). Writing the image erases that USB drive.
+
+**A GitHub source ZIP is not bootable.** BIOS/UEFI firmware cannot boot the repository ZIP or an extracted source folder. Build the ISO and flash it to USB first. See docs/installation.md.
+
+## Installation modes
+
+- **Alongside:** uses only an existing unallocated region of at least 20 GiB. It does not resize or format existing partitions. UEFI dual boot reuses the existing EFI System Partition.
+- **Erase disk:** replaces the selected disk's partition table and data. The installer requires a warning acknowledgement and typing ERASE before it proceeds.
+
+Back up important data before installation. For dual boot, create unallocated space from the existing OS's disk manager before booting Mintosh.
+
+## Build and test targets
+
+Run make help for all targets. Important targets:
+
+- make kernel-fetch
+- make kernel-config
+- make kernel
+- make iso
+- make qemu
+- make test-qemu
+- make usb USB=/dev/sdX
+
+The automated GitHub Actions workflow builds the image, boots it in QEMU, and uploads the ISO and serial log as workflow artifacts.
 
 ## Architecture
 
-See docs/architecture.md for the boot sequence and system layers, and docs/development.md for build requirements and limitations.
-
-## Kernel source
-
-The upstream Linux source is fetched at build time using the version in configs/release.json. It is not vendored into this repository. The source is GPL-2.0-only; see the kernel source tree's COPYING file and the Linux kernel licensing documentation.
+See docs/architecture.md, docs/development.md, and docs/installation.md.
 
 ## Current limitations
 
-The initial image embeds its complete root filesystem in initramfs, so changes are lost on reboot. The project does not yet include a graphical desktop, persistent disk image, installer, package manager frontend, update framework, secure-boot signing, or ARM64 image builder. Validate in QEMU before attempting physical hardware.
+The installer currently targets x86_64 only. It uses a text interface, requires internet during installation for bootloader package setup, and expects pre-existing unallocated space for dual boot. Automatic Windows partition shrinking, disk encryption, LVM/RAID, Secure Boot, graphical desktop, application store, and ARM64 installer media are not implemented. Secure Boot must be disabled for this initial image.
