@@ -30,7 +30,7 @@ Run it interactively with `make qemu`, or run the serial-console boot test with 
 
 ## Native Mintosh source
 
-`Sources/` contains the native source for Darl, launch7762, launch511, LibSys, CSF, Foundation, I/O+, Kexts, Security, and System Logging. The target root filesystem compiles these programs inside its own Debian userspace and installs them into the image.
+`Sources/` contains the native source for Darl, launch7762, launch511, LibSys, CSF, Foundation, I/O+, GVD, FMS, DM, IOPS, Kexts, Security, and System Logging. The target root filesystem compiles these programs inside its own Debian userspace and installs them into the image.
 
 After boot, use:
 
@@ -40,6 +40,11 @@ After boot, use:
     mintoshctl version
     mintoshctl services
     ioplus
+    gvdctl list
+    iopsctl status
+    dmctl list
+    fmsctl index /home
+    fmsctl search documents
     kextctl list
     security-audit
 
