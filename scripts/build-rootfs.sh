@@ -22,7 +22,7 @@ fi
 rm -rf "$ROOTFS"
 echo "Creating Mintosh $VERSION root filesystem from Debian $SUITE..."
 debootstrap --arch=amd64 --variant=minbase \
-  --include=systemd,systemd-sysv,systemd-resolved,udev,dbus,kmod,bash,coreutils,util-linux,procps,findutils,grep,sed,gawk,tar,gzip,xz-utils,iproute2,iputils-ping,netbase,ca-certificates,sudo,passwd,login,locales,tzdata,e2fsprogs,less,nano,curl,wget,openssh-client,dialog,parted,dosfstools,rsync,os-prober,efibootmgr,ntfs-3g,initramfs-tools,grub-common,grub-pc-bin,grub-efi-amd64-bin,python3,grub2-common \
+  --include=systemd,systemd-sysv,systemd-resolved,udev,dbus,kmod,bash,coreutils,util-linux,procps,findutils,grep,sed,gawk,tar,gzip,xz-utils,iproute2,iputils-ping,netbase,ca-certificates,sudo,passwd,login,locales,tzdata,e2fsprogs,less,nano,curl,wget,openssh-client,dialog,parted,dosfstools,rsync,os-prober,efibootmgr,ntfs-3g,initramfs-tools,grub-common,grub-pc-bin,grub-efi-amd64-bin,python3,grub2-common,gcc,make,libc6-dev \
   "$SUITE" "$ROOTFS" https://deb.debian.org/debian
 printf '%s\n' mintosh > "$ROOTFS/etc/hostname"
 cat > "$ROOTFS/etc/hosts" <<'EOF'
@@ -58,17 +58,13 @@ Name=en* eth*
 DHCP=yes
 IPv6AcceptRA=yes
 EOF
-cat > "$ROOTFS/etc/systemd/system/mintosh-ready.service" <<'EOF'
-[Unit]
-Description=Mintosh Base boot completion marker
-After=basic.target
-[Service]
-Type=oneshot
-ExecStart=/usr/bin/echo Mintosh Base is ready
-StandardOutput=journal+console
-[Install]
-WantedBy=multi-user.target
-EOF
+mkdir -p "$ROOTFS/usr/src/mintosh" "$ROOTFS/etc/mintosh/services"
+cp -a "$ROOT/Sources" "$ROOTFS/usr/src/mintosh/"
+chroot "$ROOTFS" make -C /usr/src/mintosh/Sources/MintoshCore install
+rm -rf "$ROOTFS/usr/src/mintosh"
+install -m 0644 "$ROOT/Sources/Services/launch7762.service" "$ROOTFS/etc/systemd/system/launch7762.service"
+install -m 0644 "$ROOT/Sources/Services/mintosh-ready.service" "$ROOTFS/etc/systemd/system/mintosh-ready.service"
+install -m 0644 "$ROOT/Sources/Services/mosf.service" "$ROOTFS/etc/mintosh/services/mosf.service"
 cat > "$ROOTFS/etc/systemd/system/mintosh-installer.service" <<'EOF'
 [Unit]
 Description=Mintosh live installer
@@ -108,7 +104,7 @@ ln -snf /usr/share/zoneinfo/UTC "$ROOTFS/etc/localtime"
 : > "$ROOTFS/etc/machine-id"
 mkdir -p "$ROOTFS/var/lib/dbus"
 ln -snf /etc/machine-id "$ROOTFS/var/lib/dbus/machine-id"
-systemctl --root="$ROOTFS" enable systemd-networkd.service systemd-resolved.service serial-getty@ttyS0.service mintosh-ready.service mintosh-installer.service
+systemctl --root="$ROOTFS" enable systemd-networkd.service systemd-resolved.service serial-getty@ttyS0.service launch7762.service mintosh-ready.service mintosh-installer.service
 ln -snf /run/systemd/resolve/stub-resolv.conf "$ROOTFS/etc/resolv.conf"
 rm -rf "$ROOTFS/var/lib/apt/lists/"*
 echo "Mintosh root filesystem created at out/rootfs."
