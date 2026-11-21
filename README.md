@@ -51,7 +51,7 @@ After boot, use:
     kextctl list
     security-audit
 
-`make verify` also validates required boot/module-signing kernel options, compiles the native core, runs regression/CLI smoke tests and tests that the installer excludes its live boot medium. The manual GitHub Actions workflow **Mintosh QEMU boot verification** builds the pinned kernel and ISO, then boots the image under QEMU.
+`make verify` also validates required boot/module-signing kernel options, compiles the native core, runs regression/CLI smoke tests, verifies live boot-media exclusion and tests that alongside partition creation preserves existing partitions and data. The manual GitHub Actions workflow **Mintosh QEMU boot verification** builds the pinned kernel and ISO, then boots the image under QEMU.
 
 ## Build stages
 
