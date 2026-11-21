@@ -48,22 +48,22 @@ static int read_value(const char *path, char *buffer, size_t capacity) {
 }
 
 static int write_value(const char *path, const char *value) {
+    char buffer[128];
+    size_t length = strlen(value);
+    if (!length || length + 1 >= sizeof buffer) { errno = EINVAL; return -1; }
+    memcpy(buffer, value, length);
+    buffer[length++] = '\\n';
     int descriptor = open(path, O_WRONLY | O_CLOEXEC);
     if (descriptor < 0) return -1;
-    size_t length = strlen(value);
     ssize_t written;
-    do { written = write(descriptor, value, length); }
+    do { written = write(descriptor, buffer, length); }
     while (written < 0 && errno == EINTR);
     int saved = errno;
-    if (written == (ssize_t)length) {
-        do { written = write(descriptor, "\n", 1); }
-        while (written < 0 && errno == EINTR);
-        if (written == 1) saved = 0;
-        else if (written >= 0) saved = EIO;
-        else saved = errno;
-    } else if (written >= 0) saved = EIO;
     close(descriptor);
-    if (saved) { errno = saved; return -1; }
+    if (written != (ssize_t)length) {
+        errno = written < 0 ? saved : EIO;
+        return -1;
+    }
     return 0;
 }
 
