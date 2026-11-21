@@ -66,9 +66,11 @@ $(BUILD)/mintoshctl: ../MintoshCtl/control_command.c ../MintoshCtl/darl_client.c
 $(BUILD)/mstore: ../PackageManager/package_command.c ../PackageManager/package_validation.c ../PackageManager/package_exec.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $^ -o $@
 
-$(BUILD)/libcsf.a: ../CSF/darl_request.c $(LIBSYS_OBJECTS) | $(BUILD)
+$(BUILD)/libcsf.a: ../CSF/darl_request.c ../CSF/system_info.c ../CSF/service_api.c $(LIBSYS_OBJECTS) | $(BUILD)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c ../CSF/darl_request.c -o $(BUILD)/csf-darl-request.o
-	$(AR) rcs $@ $(BUILD)/csf-darl-request.o $(LIBSYS_OBJECTS)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c ../CSF/system_info.c -o $(BUILD)/csf-system-info.o
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c ../CSF/service_api.c -o $(BUILD)/csf-service-api.o
+	$(AR) rcs $@ $(BUILD)/csf-darl-request.o $(BUILD)/csf-system-info.o $(BUILD)/csf-service-api.o $(LIBSYS_OBJECTS)
 
 $(BUILD)/libgvd.a: ../GVD/dispatch_queue.c ../GVD/include/GVD.h | $(BUILD)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -pthread -I../GVD/include -c ../GVD/dispatch_queue.c -o $(BUILD)/gvd-dispatch-queue.o
@@ -84,6 +86,9 @@ $(BUILD)/libfoundation.a: ../Foundation/string.c ../Foundation/path.c ../Foundat
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c ../Foundation/error.c -o $(BUILD)/foundation-error.o
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c ../Foundation/filesystem.c -o $(BUILD)/foundation-filesystem.o
 	$(AR) rcs $@ $(BUILD)/foundation-string.o $(BUILD)/foundation-path.o $(BUILD)/foundation-data.o $(BUILD)/foundation-array.o $(BUILD)/foundation-dictionary.o $(BUILD)/foundation-url.o $(BUILD)/foundation-error.o $(BUILD)/foundation-filesystem.o
+
+$(BUILD)/csf-tests: ../CSF/tests/csf_tests.c ../CSF/service_api.c | $(BUILD)
+	$(CC) $(CPPFLAGS) $(CFLAGS) $^ ../LibSys/runtime_paths.c ../LibSys/unix_socket.c ../LibSys/line_reader.c -o $@
 
 $(BUILD)/gvd-dispatch-tests: ../GVD/tests/gvd_tests.c ../GVD/dispatch_queue.c | $(BUILD)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -pthread -I../GVD/include $^ -o $@
@@ -118,7 +123,7 @@ $(BUILD)/security-tests: ../Security/tests/security_tests.c ../Security/permissi
 $(BUILD)/service-control-tests: ../Launch7762/tests/service_control_tests.c ../Launch7762/service_control.c ../LibSys/file_descriptor.c | $(BUILD)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -I../Launch7762 $^ -o $@
 
-test-foundation: $(BUILD)/foundation-tests $(BUILD)/package-validation-tests $(BUILD)/service-control-tests $(BUILD)/libsys-tests $(BUILD)/libsys-filesystem-tests $(BUILD)/darl-protocol-tests $(BUILD)/ioplus-uevent-tests $(BUILD)/gvd-tests $(BUILD)/iops-tests $(BUILD)/gvd-dispatch-tests $(BUILD)/security-tests
+test-foundation: $(BUILD)/foundation-tests $(BUILD)/package-validation-tests $(BUILD)/service-control-tests $(BUILD)/libsys-tests $(BUILD)/libsys-filesystem-tests $(BUILD)/darl-protocol-tests $(BUILD)/ioplus-uevent-tests $(BUILD)/gvd-tests $(BUILD)/iops-tests $(BUILD)/gvd-dispatch-tests $(BUILD)/csf-tests $(BUILD)/security-tests
 	$(BUILD)/foundation-tests
 	$(BUILD)/package-validation-tests
 	$(BUILD)/service-control-tests
@@ -129,6 +134,7 @@ test-foundation: $(BUILD)/foundation-tests $(BUILD)/package-validation-tests $(B
 	$(BUILD)/gvd-tests
 	$(BUILD)/iops-tests
 	$(BUILD)/gvd-dispatch-tests
+	$(BUILD)/csf-tests
 	$(BUILD)/security-tests
 	@echo 'Foundation, package validation and service control tests passed.'
 
