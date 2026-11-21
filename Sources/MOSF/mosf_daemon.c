@@ -17,15 +17,18 @@ static void request_shutdown(int signal_number) { (void)signal_number; shutdown_
 int main(int argc, char **argv) {
     if (argc > 1 && strcmp(argv[1], "--version") == 0) { puts("MOSF 0.1.0"); return 0; }
     if (getpid() == 1) { fputs("MOSF is not the PID 1 init process.\n", stderr); return 2; }
-    if (ms_mkdir_p(MINTOSH_RUNTIME_DIR, 0755) < 0) { perror("mosf: runtime directory"); return 1; }
+    const char *runtime_directory = ms_runtime_directory();
+    const char *socket_path = ms_mosf_socket_path();
+    if (!socket_path[0] || ms_mkdir_p(runtime_directory, 0755) < 0) { perror("mosf: runtime directory"); return 1; }
     int server = socket(AF_UNIX, SOCK_STREAM | SOCK_CLOEXEC, 0);
     if (server < 0) { perror("mosf: socket"); return 1; }
     struct sockaddr_un address = { .sun_family = AF_UNIX };
-    strcpy(address.sun_path, MINTOSH_MOSF_SOCKET);
-    (void)unlink(MINTOSH_MOSF_SOCKET);
+    if (strlen(socket_path) >= sizeof address.sun_path) { fputs("mosf: socket path too long\n", stderr); close(server); return 1; }
+    strcpy(address.sun_path, socket_path);
+    (void)unlink(socket_path);
     if (bind(server, (struct sockaddr *)&address, sizeof address) < 0 ||
-        chmod(MINTOSH_MOSF_SOCKET, 0666) < 0 || listen(server, 16) < 0) {
-        perror("mosf: listen"); close(server); unlink(MINTOSH_MOSF_SOCKET); return 1;
+        chmod(socket_path, 0666) < 0 || listen(server, 16) < 0) {
+        perror("mosf: listen"); close(server); unlink(socket_path); return 1;
     }
     signal(SIGTERM, request_shutdown); signal(SIGINT, request_shutdown);
     ms_log("mosf", "info", "MOSF started");
@@ -46,7 +49,7 @@ int main(int argc, char **argv) {
         }
         close(client);
     }
-    close(server); unlink(MINTOSH_MOSF_SOCKET);
+    close(server); unlink(socket_path);
     ms_log("mosf", "info", "MOSF stopped");
     return 0;
 }

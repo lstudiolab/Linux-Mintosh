@@ -9,7 +9,7 @@ LIBDIR = $(DESTDIR)$(PREFIX)/lib
 INCLUDEDIR = $(DESTDIR)$(PREFIX)/include/mintosh
 BUILD = build
 
-LIBSYS_SOURCES = ../LibSys/filesystem.c ../LibSys/file_descriptor.c ../LibSys/unix_socket.c ../LibSys/system_log.c
+LIBSYS_SOURCES = ../LibSys/filesystem.c ../LibSys/file_descriptor.c ../LibSys/unix_socket.c ../LibSys/system_log.c ../LibSys/runtime_paths.c
 LIBSYS_OBJECTS = $(patsubst ../LibSys/%.c,$(BUILD)/libsys-%.o,$(LIBSYS_SOURCES))
 PROGRAMS = mosf launch7762 launch511 ioplus kextctl mosflog security-audit mintoshctl
 

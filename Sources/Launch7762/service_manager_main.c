@@ -24,7 +24,7 @@ static void handle_client(MintoshServiceManager *manager, int descriptor) {
 
 int main(int argc, char **argv) {
     if (argc > 1 && strcmp(argv[1], "--version") == 0) { puts("launch7762 0.1.0"); return 0; }
-    if (ms_mkdir_p(MINTOSH_RUNTIME_DIR, 0755) < 0) { perror("launch7762: runtime directory"); return 1; }
+    if (ms_mkdir_p(ms_runtime_directory(), 0755) < 0) { perror("launch7762: runtime directory"); return 1; }
     MintoshServiceManager manager = {0};
     if (ms_services_load(&manager, "/etc/mintosh/services") < 0) perror("launch7762: service directory");
     int server = ms_service_socket_open();
@@ -51,7 +51,7 @@ int main(int argc, char **argv) {
         usleep(100000);
     }
     close(server);
-    unlink(MINTOSH_LAUNCH_SOCKET);
+    unlink(ms_launch_socket_path());
     ms_log("launch7762", "info", "Mintosh service manager stopped");
     return 0;
 }

@@ -12,11 +12,15 @@ int ms_service_socket_open(void) {
     int descriptor = socket(AF_UNIX, SOCK_STREAM | SOCK_CLOEXEC, 0);
     if (descriptor < 0) return -1;
     struct sockaddr_un address = { .sun_family = AF_UNIX };
-    strcpy(address.sun_path, MINTOSH_LAUNCH_SOCKET);
-    (void)unlink(MINTOSH_LAUNCH_SOCKET);
+    const char *socket_path = ms_launch_socket_path();
+    if (!socket_path[0] || strlen(socket_path) >= sizeof address.sun_path) {
+        close(descriptor); errno = ENAMETOOLONG; return -1;
+    }
+    strcpy(address.sun_path, socket_path);
+    (void)unlink(socket_path);
     if (bind(descriptor, (struct sockaddr *)&address, sizeof address) < 0 ||
-        chmod(MINTOSH_LAUNCH_SOCKET, 0660) < 0 || listen(descriptor, 16) < 0) {
-        int saved_errno = errno; close(descriptor); unlink(MINTOSH_LAUNCH_SOCKET); errno = saved_errno; return -1;
+        chmod(socket_path, 0660) < 0 || listen(descriptor, 16) < 0) {
+        int saved_errno = errno; close(descriptor); unlink(socket_path); errno = saved_errno; return -1;
     }
     return descriptor;
 }
