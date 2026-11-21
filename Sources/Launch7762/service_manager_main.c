@@ -30,8 +30,7 @@ static void handle_client(MintoshServiceManager *manager, int descriptor) {
         ms_services_list(manager, descriptor);
         return;
     }
-    int privileged = has_credentials &&
-        (peer.uid == 0 || peer.uid == geteuid());
+    int privileged = has_credentials && (peer.uid == 0 || peer.uid == geteuid());
     ms_services_control(manager, descriptor, request, privileged);
 }
 
@@ -42,31 +41,54 @@ static int running_services(const MintoshServiceManager *manager) {
 }
 
 int main(int argc, char **argv) {
-    if (argc > 1 && strcmp(argv[1], "--version") == 0) { puts("launch7762 0.2.0"); return 0; }
-    if (ms_mkdir_p(ms_runtime_directory(), 0755) < 0) { perror("launch7762: runtime directory"); return 1; }
+    if (argc > 1 && strcmp(argv[1], "--version") == 0) {
+        puts("launch7762 0.2.0");
+        return 0;
+    }
+    if (ms_mkdir_p(ms_runtime_directory(), 0755) < 0) {
+        perror("launch7762: runtime directory");
+        return 1;
+    }
     const char *service_directory = getenv("MINTOSH_SERVICE_DIR");
-    if (!service_directory || !service_directory[0]) service_directory = "/etc/mintosh/services";
+    if (!service_directory || !service_directory[0])
+        service_directory = "/etc/mintosh/services";
     MintoshServiceManager manager = {0};
-    if (ms_services_load(&manager, service_directory) < 0) perror("launch7762: service directory");
+    if (ms_services_load(&manager, service_directory) < 0) {
+        perror("launch7762: refusing untrusted service directory");
+        return 1;
+    }
     int server = ms_service_socket_open();
-    if (server < 0) { perror("launch7762: control socket"); return 1; }
+    if (server < 0) {
+        perror("launch7762: control socket");
+        return 1;
+    }
     signal(SIGTERM, request_shutdown);
     signal(SIGINT, request_shutdown);
     signal(SIGPIPE, SIG_IGN);
     ms_log("launch7762", "info", "Mintosh service manager started");
     for (size_t index = 0; index < manager.count; ++index)
-        if (manager.services[index].enabled) (void)ms_service_start(&manager.services[index]);
+        if (manager.services[index].enabled)
+            (void)ms_service_start(&manager.services[index]);
+
     while (!shutdown_requested) {
         fd_set readable;
-        FD_ZERO(&readable); FD_SET(server, &readable);
-        struct timeval timeout = { .tv_sec = 1 };
+        FD_ZERO(&readable);
+        FD_SET(server, &readable);
+        struct timeval timeout = {.tv_sec = 1};
         int ready = select(server + 1, &readable, NULL, NULL, &timeout);
         if (ready > 0 && FD_ISSET(server, &readable)) {
             int client = accept4(server, NULL, NULL, SOCK_CLOEXEC);
-            if (client >= 0) { handle_client(&manager, client); close(client); }
-        } else if (ready < 0 && errno != EINTR) break;
+            if (client >= 0) {
+                handle_client(&manager, client);
+                close(client);
+            }
+        } else if (ready < 0 && errno != EINTR) {
+            ms_log("launch7762", "error", "control socket select failed");
+            break;
+        }
         ms_services_reap(&manager, 0);
     }
+
     ms_services_stop_all(&manager);
     for (int attempt = 0; attempt < 60 && running_services(&manager); ++attempt) {
         ms_services_reap(&manager, 1);
