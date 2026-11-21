@@ -87,7 +87,7 @@ $(BUILD)/libfoundation.a: ../Foundation/string.c ../Foundation/path.c ../Foundat
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c ../Foundation/filesystem.c -o $(BUILD)/foundation-filesystem.o
 	$(AR) rcs $@ $(BUILD)/foundation-string.o $(BUILD)/foundation-path.o $(BUILD)/foundation-data.o $(BUILD)/foundation-array.o $(BUILD)/foundation-dictionary.o $(BUILD)/foundation-url.o $(BUILD)/foundation-error.o $(BUILD)/foundation-filesystem.o
 
-$(BUILD)/csf-tests: ../CSF/tests/csf_tests.c ../CSF/service_api.c | $(BUILD)
+$(BUILD)/csf-tests: ../CSF/tests/csf_tests.c ../CSF/service_api.c ../CSF/system_info.c | $(BUILD)
 	$(CC) $(CPPFLAGS) $(CFLAGS) $^ -o $@
 
 $(BUILD)/gvd-dispatch-tests: ../GVD/tests/gvd_tests.c ../GVD/dispatch_queue.c | $(BUILD)
