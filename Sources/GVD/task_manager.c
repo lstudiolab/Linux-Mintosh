@@ -2,6 +2,7 @@
 #include "task_policy.h"
 #include <dirent.h>
 #include <errno.h>
+#include <limits.h>
 #include <sched.h>
 #include <signal.h>
 #include <stdio.h>
