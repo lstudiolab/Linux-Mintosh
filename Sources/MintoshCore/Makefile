@@ -11,7 +11,7 @@ BUILD = build
 
 LIBSYS_SOURCES = ../LibSys/filesystem.c ../LibSys/file_descriptor.c ../LibSys/unix_socket.c ../LibSys/line_reader.c ../LibSys/system_log.c ../LibSys/runtime_paths.c
 LIBSYS_OBJECTS = $(patsubst ../LibSys/%.c,$(BUILD)/libsys-%.o,$(LIBSYS_SOURCES))
-PROGRAMS = darl launch7762 launch511 ioplus kextctl mintosh-log security-audit mintoshctl mstore
+PROGRAMS = darl launch7762 launch511 ioplus hp-compat kextctl mintosh-log security-audit mintoshctl mstore
 
 all: $(addprefix $(BUILD)/,$(PROGRAMS)) $(BUILD)/libcsf.a $(BUILD)/libfoundation.a
 
@@ -28,6 +28,9 @@ $(BUILD)/launch7762: ../Launch7762/service_manager_main.c ../Launch7762/service_
 	$(CC) $(CPPFLAGS) $(CFLAGS) $^ -o $@
 
 $(BUILD)/launch511: ../Launch511/command_runner.c ../Launch511/command_arguments.c ../Launch511/command_exec.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) $^ -o $@
+
+$(BUILD)/hp-compat: ../HPCompatibility/hp_compatibility.c | $(BUILD)
 	$(CC) $(CPPFLAGS) $(CFLAGS) $^ -o $@
 
 $(BUILD)/ioplus: ../IOPlus/hardware_inventory.c ../IOPlus/kernel_information.c ../IOPlus/sysfs_inventory.c ../IOPlus/memory_information.c ../IOPlus/json_inventory.c

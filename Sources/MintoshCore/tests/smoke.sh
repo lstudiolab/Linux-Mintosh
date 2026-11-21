@@ -30,6 +30,8 @@ KEXT_INVALID_STATUS=$?
 set -e
 [ "$LAUNCH511_STATUS" -eq 64 ]
 [ "$KEXT_INVALID_STATUS" -eq 64 ]
+"$B/hp-compat" --version | grep -q '0.1.0'
+"$B/hp-compat" --json | python3 -c 'import json,sys; value=json.load(sys.stdin); assert {"vendor","product","board","bios_version","is_hp","is_probook"} <= value.keys()'
 "$B/ioplus" --version | grep -q '0.2.0'
 "$B/ioplus" --json | python3 -c 'import json,sys; value=json.load(sys.stdin); assert {"kernel","memory_kib","devices"} <= value.keys()'
 "$B/kextctl" --version | grep -q '0.1.0'

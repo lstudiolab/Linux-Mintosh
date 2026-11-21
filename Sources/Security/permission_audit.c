@@ -30,7 +30,7 @@ int main(int argc, char **argv) {
     static const char *const executables[] = {
         "/usr/bin/darl", "/usr/bin/launch7762", "/usr/bin/launch511",
         "/usr/bin/mintoshctl", "/usr/bin/mstore", "/usr/bin/kextctl",
-        "/usr/bin/ioplus", "/usr/bin/mintosh-log", "/usr/bin/security-audit"
+        "/usr/bin/ioplus", "/usr/bin/hp-compat", "/usr/bin/mintosh-log", "/usr/bin/security-audit"
     };
     for (size_t index = 0; index < sizeof executables / sizeof executables[0]; ++index)
         warnings += security_check_file_permissions(executables[index], 0755, 0);

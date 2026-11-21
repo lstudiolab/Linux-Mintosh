@@ -22,6 +22,7 @@ Native source code lives under `Sources/`. The current core is compiled inside t
 - **CSF**: C client API for the Darl local service endpoint.
 - **Foundation**: reusable string, byte-data and lexical path primitives with alias-safe append operations.
 - **I/O+**: live hardware inventory using Linux sysfs and procfs.
+- **HP Compatibility**: DMI-based HP/ProBook identification and diagnostics; x86-64 kernel builds enable a broad HP laptop, graphics, wireless, audio, storage and input driver profile.
 - **Kexts**: kernel module operations delegated to Linux modprobe/kmod.
 - **Security**: basic permissions audit for critical account files.
 - **System Logging**: syslog client utility.
@@ -50,7 +51,7 @@ The live root filesystem is bootstrapped from Debian Trixie and includes systemd
 
 ## Kernel and releases
 
-Kernel versions are pinned in configs/release.json. Kernel source is downloaded during builds and is not vendored into Git. ARCH=x86_64 maps to the Linux kernel's ARCH=x86; ARCH=arm64 maps to ARCH=arm64. The first bootable installer targets x86_64.
+Kernel versions are pinned in configs/release.json. Kernel source is downloaded during builds and is not vendored into Git. ARCH=x86_64 maps to the Linux kernel's ARCH=x86; ARCH=arm64 maps to ARCH=arm64. The first bootable installer targets x86_64. Its kernel configuration includes a broad HP ProBook laptop driver profile. The Debian Trixie root filesystem enables non-free-firmware and installs firmware for common Intel, AMD, Realtek, Atheros, Broadcom, MediaTek and NVIDIA devices.
 
 ## Image
 

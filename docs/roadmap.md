@@ -20,6 +20,7 @@ This roadmap separates implemented source from verified release behavior. A dire
 - [~] CSF client library (Darl request transport only; higher-level system APIs remain)
 - [~] Foundation library (alias-safe strings, byte-data buffers and lexical path primitives; collections, URL, filesystem and error APIs remain)
 - [~] I/O+ inventory (human-readable and JSON kernel/memory/device inventory; structured device properties and hotplug events remain)
+- [~] HP ProBook compatibility baseline (multi-generation x86-64 driver profile, vendor firmware packages and DMI diagnostics; model-by-model hardware certification remains)
 - [~] Kexts Linux module frontend (list/load/unload wrapper; signed module policy and lifecycle integration remain)
 - [~] System Logging syslog frontend (write path exists; structured querying, rotation policy and retention remain)
 - [~] Security baseline audit (critical account files, protected service definitions and installed executable ownership/modes; policy engine, capabilities and sandboxing remain)
@@ -38,6 +39,7 @@ This roadmap separates implemented source from verified release behavior. A dire
 - [x] Native service manager and Darl started during boot
 - [x] systemd-networkd DHCP configuration
 - [x] sudo user creation and root-account lock
+- [~] HP ProBook multi-generation driver and firmware baseline
 - [ ] Hardware matrix beyond QEMU
 - [ ] Network smoke test in CI
 - [ ] End-to-end service control and package transaction tests in installed rootfs
@@ -48,7 +50,7 @@ This roadmap separates implemented source from verified release behavior. A dire
 - [x] Live environment and text installer
 - [x] Passing QEMU boot test on the release commit
 - [ ] Installer destructive-operation test suite
-- [ ] Physical-machine installation test
+- [ ] Physical-machine installation test on representative HP ProBook Intel and AMD models
 - [ ] ARM64 bootable image and installer
 
 ## Foundation completion gates
