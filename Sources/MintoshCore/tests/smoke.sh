@@ -30,7 +30,7 @@ set -e
 [ "$LAUNCH511_STATUS" -eq 64 ]
 "$B/ioplus" --version | grep -q '0.1.0'
 "$B/kextctl" --version | grep -q '0.1.0'
-"$B/darllog" --version | grep -q '0.1.0'
+"$B/mintosh-log" --version | grep -q '0.1.0'
 "$B/security-audit" --version | grep -q '0.1.0'
 "$B/mintoshctl" --version | grep -q '0.1.0'
 "$B/mstore" --version | grep -q '0.1.0'

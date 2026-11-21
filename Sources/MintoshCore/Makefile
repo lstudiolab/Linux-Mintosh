@@ -11,7 +11,7 @@ BUILD = build
 
 LIBSYS_SOURCES = ../LibSys/filesystem.c ../LibSys/file_descriptor.c ../LibSys/unix_socket.c ../LibSys/system_log.c ../LibSys/runtime_paths.c
 LIBSYS_OBJECTS = $(patsubst ../LibSys/%.c,$(BUILD)/libsys-%.o,$(LIBSYS_SOURCES))
-PROGRAMS = darl launch7762 launch511 ioplus kextctl darllog security-audit mintoshctl mstore
+PROGRAMS = darl launch7762 launch511 ioplus kextctl mintosh-log security-audit mintoshctl mstore
 
 all: $(addprefix $(BUILD)/,$(PROGRAMS)) $(BUILD)/libcsf.a $(BUILD)/libfoundation.a
 
@@ -36,7 +36,7 @@ $(BUILD)/ioplus: ../IOPlus/hardware_inventory.c ../IOPlus/kernel_information.c .
 $(BUILD)/kextctl: ../Kexts/module_manager.c ../Kexts/module_command.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $^ -o $@
 
-$(BUILD)/darllog: ../SystemLogging/log_command.c ../SystemLogging/log_writer.c $(LIBSYS_OBJECTS)
+$(BUILD)/mintosh-log: ../SystemLogging/log_command.c ../SystemLogging/log_writer.c $(LIBSYS_OBJECTS)
 	$(CC) $(CPPFLAGS) $(CFLAGS) $^ -o $@
 
 $(BUILD)/security-audit: ../Security/permission_audit.c ../Security/permission_check.c
