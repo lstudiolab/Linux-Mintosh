@@ -1,4 +1,7 @@
-#include "permission_check.h"\n#include "module_policy.h"\n#include <grp.h>\n#include <sys/stat.h>
+#include "permission_check.h"
+#include "module_policy.h"
+#include <grp.h>
+#include <sys/stat.h>
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
@@ -31,7 +34,7 @@ int main(int argc, char **argv) {
 
     struct group *service_group = getgrnam("mintosh-services");
     if (!service_group) {
-        fputs("WARNING: mintosh-services group is missing\\n", stderr);
+        fputs("WARNING: mintosh-services group is missing\n", stderr);
         ++warnings;
     } else {
         warnings += security_check_socket_permissions("/run/mintosh/darl.sock", 0,
@@ -44,7 +47,7 @@ int main(int argc, char **argv) {
     }
     int module_signatures = kexts_module_signatures_enforced();
     if (module_signatures != 1) {
-        fputs("WARNING: kernel module signature enforcement is not active\\n", stderr);
+        fputs("WARNING: kernel module signature enforcement is not active\n", stderr);
         ++warnings;
     } else {
         puts("OK: kernel enforces signed module loading");
