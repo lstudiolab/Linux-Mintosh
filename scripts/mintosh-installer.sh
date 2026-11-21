@@ -86,17 +86,7 @@ ROOT_PART=""
 EFI_PART=""
 
 if [[ "$MODE" == erase ]]; then
-  parted -s "$DISK" mklabel gpt >>"$LOG" 2>&1 || fail "Could not create a new GPT partition table."
-  if (( UEFI )); then
-    parted -s "$DISK" mkpart ESP fat32 1MiB 1025MiB >>"$LOG" 2>&1
-    parted -s "$DISK" set 1 esp on >>"$LOG" 2>&1
-    parted -s "$DISK" mkpart primary ext4 1025MiB 100% >>"$LOG" 2>&1
-  
-  else
-    parted -s "$DISK" mkpart BIOSBOOT 1MiB 3MiB >>"$LOG" 2>&1
-    parted -s "$DISK" set 1 bios_grub on >>"$LOG" 2>&1
-    parted -s "$DISK" mkpart primary ext4 3MiB 100% >>"$LOG" 2>&1
-  fi
+  mintosh_prepare_erase_layout "$DISK" "$UEFI" "$CONFIRM" >>"$LOG" 2>&1 || fail "Could not create the confirmed erase-mode partition layout."
   partprobe "$DISK" || true
   udevadm settle || true
   if (( UEFI )); then
