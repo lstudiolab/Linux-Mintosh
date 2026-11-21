@@ -21,6 +21,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: mintosh-base-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   qemu-boot:
     runs-on: ubuntu-24.04
