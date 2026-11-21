@@ -11,6 +11,8 @@ The release manifest is the source of truth:
 
 The first Developer Preview targets x86_64 bootable media. ARM64 is supported by the kernel build configuration; ARM64 live images and installation are not yet implemented.
 
+**Hardware safety:** this is still a Developer Preview, not a hardware-certified installer. Do not install it on your daily-use laptop or overwrite an internal disk yet. Require a successful QEMU boot test and a disposable-disk installation test before physical installation.
+
 ## Build the x86_64 installer
 
 On a Debian/Ubuntu x86_64 build host with internet access and sudo:
