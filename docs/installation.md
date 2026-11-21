@@ -52,7 +52,7 @@ The installer asks for a username and password. The account is added to the sudo
 - Boot the USB in the same firmware mode as the existing operating system. For Windows installed in UEFI mode, boot Mintosh's UEFI USB entry.
 - Secure Boot is not currently supported; disable it in firmware settings before booting the installer.
 - Dual boot requires sufficient unallocated space. The installer does not automatically resize Windows partitions.
-- Internet connectivity is required during installation to install the selected GRUB and initramfs packages.
+- GRUB and initramfs tools are bundled in the live image, so installation itself does not require internet access. A network connection is useful after installation.
 - Always back up important data before partitioning. Dual-boot and bootloader changes carry risk.
 
 ## Current scope
