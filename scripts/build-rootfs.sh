@@ -63,6 +63,7 @@ mkdir -p "$ROOTFS/usr/src/mintosh" "$ROOTFS/etc/mintosh/services"
 cp -a "$ROOT/Sources" "$ROOTFS/usr/src/mintosh/"
 chroot "$ROOTFS" make -C /usr/src/mintosh/Sources/MintoshCore install
 rm -rf "$ROOTFS/usr/src/mintosh"
+chroot "$ROOTFS" apt-mark manual libsqlite3-0
 chroot "$ROOTFS" apt-get purge --yes gcc make libc6-dev libsqlite3-dev
 chroot "$ROOTFS" apt-get autoremove --yes
 chroot "$ROOTFS" apt-get clean
