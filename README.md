@@ -67,4 +67,4 @@ See docs/architecture.md, docs/development.md, and docs/installation.md.
 
 ## Current limitations
 
-The installer currently targets x86_64 only. It uses a text interface, requires internet during installation for bootloader package setup, and expects pre-existing unallocated space for dual boot. Automatic Windows partition shrinking, disk encryption, LVM/RAID, Secure Boot, graphical desktop, application store, and ARM64 installer media are not implemented. Secure Boot must be disabled for this initial image.
+The installer currently targets x86_64 only. It uses a text interface, uses preinstalled bootloader packages during installation, and expects pre-existing unallocated space for dual boot. Automatic Windows partition shrinking, disk encryption, LVM/RAID, Secure Boot, graphical desktop, application store, and ARM64 installer media are not implemented. Secure Boot must be disabled for this initial image.
