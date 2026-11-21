@@ -25,6 +25,7 @@ endif
 help:
 	@printf '%s\n' \
 	  'Mintosh Base targets:' \
+	  '  make check-scripts   Validate shell scripts and release manifest' \
 	  '  make host-deps       Install Debian/Ubuntu build dependencies' \
 	  '  make kernel-fetch    Fetch the release-pinned upstream Linux kernel' \
 	  '  make kernel-config   Configure the kernel for Mintosh/QEMU' \
