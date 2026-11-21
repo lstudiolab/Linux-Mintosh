@@ -87,11 +87,13 @@ static void print_power_supplies(int json) {
             (void)read_value(path, online, sizeof online);
             if (json) {
                 if (!first) putchar(',');
-                printf("{\"name\":\"%s\",\"type\":\"%s\",\"status\":\"%s\",\"capacity\":",
-                       entry->d_name, type, status);
-                if (capacity[0]) printf("%s", capacity); else fputs("null", stdout);
+                fputs("{\"name\":", stdout); json_string(entry->d_name);
+                fputs(",\"type\":", stdout); json_string(type);
+                fputs(",\"status\":", stdout); json_string(status);
+                fputs(",\"capacity\":", stdout);
+                if (numeric_value(capacity)) fputs(capacity, stdout); else fputs("null", stdout);
                 fputs(",\"online\":", stdout);
-                if (online[0]) printf("%s", online); else fputs("null", stdout);
+                if (numeric_value(online)) fputs(online, stdout); else fputs("null", stdout);
                 putchar('}');
             } else {
                 printf("  %s: type=%s status=%s capacity=%s online=%s\n",
@@ -107,7 +109,6 @@ static void print_power_supplies(int json) {
     if (json) putchar(']');
     else if (first) puts("  unavailable");
 }
-
 static void print_thermal_zones(int json) {
     DIR *directory = opendir("/sys/class/thermal");
     if (!json) puts("Thermal zones:");
@@ -124,9 +125,10 @@ static void print_thermal_zones(int json) {
             (void)read_value(path, temperature, sizeof temperature);
             if (json) {
                 if (!first) putchar(',');
-                printf("{\"name\":\"%s\",\"type\":\"%s\",\"millidegrees\":",
-                       entry->d_name, type);
-                if (temperature[0]) printf("%s", temperature); else fputs("null", stdout);
+                fputs("{\"name\":", stdout); json_string(entry->d_name);
+                fputs(",\"type\":", stdout); json_string(type);
+                fputs(",\"millidegrees\":", stdout);
+                if (numeric_value(temperature)) fputs(temperature, stdout); else fputs("null", stdout);
                 putchar('}');
             } else {
                 printf("  %s: %s %s m°C\n", entry->d_name,
@@ -140,7 +142,6 @@ static void print_thermal_zones(int json) {
     if (json) putchar(']');
     else if (first) puts("  unavailable");
 }
-
 static void print_cpu_governors(int json) {
     DIR *directory = opendir("/sys/devices/system/cpu");
     if (!json) puts("CPU frequency governors:");
@@ -157,8 +158,9 @@ static void print_cpu_governors(int json) {
             if (read_value(path, governor, sizeof governor) < 0) continue;
             if (json) {
                 if (!first) putchar(',');
-                printf("{\"cpu\":\"%s\",\"governor\":\"%s\"}",
-                       entry->d_name, governor);
+                fputs("{\"cpu\":", stdout); json_string(entry->d_name);
+                fputs(",\"governor\":", stdout); json_string(governor);
+                putchar('}');
             } else printf("  %s: %s\n", entry->d_name, governor);
             first = 0;
         }
@@ -167,17 +169,15 @@ static void print_cpu_governors(int json) {
     if (json) putchar(']');
     else if (first) puts("  unavailable");
 }
-
 static void print_platform_profile(int json) {
     char profile[64] = "";
     if (read_value("/sys/firmware/acpi/platform_profile", profile, sizeof profile) < 0)
         snprintf(profile, sizeof profile, "unavailable");
     if (json) {
         fputs(",\"platform_profile\":", stdout);
-        printf("\"%s\"", profile);
+        json_string(profile);
     } else printf("Platform profile: %s\n", profile);
 }
-
 static int show_status(int json) {
     if (json) putchar('{');
     else puts("Mintosh I/O Power Services");
