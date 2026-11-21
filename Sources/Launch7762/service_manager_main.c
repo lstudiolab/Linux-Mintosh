@@ -16,29 +16,16 @@ static volatile sig_atomic_t shutdown_requested;
 static void request_shutdown(int signal_number) { (void)signal_number; shutdown_requested = 1; }
 
 static void handle_client(MintoshServiceManager *manager, int descriptor) {
-    struct timeval timeout = {.tv_sec = 2, .tv_usec = 0};
-    (void)setsockopt(descriptor, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof timeout);
     struct ucred peer = {0};
     socklen_t peer_size = sizeof peer;
     int has_credentials = getsockopt(descriptor, SOL_SOCKET, SO_PEERCRED,
                                      &peer, &peer_size) == 0;
     char request[256];
-    size_t used = 0;
-    int complete = 0;
-    while (used + 1 < sizeof request) {
-        char byte;
-        ssize_t count = read(descriptor, &byte, 1);
-        if (count < 0 && errno == EINTR) continue;
-        if (count <= 0) break;
-        if (byte == '\n' || byte == '\r') { complete = 1; break; }
-        request[used++] = byte;
-    }
-    if (!complete) {
-        (void)ms_write_all(descriptor, "ERROR incomplete or oversized request\n", sizeof("ERROR incomplete or oversized request\n") - 1);
+    if (ms_read_line(descriptor, request, sizeof request, 2000) < 0) {
+        (void)ms_write_all(descriptor, "ERROR invalid request\\n",
+                           sizeof("ERROR invalid request\\n") - 1);
         return;
     }
-    request[used] = '\0';
-    if (!used) return;
     if (strcmp(request, "LIST") == 0) {
         ms_services_list(manager, descriptor);
         return;
@@ -65,6 +52,7 @@ int main(int argc, char **argv) {
     if (server < 0) { perror("launch7762: control socket"); return 1; }
     signal(SIGTERM, request_shutdown);
     signal(SIGINT, request_shutdown);
+    signal(SIGPIPE, SIG_IGN);
     ms_log("launch7762", "info", "Mintosh service manager started");
     for (size_t index = 0; index < manager.count; ++index)
         if (manager.services[index].enabled) (void)ms_service_start(&manager.services[index]);

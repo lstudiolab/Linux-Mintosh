@@ -1,4 +1,5 @@
 #include "Foundation.h"
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -17,9 +18,21 @@ int mf_string_append(MFString *value, const char *text) {
     if (!value || !text || (value->length && !value->data)) return -1;
     size_t extra = strlen(text);
     if (extra > (size_t)-1 - value->length - 1) return -1;
+    size_t source_offset = 0;
+    int source_aliases_value = 0;
+    if (value->data) {
+        uintptr_t base = (uintptr_t)value->data;
+        uintptr_t source = (uintptr_t)text;
+        if (source >= base && source - base <= value->length) {
+            source_offset = (size_t)(source - base);
+            source_aliases_value = 1;
+        }
+    }
     char *updated = realloc(value->data, value->length + extra + 1);
     if (!updated) return -1;
-    memcpy(updated + value->length, text, extra + 1);
+    const char *source = source_aliases_value ? updated + source_offset : text;
+    memmove(updated + value->length, source, extra);
+    updated[value->length + extra] = '\\0';
     value->data = updated;
     value->length += extra;
     return 0;

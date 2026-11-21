@@ -16,11 +16,11 @@ Mintosh is a Linux distribution, not a replacement kernel. The upstream Linux ke
 Native source code lives under `Sources/`. The current core is compiled inside the Debian target root filesystem, so its binaries link against the target userspace rather than the build host.
 
 - **Darl**: local Unix-socket system foundation API for status and version queries.
-- **launch7762**: native service supervisor. It reads `/etc/mintosh/services/*.service`, starts enabled processes, tracks child exits and applies restart policy.
-- **launch511**: command execution helper used by launch7762.
-- **LibSys**: shared POSIX system utilities, Unix-socket transport and syslog integration.
+- **launch7762**: native service supervisor. It reads protected `/etc/mintosh/services/*.service` definitions, starts enabled processes with direct `execve`, tracks child exits, applies capped exponential restart backoff and authorizes control operations with Unix peer credentials.
+- **launch511**: standalone command execution helper. launch7762 executes validated service argument vectors directly and does not route service commands through a shell.
+- **LibSys**: shared POSIX utilities, bounded Unix-socket line framing with deadlines, file-descriptor helpers, runtime paths and syslog integration.
 - **CSF**: C client API for the Darl local service endpoint.
-- **Foundation**: reusable string and path primitives.
+- **Foundation**: reusable string, byte-data and lexical path primitives with alias-safe append operations.
 - **I/O+**: live hardware inventory using Linux sysfs and procfs.
 - **Kexts**: kernel module operations delegated to Linux modprobe/kmod.
 - **Security**: basic permissions audit for critical account files.

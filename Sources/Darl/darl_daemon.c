@@ -16,22 +16,6 @@
 static volatile sig_atomic_t shutdown_requested;
 static void request_shutdown(int signal_number) { (void)signal_number; shutdown_requested = 1; }
 
-static int read_request(int descriptor, char *request, size_t capacity) {
-    size_t used = 0;
-    while (used + 1 < capacity) {
-        char byte;
-        ssize_t count = read(descriptor, &byte, 1);
-        if (count < 0 && errno == EINTR) continue;
-        if (count < 0) return -1;
-        if (count == 0) break;
-        if (byte == '\n' || byte == '\r') break;
-        request[used++] = byte;
-    }
-    request[used] = '\0';
-    if (used + 1 == capacity) { errno = EMSGSIZE; return -1; }
-    return used ? 0 : -1;
-}
-
 int main(int argc, char **argv) {
     if (argc > 1 && strcmp(argv[1], "--version") == 0) {
         puts("Darl 0.2.0");
@@ -76,6 +60,7 @@ int main(int argc, char **argv) {
 
     signal(SIGTERM, request_shutdown);
     signal(SIGINT, request_shutdown);
+    signal(SIGPIPE, SIG_IGN);
     ms_log("darl", "info", "Darl started");
     while (!shutdown_requested) {
         fd_set readable;
@@ -87,10 +72,8 @@ int main(int argc, char **argv) {
         if (ready == 0) continue;
         int client = accept4(server, NULL, NULL, SOCK_CLOEXEC);
         if (client < 0) { if (errno == EINTR) continue; break; }
-        struct timeval client_timeout = {.tv_sec = 2, .tv_usec = 0};
-        (void)setsockopt(client, SOL_SOCKET, SO_RCVTIMEO, &client_timeout, sizeof client_timeout);
         char request[128] = {0}, response[256];
-        if (read_request(client, request, sizeof request) == 0) {
+        if (ms_read_line(client, request, sizeof request, 2000) > 0) {
             darl_format_response(request, response, sizeof response);
             (void)ms_write_all(client, response, strlen(response));
         } else {

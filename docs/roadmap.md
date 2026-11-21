@@ -18,7 +18,7 @@ This roadmap separates implemented source from verified release behavior. A dire
 - [~] launch7762 native service supervisor (process lifecycle, protected definitions and restart backoff; per-service users, dependencies and resource limits remain)
 - [~] launch511 command execution helper (direct argv execution; policy and privilege model remain)
 - [~] CSF client library (Darl request transport only; higher-level system APIs remain)
-- [~] Foundation library (string and lexical path primitives; collections, data, URL, filesystem and error APIs remain)
+- [~] Foundation library (alias-safe strings, byte-data buffers and lexical path primitives; collections, URL, filesystem and error APIs remain)
 - [~] I/O+ inventory (basic procfs/sysfs enumeration; structured device properties and hotplug events remain)
 - [~] Kexts Linux module frontend (list/load/unload wrapper; signed module policy and lifecycle integration remain)
 - [~] System Logging syslog frontend (write path exists; structured querying, rotation policy and retention remain)
