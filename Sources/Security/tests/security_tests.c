@@ -14,12 +14,15 @@ int main(void) {
     char directory[] = "/tmp/mintosh-security-XXXXXX";
     assert(mkdtemp(directory));
     assert(chmod(directory, 0755) == 0);
+    char state_directory[] = "/tmp/mintosh-security-state-XXXXXX";
+    assert(mkdtemp(state_directory));
+    assert(chmod(state_directory, 0755) == 0);
     char good[256], bad[256], link[256], grouped[256], socket_path[256];
     snprintf(good, sizeof good, "%s/good.service", directory);
     snprintf(bad, sizeof bad, "%s/bad.service", directory);
     snprintf(link, sizeof link, "%s/link.service", directory);
-    snprintf(grouped, sizeof grouped, "%s/grouped.db", directory);
-    snprintf(socket_path, sizeof socket_path, "%s/test.sock", directory);
+    snprintf(grouped, sizeof grouped, "%s/grouped.db", state_directory);
+    snprintf(socket_path, sizeof socket_path, "%s/test.sock", state_directory);
 
     int descriptor = open(good, O_WRONLY | O_CREAT | O_EXCL, 0644);
     assert(descriptor >= 0);
@@ -57,5 +60,6 @@ int main(void) {
     unlink(bad);
     unlink(good);
     rmdir(directory);
+    rmdir(state_directory);
     return 0;
 }
