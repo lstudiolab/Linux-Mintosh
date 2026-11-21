@@ -40,7 +40,7 @@ int main(int argc, char **argv) {
         }
         if (!strcmp(argv[1], "load")) {
             if (kexts_module_signatures_enforced() != 1) {
-                fputs("kextctl: refusing to load modules because kernel signature enforcement is not confirmed\\n", stderr);
+                fputs("kextctl: refusing to load modules because kernel signature enforcement is not confirmed\n", stderr);
                 return 3;
             }
             char *arguments[] = {"modprobe", "--", argv[2], NULL};
