@@ -56,6 +56,10 @@ Kernel versions are pinned in configs/release.json. Kernel source is downloaded 
 
 The build creates a GRUB BIOS/UEFI hybrid ISO intended to be written to USB media. A source ZIP is not bootable. The complete live root filesystem is embedded in a compressed initramfs, so the live session runs from RAM. The installer copies the base system to a persistent ext4 partition for normal installed use.
 
+## Package management
+
+`mstore` is the native command-line package interface. The initial implementation uses APT/dpkg and signed Debian Trixie repository metadata for search, package inspection, installation, removal and upgrades. This avoids requiring a Mintosh-operated download server. A Mintosh-specific signed repository and graphical catalog are not implemented yet.
+
 ## Graphical stack
 
 AppKit, Tarts, GT, BlueE, Finder and Dock are not implemented yet. They must be real graphical components with defined rendering, input, accessibility and application-lifecycle interfaces; the current native core does not pretend to provide them.

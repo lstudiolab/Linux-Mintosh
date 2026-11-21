@@ -33,6 +33,12 @@ set -e
 "$B/mosflog" --version | grep -q '0.1.0'
 "$B/security-audit" --version | grep -q '0.1.0'
 "$B/mintoshctl" --version | grep -q '0.1.0'
+"$B/mstore" --version | grep -q '0.1.0'
+set +e
+"$B/mstore" install --invalid >/dev/null 2>&1
+MSTORE_INVALID_STATUS=$?
+set -e
+[ "$MSTORE_INVALID_STATUS" -eq 64 ]
 
 # Exercise the real MOSF Unix-socket protocol as an unprivileged user.
 "$B/mosf" &

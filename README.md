@@ -35,6 +35,8 @@ Run it interactively with `make qemu`, or run the serial-console boot test with 
 After boot, use:
 
     mintoshctl status
+    mstore search browser
+    sudo mstore install firefox
     mintoshctl version
     mintoshctl services
     ioplus
