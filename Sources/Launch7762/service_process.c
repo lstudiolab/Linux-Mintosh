@@ -4,6 +4,7 @@
 #include <ctype.h>
 #include <errno.h>
 #include <signal.h>
+#include <limits.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/wait.h>
@@ -12,6 +13,8 @@
 #define SERVICE_STOP_GRACE_SECONDS 3
 #define SERVICE_RESTART_MAX_SECONDS 60
 #define SERVICE_ARGUMENT_LIMIT 32
+#define SERVICE_RESTART_LIMIT 10
+#define SERVICE_STABLE_SECONDS 300
 
 static struct timespec monotonic_now(void) {
     struct timespec now = {0};
@@ -65,6 +68,14 @@ int ms_service_start(MintoshService *service) {
         if (setsid() < 0 || parse_arguments(command, arguments,
                                              SERVICE_ARGUMENT_LIMIT) < 0)
             _exit(126);
+        (void)umask(027);
+        if (chdir("/") < 0) _exit(126);
+        if (close_range(3, UINT_MAX, 0) < 0) {
+            long maximum = sysconf(_SC_OPEN_MAX);
+            if (maximum < 0) maximum = 65536;
+            for (int descriptor = 3; descriptor < maximum; ++descriptor)
+                (void)close(descriptor);
+        }
         char *const environment[] = {
             "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
             "LANG=C.UTF-8",
@@ -77,6 +88,7 @@ int ms_service_start(MintoshService *service) {
     service->restart_pending = 0;
     service->kill_sent = 0;
     service->stop_deadline = (struct timespec){0};
+    service->started_at = monotonic_now();
     char message[160];
     snprintf(message, sizeof message, "started %s with pid %ld",
              service->name, (long)child);
@@ -98,10 +110,10 @@ void ms_service_stop(MintoshService *service) {
 }
 
 static void schedule_restart(MintoshService *service, struct timespec now) {
-    unsigned int shift = service->restart_count > 5 ? 5 : service->restart_count;
+    unsigned int shift = service->restart_count > 6 ? 6 : service->restart_count;
     time_t delay = (time_t)1 << shift;
     if (delay > SERVICE_RESTART_MAX_SECONDS) delay = SERVICE_RESTART_MAX_SECONDS;
-    if (service->restart_count < 32) ++service->restart_count;
+    ++service->restart_count;
     service->restart_pending = 1;
     service->restart_at = add_seconds(now, delay);
 }
@@ -117,6 +129,9 @@ void ms_services_reap(MintoshServiceManager *manager, int shutting_down) {
             service->process_id = 0;
             service->stop_deadline = (struct timespec){0};
             service->kill_sent = 0;
+            time_t runtime = now.tv_sec - service->started_at.tv_sec;
+            service->started_at = (struct timespec){0};
+            if (runtime >= SERVICE_STABLE_SECONDS) service->restart_count = 0;
             char message[160];
             snprintf(message, sizeof message, "%s exited (wait status %d)",
                      service->name, status);
@@ -126,7 +141,13 @@ void ms_services_reap(MintoshServiceManager *manager, int shutting_down) {
             int should_restart = service->enabled && !shutting_down &&
                 (service->restart_policy == MINTOSH_RESTART_ALWAYS ||
                  (service->restart_policy == MINTOSH_RESTART_ON_FAILURE && failed));
-            if (should_restart) schedule_restart(service, now);
+            if (should_restart && service->restart_count < SERVICE_RESTART_LIMIT) {
+                schedule_restart(service, now);
+            } else if (should_restart) {
+                service->enabled = 0;
+                ms_log("launch7762", "error",
+                       "service disabled after reaching its restart limit");
+            }
             break;
         }
     }
