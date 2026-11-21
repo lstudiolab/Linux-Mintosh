@@ -178,7 +178,7 @@ if [[ "$USERNAME" != "mintosh" ]]; then
 fi
 chroot "$TARGET" usermod -d "/home/$USERNAME" -m "$USERNAME" >>"$LOG" 2>&1 || fail "Could not configure the home directory."
 printf '%s:%s\n' "$USERNAME" "$PASSWORD" | chroot "$TARGET" chpasswd || fail "Could not set the account password."
-chroot "$TARGET" usermod -aG sudo "$USERNAME" >>"$LOG" 2>&1 || fail "Could not configure administrator permissions."
+chroot "$TARGET" usermod -aG sudo,mintosh "$USERNAME" >>"$LOG" 2>&1 || fail "Could not configure administrator and Mintosh service permissions."
 unset PASSWORD PASSWORD2
 
 if (( UEFI )); then
