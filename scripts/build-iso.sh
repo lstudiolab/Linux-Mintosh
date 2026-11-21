@@ -26,6 +26,8 @@ menuentry "Mintosh Live Installer (safe graphics/verbose)" {
     initrd /boot/initramfs.cpio.gz
 }
 EOF
-grub-mkrescue -o "$ISO" "$ISO_ROOT"
+grub-mkrescue -o "$ISO" -volid MINTOSH "$ISO_ROOT"
+ISO_LABEL=$(blkid -p -s LABEL -o value "$ISO" 2>/dev/null || true)
+[ "$ISO_LABEL" = "MINTOSH" ] || { echo "ISO volume label verification failed; the installer cannot safely identify its boot medium." >&2; exit 1; }
 chmod 0644 "$ISO"
 echo "Bootable Mintosh installer ISO created: out/mintosh-$ARCH.iso"
