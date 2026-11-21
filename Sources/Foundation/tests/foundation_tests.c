@@ -44,6 +44,39 @@ int main(void) {
     mf_array_destroy(&array); assert(array.elements == NULL);
 
     MFError error;
+    MFDictionary dictionary;
+    assert(mf_dictionary_init(&dictionary) == 0);
+    assert(mf_dictionary_set(&dictionary, "distribution", "Mintosh") == 0);
+    assert(mf_dictionary_set(&dictionary, "kernel", "Linux") == 0);
+    assert(strcmp(mf_dictionary_get(&dictionary, "distribution"), "Mintosh") == 0);
+    assert(mf_dictionary_set(&dictionary, "kernel", "LMK") == 0);
+    assert(strcmp(mf_dictionary_get(&dictionary, "kernel"), "LMK") == 0);
+    assert(mf_dictionary_remove(&dictionary, "distribution") == 0);
+    assert(mf_dictionary_get(&dictionary, "distribution") == NULL);
+    mf_dictionary_destroy(&dictionary);
+    assert(dictionary.entries == NULL && dictionary.count == 0);
+
+    MFURL url = {0};
+    assert(mf_url_parse("HTTPS://Example.COM:443/system/api?mode=full#status",
+                        &url, &error) == 0);
+    assert(strcmp(url.scheme, "https") == 0);
+    assert(strcmp(url.host, "example.com") == 0);
+    assert(url.has_port && url.port == 443);
+    assert(strcmp(url.path, "/system/api") == 0);
+    assert(strcmp(url.query, "mode=full") == 0);
+    assert(strcmp(url.fragment, "status") == 0);
+    assert(mf_url_is_secure(&url));
+    mf_url_destroy(&url);
+    assert(mf_url_parse("file:///etc/mintosh-release", &url, &error) == 0);
+    assert(strcmp(url.scheme, "file") == 0);
+    assert(strcmp(url.path, "/etc/mintosh-release") == 0);
+    assert(!mf_url_is_secure(&url));
+    mf_url_destroy(&url);
+    assert(mf_url_parse("https://example.com:99999/", &url, &error) < 0);
+    assert(error.code == MF_ERROR_INVALID_ARGUMENT);
+    assert(mf_url_parse("https://example.com/%Q0", &url, &error) < 0);
+    assert(mf_url_parse("relative/path", &url, &error) < 0);
+
     mf_error_set(&error, MF_ERROR_IO, 5, "test");
     assert(error.code == MF_ERROR_IO && error.system_code == 5);
     mf_error_clear(&error); assert(error.code == MF_ERROR_NONE);
