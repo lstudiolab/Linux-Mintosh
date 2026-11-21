@@ -1,0 +1,18 @@
+{
+  "distribution": "Mintosh",
+  "release": "0.1.0",
+  "debian_suite": "trixie",
+  "architectures": ["x86_64", "arm64"],
+  "kernel": {
+    "version": "6.18.64",
+    "source": "https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.18.64.tar.xz",
+    "archive": "linux-6.18.64.tar.xz",
+    "sha256": null,
+    "license": "GPL-2.0-only"
+  },
+  "image": {
+    "primary_architecture": "x86_64",
+    "bootloader": "GRUB",
+    "firmware": ["BIOS", "UEFI"]
+  }
+}
