@@ -35,13 +35,18 @@ mintosh_disk_is_protected() {
 
 mintosh_list_installable_disks() {
     (("${#MINTOSH_PROTECTED_DISKS[@]}" > 0)) || return 1
-    lsblk -J -d -o NAME,SIZE,MODEL,TYPE,RM | python3 - "${MINTOSH_PROTECTED_DISKS[@]}" <<'PY'
+    python3 - "${MINTOSH_PROTECTED_DISKS[@]}" <<'PY'
 import json
+import subprocess
 import sys
 
 protected = set(sys.argv[1:])
 try:
-    data = json.load(sys.stdin)
+    raw = subprocess.check_output(
+        ["lsblk", "-J", "-d", "-o", "NAME,SIZE,MODEL,TYPE,RM"],
+        text=True
+    )
+    data = json.loads(raw)
 except Exception as error:
     print(f"installer: cannot read block-device inventory: {error}", file=sys.stderr)
     raise SystemExit(1)
