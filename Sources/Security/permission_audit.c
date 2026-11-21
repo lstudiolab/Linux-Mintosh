@@ -28,7 +28,7 @@ int main(int argc, char **argv) {
     warnings += security_check_service_directory("/etc/mintosh/services", 0);
 
     static const char *const executables[] = {
-        "/usr/bin/darl", "/usr/bin/launch7762", "/usr/bin/launch511",
+        "/usr/bin/darl", "/usr/bin/launch7762", "/usr/bin/launch-client", "/usr/bin/launch511",
         "/usr/bin/mintoshctl", "/usr/bin/mstore", "/usr/bin/kextctl",
         "/usr/bin/ioplus", "/usr/bin/hp-compat", "/usr/bin/mintosh-log", "/usr/bin/security-audit"
     };

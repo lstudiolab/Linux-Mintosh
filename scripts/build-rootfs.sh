@@ -51,7 +51,7 @@ sysfs /sys sysfs defaults 0 0
 devtmpfs /dev devtmpfs mode=0755,nosuid 0 0
 tmpfs /run tmpfs mode=0755,nosuid,nodev 0 0
 EOF
-mkdir -p "$ROOTFS/etc/systemd/network" "$ROOTFS/etc/systemd/system"
+mkdir -p "$ROOTFS/etc/systemd/network" "$ROOTFS/etc/systemd/system" "$ROOTFS/usr/lib/systemd/user" "$ROOTFS/etc/systemd/user/default.target.wants"
 cat > "$ROOTFS/etc/systemd/network/20-wired.network" <<'EOF'
 [Match]
 Name=en* eth*
@@ -69,6 +69,8 @@ chroot "$ROOTFS" apt-get clean
 install -m 0644 "$ROOT/Sources/Services/launch7762.service" "$ROOTFS/etc/systemd/system/launch7762.service"
 install -m 0644 "$ROOT/Sources/Services/mintosh-ready.service" "$ROOTFS/etc/systemd/system/mintosh-ready.service"
 install -m 0644 "$ROOT/Sources/Services/ioplus-events.service" "$ROOTFS/etc/systemd/system/ioplus-events.service"
+install -m 0644 "$ROOT/Sources/Services/launch-client.service" "$ROOTFS/usr/lib/systemd/user/launch-client.service"
+ln -sfn /usr/lib/systemd/user/launch-client.service "$ROOTFS/etc/systemd/user/default.target.wants/launch-client.service"
 install -m 0644 "$ROOT/Sources/Services/darl.service" "$ROOTFS/etc/mintosh/services/darl.service"
 cat > "$ROOTFS/etc/systemd/system/mintosh-installer.service" <<'EOF'
 [Unit]

@@ -11,7 +11,7 @@ BUILD = build
 
 LIBSYS_SOURCES = ../LibSys/filesystem.c ../LibSys/file_descriptor.c ../LibSys/unix_socket.c ../LibSys/line_reader.c ../LibSys/system_log.c ../LibSys/runtime_paths.c
 LIBSYS_OBJECTS = $(patsubst ../LibSys/%.c,$(BUILD)/libsys-%.o,$(LIBSYS_SOURCES))
-PROGRAMS = darl launch7762 launch511 ioplus hp-compat kextctl mintosh-log security-audit mintoshctl mstore
+PROGRAMS = darl launch7762 launch-client launch511 ioplus hp-compat kextctl mintosh-log security-audit mintoshctl mstore
 
 all: $(addprefix $(BUILD)/,$(PROGRAMS)) $(BUILD)/libcsf.a $(BUILD)/libfoundation.a
 
@@ -25,6 +25,9 @@ $(BUILD)/darl: ../Darl/darl_daemon.c ../Darl/darl_protocol.c $(LIBSYS_OBJECTS)
 	$(CC) $(CPPFLAGS) $(CFLAGS) $^ -o $@
 
 $(BUILD)/launch7762: ../Launch7762/service_manager_main.c ../Launch7762/service_config.c ../Launch7762/service_process.c ../Launch7762/service_control.c ../Launch7762/service_socket.c $(LIBSYS_OBJECTS)
+	$(CC) $(CPPFLAGS) $(CFLAGS) $^ -o $@
+
+$(BUILD)/launch-client: ../LaunchClient/launch_client.c $(LIBSYS_OBJECTS)
 	$(CC) $(CPPFLAGS) $(CFLAGS) $^ -o $@
 
 $(BUILD)/launch511: ../Launch511/command_runner.c ../Launch511/command_arguments.c ../Launch511/command_exec.c
