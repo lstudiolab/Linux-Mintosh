@@ -2,19 +2,25 @@
 set -eu
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 ROOTFS="$ROOT/out/rootfs"
-SUITE=$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["debian_suite"])' "$ROOT/configs/release.json")
+RELEASE="$ROOT/configs/release.json"
+SUITE=$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["debian_suite"])' "$RELEASE")
+VERSION=$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["release"])' "$RELEASE")
 TARGET_USER=${MINTOSH_USER:-mintosh}
 TARGET_PASSWORD=${MINTOSH_PASSWORD:-}
+ARCH=${ARCH:-x86_64}
+[ "$ARCH" = x86_64 ] || { echo "The Mintosh root filesystem currently targets x86_64." >&2; exit 1; }
 [ "$(id -u)" -eq 0 ] || { echo "Run through sudo: make rootfs" >&2; exit 1; }
 command -v debootstrap >/dev/null || { echo "Install debootstrap (make host-deps)." >&2; exit 1; }
+case "$TARGET_USER" in [a-z_]* ) ;; *) echo "MINTOSH_USER must begin with a letter or underscore." >&2; exit 1 ;; esac
 case "$TARGET_USER" in *[!a-zA-Z0-9_-]*|'') echo "Invalid MINTOSH_USER." >&2; exit 1 ;; esac
+[ ${#TARGET_USER} -le 32 ] || { echo "MINTOSH_USER is too long (maximum 32 characters)." >&2; exit 1; }
 mkdir -p "$ROOT/out"
 if [ -e "$ROOTFS/etc/os-release" ]; then
   echo "Root filesystem already exists at $ROOTFS (run make clean to rebuild it)."
   exit 0
 fi
 rm -rf "$ROOTFS"
-echo "Creating Mintosh root filesystem from Debian $SUITE..."
+echo "Creating Mintosh $VERSION root filesystem from Debian $SUITE..."
 debootstrap --arch=amd64 --variant=minbase \
   --include=systemd,systemd-sysv,systemd-resolved,udev,dbus,kmod,bash,coreutils,util-linux,procps,findutils,grep,sed,gawk,tar,gzip,xz-utils,iproute2,iputils-ping,netbase,ca-certificates,sudo,passwd,login,locales,tzdata,e2fsprogs,less,nano,curl,wget,openssh-client,dialog,parted,dosfstools,rsync,os-prober,efibootmgr,ntfs-3g,initramfs-tools,grub-common,grub-pc-bin,grub-efi-amd64-bin,python3,grub2-common \
   "$SUITE" "$ROOTFS" https://deb.debian.org/debian
@@ -24,17 +30,19 @@ cat > "$ROOTFS/etc/hosts" <<'EOF'
 127.0.1.1 mintosh
 ::1 localhost ip6-localhost ip6-loopback
 EOF
-cat > "$ROOTFS/etc/os-release" <<'EOF'
+cat > "$ROOTFS/etc/os-release" <<EOF
 NAME="Mintosh"
-PRETTY_NAME="Mintosh 0.2.0"
+PRETTY_NAME="Mintosh $VERSION"
 ID=mintosh
 ID_LIKE=debian
-VERSION_ID="0.2.0"
-VERSION_CODENAME=seed
+VERSION_ID="$VERSION"
+VERSION_CODENAME="$SUITE"
 HOME_URL="https://github.com/lstudiolab/Linux-Mintosh"
 EOF
-cat > "$ROOTFS/etc/issue" <<'EOF'
-Mintosh 0.2.0 \n \l
+printf 'Mintosh %s \\n \\l\n' "$VERSION" > "$ROOTFS/etc/issue"
+cat > "$ROOTFS/etc/mintosh-release" <<EOF
+MINTOSH_VERSION="$VERSION"
+MINTOSH_DEBIAN_SUITE="$SUITE"
 EOF
 cat > "$ROOTFS/etc/fstab" <<'EOF'
 proc /proc proc defaults 0 0

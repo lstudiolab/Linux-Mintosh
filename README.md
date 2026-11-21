@@ -1,70 +1,65 @@
 # Mintosh
 
-Mintosh is a Linux-based operating system project built around the upstream Linux kernel, systemd, GNU userspace, and a custom installation flow.
+Mintosh is a Linux-based operating system built around the upstream Linux kernel, systemd, GNU userspace and a custom installation flow. The project aims for a consistent, minimalist desktop experience while retaining Linux hardware and application compatibility.
 
-## Current milestone: bootable Mintosh installer
+## Current release
 
-The x86_64 image now builds a live Mintosh environment with a text-based installer. It supports:
+The release manifest is the source of truth:
 
-- GRUB boot from BIOS and UEFI USB media.
-- Live boot without modifying internal disks.
-- Install alongside an existing OS using already-unallocated disk space.
-- Erase a selected disk after two explicit confirmations.
-- Persistent ext4 root filesystem.
-- UEFI EFI System Partition reuse for dual boot, without formatting it.
-- GRUB installation and OS probing for supported existing systems, including Windows.
-- User account and password setup.
-- QEMU serial-console boot smoke test.
+    make check-release
+    make release-info
 
-## Build the installer
+The first Developer Preview targets x86_64 bootable media. ARM64 is supported by the kernel build configuration; ARM64 live images and installation are not yet implemented.
 
-On a Debian/Ubuntu x86_64 build host:
+## Build the x86_64 installer
+
+On a Debian/Ubuntu x86_64 build host with internet access and sudo:
 
     git clone https://github.com/lstudiolab/Linux-Mintosh.git
     cd Linux-Mintosh
     make host-deps
+    make verify
     make kernel-fetch
     make kernel-config
     make kernel
     make iso
 
-The installer image is created at:
+The ISO is created at:
 
     out/mintosh-x86_64.iso
 
-Write the ISO to a USB drive using Rufus, balenaEtcher, or GNOME Disks. On Linux, an explicit-confirmation writer is included:
+Run it interactively:
 
-    make usb USB=/dev/sdX
+    make qemu
 
-Use the whole USB device (for example /dev/sdb), not a partition (for example /dev/sdb1). Writing the image erases that USB drive.
+Run the serial-console smoke test:
 
-**A GitHub source ZIP is not bootable.** BIOS/UEFI firmware cannot boot the repository ZIP or an extracted source folder. Build the ISO and flash it to USB first. See docs/installation.md.
+    make test-qemu
 
-## Installation modes
+The automated GitHub Actions workflow performs the same validation and build, runs QEMU, and uploads the ISO and serial log.
 
-- **Alongside:** uses only an existing unallocated region of at least 20 GiB. It does not resize or format existing partitions. UEFI dual boot reuses the existing EFI System Partition.
-- **Erase disk:** replaces the selected disk's partition table and data. The installer requires a warning acknowledgement and typing ERASE before it proceeds.
+## Build stages
 
-Back up important data before installation. For dual boot, create unallocated space from the existing OS's disk manager before booting Mintosh.
+- `make check-release`: validate the release manifest.
+- `make verify`: validate release metadata and shell syntax.
+- `make host-deps`: install Debian/Ubuntu build dependencies.
+- `make kernel-fetch`: download and verify the pinned upstream Linux source.
+- `make kernel-config`: configure the kernel for Mintosh and QEMU.
+- `make kernel`: compile the kernel and modules.
+- `make rootfs`: bootstrap the Debian-based Mintosh Base.
+- `make initramfs`: assemble the live initramfs.
+- `make iso`: create BIOS/UEFI GRUB installer media.
+- `make test-qemu`: verify that systemd reaches the Mintosh ready service.
+- `make usb USB=/dev/sdX`: write the ISO to a USB drive after explicit confirmation.
 
-## Build and test targets
+A GitHub source ZIP is not bootable. Firmware needs the built ISO written to a USB device.
 
-Run make help for all targets. Important targets:
+## Installation
 
-- make kernel-fetch
-- make kernel-config
-- make kernel
-- make iso
-- make qemu
-- make test-qemu
-- make usb USB=/dev/sdX
+The text installer supports installation into existing unallocated space or erasing a selected disk after two explicit confirmations. The alongside flow does not shrink or format existing partitions. Back up important data before installing.
 
-The automated GitHub Actions workflow builds the image, boots it in QEMU, and uploads the ISO and serial log as workflow artifacts.
-
-## Architecture
-
-See docs/architecture.md, docs/development.md, and docs/installation.md.
+See [installation](docs/installation.md), [architecture](docs/architecture.md), [development](docs/development.md), [release management](docs/release-management.md) and the [roadmap](docs/roadmap.md).
 
 ## Current limitations
 
-The installer currently targets x86_64 only. It uses a text interface, uses preinstalled bootloader packages during installation, and expects pre-existing unallocated space for dual boot. Automatic Windows partition shrinking, disk encryption, LVM/RAID, Secure Boot, graphical desktop, application store, and ARM64 installer media are not implemented. Secure Boot must be disabled for this initial image.
+The desktop, graphical application catalog, Mintosh update service, Secure Boot, disk encryption, automatic partition resizing and ARM64 installer are not implemented yet. The QEMU boot script and CI workflow exist; a successful run is required before calling a release boot-verified.

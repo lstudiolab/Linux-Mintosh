@@ -1,8 +1,10 @@
 #!/bin/sh
 set -eu
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+ARCH=${ARCH:-x86_64}
+[ "$ARCH" = x86_64 ] || { echo "The live ISO currently targets x86_64." >&2; exit 1; }
 ISO_ROOT="$ROOT/out/iso"
-ISO="$ROOT/out/mintosh-x86_64.iso"
+ISO="$ROOT/out/mintosh-$ARCH.iso"
 ROOTFS="$ROOT/out/rootfs"
 [ "$(id -u)" -eq 0 ] || { echo "Run through sudo: make iso" >&2; exit 1; }
 [ -s "$ROOT/out/initramfs.cpio.gz" ] || { echo "Run make initramfs first." >&2; exit 1; }
@@ -26,4 +28,4 @@ menuentry "Mintosh Live Installer (safe graphics/verbose)" {
 EOF
 grub-mkrescue -o "$ISO" "$ISO_ROOT"
 chmod 0644 "$ISO"
-echo "Bootable Mintosh installer ISO created: out/mintosh-x86_64.iso"
+echo "Bootable Mintosh installer ISO created: out/mintosh-$ARCH.iso"
