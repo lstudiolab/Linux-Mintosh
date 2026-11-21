@@ -23,6 +23,6 @@ EOF
 chmod 0755 "$ROOTFS/init"
 mkdir -p "$ROOT/out"
 echo "Packing complete Mintosh root filesystem into initramfs..."
-(cd "$ROOTFS" && find . -xdev -print0 | cpio --null --create --format=newc --quiet | gzip -1) > "$OUT"
+(cd "$ROOTFS" && find . -xdev ! -path "./boot/vmlinuz-mintosh" -print0 | cpio --null --create --format=newc --quiet | gzip -1) > "$OUT"
 chmod 0644 "$OUT"
 echo "Initramfs created: out/initramfs.cpio.gz ($(du -h "$OUT" | awk '{print $1}'))"
