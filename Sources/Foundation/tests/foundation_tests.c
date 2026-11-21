@@ -10,7 +10,7 @@ int main(void) {
     assert(mf_string_equal_cstr(&value, "Mintosh"));
     assert(mf_string_append(&value, value.data + 3) == 0);
     assert(mf_string_equal_cstr(&value, "Mintoshtosh"));
-    MFString same = mf_string_copy("Mintosh");
+    MFString same = mf_string_copy("Mintoshtosh");
     assert(mf_string_equal(&value, &same));
     mf_string_destroy(&same);
     mf_string_destroy(&value);
