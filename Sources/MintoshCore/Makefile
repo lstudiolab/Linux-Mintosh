@@ -57,8 +57,8 @@ $(BUILD)/kextctl: ../Kexts/module_manager.c ../Kexts/module_command.c ../Kexts/m
 $(BUILD)/mintosh-log: ../SystemLogging/log_command.c ../SystemLogging/log_writer.c $(LIBSYS_OBJECTS)
 	$(CC) $(CPPFLAGS) $(CFLAGS) $^ -o $@
 
-$(BUILD)/security-audit: ../Security/permission_audit.c ../Security/permission_check.c
-	$(CC) $(CPPFLAGS) $(CFLAGS) $^ -o $@
+$(BUILD)/security-audit: ../Security/permission_audit.c ../Security/permission_check.c ../Kexts/module_policy.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) -I../Kexts $^ -o $@
 
 $(BUILD)/mintoshctl: ../MintoshCtl/control_command.c ../MintoshCtl/darl_client.c ../MintoshCtl/service_client.c $(LIBSYS_OBJECTS)
 	$(CC) $(CPPFLAGS) $(CFLAGS) $^ -o $@
