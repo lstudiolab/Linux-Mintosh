@@ -1,3 +1,4 @@
+#include "module_policy.h"
 #include <ctype.h>
 #include <stdio.h>
 #include <string.h>
@@ -17,6 +18,13 @@ int main(int argc, char **argv) {
         puts("Kexts 0.1.0");
         return 0;
     }
+    if (argc == 2 && strcmp(argv[1], "status") == 0) {
+        int enforced = kexts_module_signatures_enforced();
+        if (enforced == 1) puts("Kernel module signature enforcement: enabled");
+        else if (enforced == 0) puts("Kernel module signature enforcement: disabled");
+        else puts("Kernel module signature enforcement: unavailable");
+        return enforced == 1 ? 0 : 1;
+    }
     if (argc == 2 && strcmp(argv[1], "list") == 0) {
         char *arguments[] = {"lsmod", NULL};
         return kexts_execute(arguments);
@@ -31,12 +39,16 @@ int main(int argc, char **argv) {
             return 2;
         }
         if (!strcmp(argv[1], "load")) {
+            if (kexts_module_signatures_enforced() != 1) {
+                fputs("kextctl: refusing to load modules because kernel signature enforcement is not confirmed\\n", stderr);
+                return 3;
+            }
             char *arguments[] = {"modprobe", "--", argv[2], NULL};
             return kexts_execute(arguments);
         }
         char *arguments[] = {"modprobe", "-r", "--", argv[2], NULL};
         return kexts_execute(arguments);
     }
-    fputs("usage: kextctl list|load MODULE|unload MODULE\n", stderr);
+    fputs("usage: kextctl status|list|load MODULE|unload MODULE\n", stderr);
     return 64;
 }
