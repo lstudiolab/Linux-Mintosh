@@ -43,6 +43,7 @@ static int valid_hostname(const char *host) {
             continue;
         }
         if (!((value >= 'a' && value <= 'z') ||
+              (value >= 'A' && value <= 'Z') ||
               (value >= '0' && value <= '9') || value == '-')) return 0;
         if (!label_length && value == '-') return 0;
         ++label_length;
