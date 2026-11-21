@@ -40,7 +40,7 @@ MODE=$(dialog --stdout --title "$TITLE" --menu "Choose an installation type." 15
   alongside "Install alongside an existing operating system" \
   erase "Erase a disk and install Mintosh") || exit 0
 
-mapfile -t DISKS < <(lsblk -dpno NAME,SIZE,MODEL,TYPE | awk '$NF=="disk" { $NF=""; sub(/[[:space:]]+$/, ""); print }')
+mapfile -t DISKS < <(lsblk -dpno NAME,SIZE,MODEL,TYPE,RM | awk '$NF=="0" { $NF=""; sub(/[[:space:]]+$/, ""); print }')
 (("${#DISKS[@]}" > 0)) || fail "No installable disks were detected."
 MENU=()
 for item in "${DISKS[@]}"; do
@@ -48,7 +48,7 @@ for item in "${DISKS[@]}"; do
   label=${item#* }
   MENU+=("$dev" "$label")
 done
-DISK=$(dialog --stdout --title "$TITLE" --menu "Select the destination disk." 18 78 8 "${MENU[@]}") || exit 0
+DISK=$(dialog --stdout --title "$TITLE" --menu "Select the destination disk. Removable USB devices are hidden to protect the live installer." 18 78 8 "${MENU[@]}") || exit 0
 [[ -b "$DISK" ]] || fail "The selected disk is no longer available."
 
 if [[ "$MODE" == erase ]]; then
