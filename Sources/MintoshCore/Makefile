@@ -79,7 +79,7 @@ $(BUILD)/ioplus-uevent-tests: ../IOPlus/tests/uevent_tests.c ../IOPlus/uevent_pa
 	$(CC) $(CPPFLAGS) $(CFLAGS) -I../IOPlus $^ -o $@
 
 $(BUILD)/darl-protocol-tests: ../Darl/tests/darl_protocol_tests.c ../Darl/darl_protocol.c | $(BUILD)
-	$(CC) $(CPPFLAGS) $(CFLAGS) $^ -o $@
+	$(CC) $(CPPFLAGS) $(CFLAGS) -I../Darl $^ -o $@
 
 $(BUILD)/libsys-filesystem-tests: ../LibSys/tests/filesystem_tests.c ../LibSys/filesystem.c | $(BUILD)
 	$(CC) $(CPPFLAGS) $(CFLAGS) $^ -o $@

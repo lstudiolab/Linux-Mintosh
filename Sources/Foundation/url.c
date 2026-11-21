@@ -35,7 +35,7 @@ static int valid_hostname(const char *host) {
     size_t label_length = 0;
     for (const unsigned char *cursor = (const unsigned char *)host; ; ++cursor) {
         unsigned char value = *cursor;
-        if (value == '.' || value == '\\0') {
+        if (value == '.' || value == '\0') {
             if (!label_length || host[cursor - (const unsigned char *)host - 1] == '-')
                 return 0;
             label_length = 0;
