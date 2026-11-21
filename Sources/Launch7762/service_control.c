@@ -1,5 +1,6 @@
 #include "service_manager.h"
 #include "libsys.h"
+#include <signal.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -36,11 +37,10 @@ void ms_services_control(MintoshServiceManager *manager, int descriptor, const c
     } else if (strcmp(action, "RESTART") == 0) {
         service->enabled = 1;
         if (service->process_id > 0) {
+            ms_service_stop(service);
+            service->enabled = 1;
             service->restart_pending = 1;
             service->restart_at = (struct timespec){0};
-            service->stop_deadline = (struct timespec){0};
-            (void)kill(-service->process_id, SIGTERM);
-            (void)kill(service->process_id, SIGTERM);
             send_text(descriptor, "OK restart scheduled\n");
         } else {
             send_text(descriptor, ms_service_start(service) == 0 ? "OK\n" : "ERROR restart failed\n");
