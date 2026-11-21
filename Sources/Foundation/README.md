@@ -1,13 +1,18 @@
-# Foundation
+# Mintosh Foundation
 
-Mintosh Foundation is the small, dependency-light base library shared by native userspace components.
+Foundation is the shared C API layer for native Mintosh userspace. The initial API provides alias-safe strings and byte buffers, generic value arrays, explicit error values, lexical path operations, and bounded regular-file I/O.
 
-## Current API
+## Ownership
 
-- `MFString`: owned NUL-terminated byte strings (UTF-8 by convention; encoding is not validated) with copy, append, equality and destruction operations.
-- `MFData`: owned arbitrary byte buffers with copy, append, equality and destruction operations.
-- `mf_path_join`, `mf_path_normalize` and `mf_path_is_absolute`: lexical path operations. Normalization does not resolve symbolic links or access the filesystem.
+- String, data and array values own their allocations and must be destroyed with the matching destroy function.
+- Array elements are copied by value; pointers inside an element remain caller-owned.
+- File reads reject symlinks, non-regular files and files above the caller-supplied limit.
+- Atomic writes create a temporary file in the destination directory, apply the requested mode, write and sync the contents, then rename into place and sync the directory.
 
-Append operations support source slices that alias the destination buffer, including when allocation moves the buffer. Callers own returned allocations and must destroy them with the matching function.
+## Error handling
 
-This is the initial base layer, not a complete Cocoa Foundation replacement. Collections, URL handling, filesystem coordination, serialization and richer error types remain separate implementation work.
+Functions returning allocated values use an empty value on failure. File operations accept an optional `MFError` output containing a Foundation error code, the underlying system error and a bounded diagnostic message.
+
+## Build and tests
+
+The native core Makefile builds Foundation into `libfoundation.a`. The test suite covers aliasing, allocation-backed arrays, error lifecycle, bounded reads, symlink rejection, atomic writes, path normalization and cleanup.
