@@ -1,6 +1,6 @@
 # Mintosh Foundation
 
-Foundation is the shared C API layer for native Mintosh userspace. The initial API provides alias-safe strings and byte buffers, generic value arrays, explicit error values, lexical path operations, and bounded regular-file I/O.
+Foundation is the shared C API layer for native Mintosh userspace. The initial API provides alias-safe strings and byte buffers, generic arrays, string dictionaries, absolute URL parsing, explicit error values, lexical path operations, and bounded regular-file I/O.
 
 ## Ownership
 
