@@ -42,13 +42,13 @@ int main(int argc, char **argv) {
         !S_ISDIR(directory_metadata.st_mode) ||
         directory_metadata.st_uid != geteuid() ||
         (directory_metadata.st_mode & 0022) != 0) {
-        fputs("darl: refusing an untrusted runtime directory\\n", stderr);
+        fputs("darl: refusing an untrusted runtime directory\n", stderr);
         return 1;
     }
     struct stat existing;
     if (lstat(socket_path, &existing) == 0) {
         if (!S_ISSOCK(existing.st_mode) || existing.st_uid != geteuid()) {
-            fputs("darl: refusing to replace an untrusted socket path\\n", stderr);
+            fputs("darl: refusing to replace an untrusted socket path\n", stderr);
             return 1;
         }
         if (unlink(socket_path) < 0) {
@@ -74,7 +74,7 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-    struct group *mintosh_group = getgrnam("mintosh");
+    struct group *mintosh_group = getgrnam("mintosh-services");
     gid_t socket_group = mintosh_group ? mintosh_group->gr_gid : getegid();
     if (chown(socket_path, geteuid(), socket_group) < 0 ||
         chmod(socket_path, 0660) < 0 || listen(server, 16) < 0) {
