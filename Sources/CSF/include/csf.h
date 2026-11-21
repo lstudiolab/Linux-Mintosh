@@ -1,5 +1,27 @@
 #ifndef MINTOSH_CSF_H
 #define MINTOSH_CSF_H
+
 #include <stddef.h>
-int csf_request(const char *request,char *response,size_t capacity);
+
+#define CSF_VERSION_MAX 32
+
+typedef struct {
+    int darl_running;
+    char mintosh_version[CSF_VERSION_MAX];
+    char darl_version[CSF_VERSION_MAX];
+} CSFSystemStatus;
+
+/* Low-level Darl protocol request. */
+int csf_request(const char *request, char *response, size_t capacity);
+
+/* Stable system APIs for native Mintosh applications and frameworks. */
+int csf_system_ping(void);
+int csf_system_version(char *response, size_t capacity);
+int csf_system_status(CSFSystemStatus *status);
+
+/* Service control uses the protected launch7762 local socket. */
+int csf_service_name_is_valid(const char *name);
+int csf_service_list(char *response, size_t capacity);
+int csf_service_control(const char *action, const char *name);
+
 #endif
