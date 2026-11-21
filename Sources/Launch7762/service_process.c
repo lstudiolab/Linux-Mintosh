@@ -32,7 +32,9 @@ int ms_service_start(MintoshService *service) {
     if (child < 0) { ms_log("launch7762", "error", "unable to fork service process"); return -1; }
     if (child == 0) {
         if (setsid() < 0) _exit(126);
-        execl("/usr/bin/launch511", "launch511", "--", "/bin/sh", "-c",
+        const char *runner = getenv("MINTOSH_LAUNCH511");
+        if (!runner || !runner[0]) runner = "/usr/bin/launch511";
+        execl(runner, "launch511", "--", "/bin/sh", "-c",
               service->command, (char *)NULL);
         _exit(127);
     }

@@ -6,6 +6,7 @@ B="$ROOT/Sources/MintoshCore/build"
 RUNTIME=$(mktemp -d)
 export MINTOSH_RUN_DIR="$RUNTIME"
 export MINTOSH_SERVICE_DIR="$RUNTIME/services"
+export MINTOSH_LAUNCH511="$ROOT/Sources/MintoshCore/build/launch511"
 mkdir -p "$MINTOSH_SERVICE_DIR"
 cleanup() {
     if [ -n "${LAUNCH_PID:-}" ]; then
