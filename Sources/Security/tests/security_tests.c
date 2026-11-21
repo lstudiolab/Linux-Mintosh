@@ -38,7 +38,9 @@ int main(void) {
     int socket_descriptor = socket(AF_UNIX, SOCK_STREAM | SOCK_CLOEXEC, 0);
     assert(socket_descriptor >= 0);
     struct sockaddr_un address = {.sun_family = AF_UNIX};
-    snprintf(address.sun_path, sizeof address.sun_path, "%s", socket_path);
+    size_t socket_path_length = strlen(socket_path);
+    assert(socket_path_length < sizeof address.sun_path);
+    memcpy(address.sun_path, socket_path, socket_path_length + 1);
     assert(bind(socket_descriptor, (struct sockaddr *)&address, sizeof address) == 0);
     assert(chmod(socket_path, 0600) == 0);
     assert(security_check_socket_permissions(socket_path, getuid(), getgid(), 0600) == 0);
