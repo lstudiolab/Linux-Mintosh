@@ -76,7 +76,7 @@ kernel-install: rootfs kernel
 	@test "$(ARCH)" = x86_64 || { echo 'Rootfs/ISO packaging currently targets x86_64.' >&2; exit 1; }
 	@sudo mkdir -p "$(ROOTFS)/lib/modules" "$(ROOTFS)/boot"
 	@sudo $(MAKE) -C "$(KERNEL_DIR)" O="$(CURDIR)/$(KERNEL_OUT)" ARCH="$(KERNEL_ARCH)" INSTALL_MOD_PATH="$(CURDIR)/$(ROOTFS)" modules_install
-	@KREL=$($(MAKE) -s -C "$(KERNEL_DIR)" O="$(CURDIR)/$(KERNEL_OUT)" ARCH="$(KERNEL_ARCH)" CROSS_COMPILE="$(CROSS_COMPILE)" kernelrelease); \
+	@KREL=$$($(MAKE) -s -C "$(KERNEL_DIR)" O="$(CURDIR)/$(KERNEL_OUT)" ARCH="$(KERNEL_ARCH)" CROSS_COMPILE="$(CROSS_COMPILE)" kernelrelease); \
 	  sudo install -m 0644 "$(KERNEL_OUT)/arch/x86/boot/bzImage" "$(ROOTFS)/boot/vmlinuz-$KREL"
 
 rootfs: check-host
