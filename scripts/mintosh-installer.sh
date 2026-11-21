@@ -4,6 +4,7 @@ set -Eeuo pipefail
 export TERM=${TERM:-linux}
 SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 . "$SCRIPT_DIR/installer-disk-safety.sh"
+. "$SCRIPT_DIR/installer-storage.sh"
 TITLE="Mintosh Installer"
 TARGET=/mnt/mintosh
 LOG=/var/log/mintosh-installer.log
@@ -111,26 +112,7 @@ else
   elif [[ "$(lsblk -dnro PTTYPE "$DISK")" == "gpt" ]]; then
     parted -s "$DISK" print | grep -qi bios_grub || fail "This GPT disk has no BIOS boot partition. Boot Mintosh in UEFI mode or prepare a BIOS boot partition first."
   fi
-  FREE=$(python3 - "$DISK" <<'PY'
-import subprocess,sys
-text=subprocess.check_output(["parted","-m","-s",sys.argv[1],"unit","MiB","print","free"],text=True,stderr=subprocess.DEVNULL)
-best=None
-for line in text.splitlines():
-    p=line.rstrip(";").split(":")
-    if len(p)<4 or p[0] != "":
-        continue
-    try:
-        start=float(p[1].removesuffix("MiB"))
-        end=float(p[2].removesuffix("MiB"))
-        size=float(p[3].removesuffix("MiB"))
-    except ValueError:
-        continue
-    if best is None or size>best[0]:
-        best=(size,start,end)
-if best and best[0]>=20480:
-    print(f"{best[1]:.2f}MiB {best[2]:.2f}MiB")
-PY
-) || true
+  FREE=$(mintosh_find_largest_free_region "$DISK" 20480 2>/dev/null || true)
   [[ -n "$FREE" ]] || fail "No unallocated region of at least 20 GiB was found. No existing partitions were changed."
   BEFORE=$(lsblk -nrpo NAME "$DISK")
   read -r START END <<<"$FREE"
