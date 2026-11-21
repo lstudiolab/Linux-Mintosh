@@ -17,7 +17,7 @@ int main(int argc,char **argv){
  unlink(MINTOSH_MOSF_SOCKET);
  int server=socket(AF_UNIX,SOCK_STREAM|SOCK_CLOEXEC,0);if(server<0){perror("mosf: socket");return 1;}
  struct sockaddr_un a={.sun_family=AF_UNIX};strcpy(a.sun_path,MINTOSH_MOSF_SOCKET);
- if(bind(server,(struct sockaddr*)&a,sizeof a)<0||chmod(MINTOSH_MOSF_SOCKET,0660)<0||listen(server,16)<0){perror("mosf: listen");close(server);return 1;}
+ if(bind(server,(struct sockaddr*)&a,sizeof a)<0||chmod(MINTOSH_MOSF_SOCKET,0666)<0||listen(server,16)<0){perror("mosf: listen");close(server);return 1;}
  signal(SIGTERM,stop_signal);signal(SIGINT,stop_signal);ms_log("mosf","info","MOSF started");
  while(!stopping){int c=accept4(server,NULL,NULL,SOCK_CLOEXEC);if(c<0){if(errno==EINTR)continue;if(stopping)break;continue;}char q[128]={0},r[256];ssize_t n=read(c,q,sizeof q-1);if(n<0)n=0;q[strcspn(q,"\r\n")]=0;
   if(!strcmp(q,"PING"))snprintf(r,sizeof r,"OK MOSF 0.1.0\n");
