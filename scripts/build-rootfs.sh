@@ -1,0 +1,85 @@
+#!/bin/sh
+set -eu
+ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+ROOTFS="$ROOT/out/rootfs"
+SUITE=$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["debian_suite"])' "$ROOT/configs/release.json")
+TARGET_USER=${MINTOSH_USER:-mintosh}
+TARGET_PASSWORD=${MINTOSH_PASSWORD:-}
+[ "$(id -u)" -eq 0 ] || { echo "Run through sudo: make rootfs" >&2; exit 1; }
+command -v debootstrap >/dev/null || { echo "Install debootstrap (make host-deps)." >&2; exit 1; }
+case "$TARGET_USER" in *[!a-zA-Z0-9_-]*|'') echo "Invalid MINTOSH_USER." >&2; exit 1 ;; esac
+mkdir -p "$ROOT/out"
+if [ -e "$ROOTFS/etc/os-release" ]; then
+  echo "Root filesystem already exists at $ROOTFS (run make clean to rebuild)." >&2
+  exit 1
+fi
+rm -rf "$ROOTFS"
+echo "Creating Mintosh root filesystem from Debian $SUITE..."
+debootstrap --arch=amd64 --variant=minbase \
+  --include=systemd,systemd-sysv,systemd-networkd,systemd-resolved,udev,dbus,kmod,bash,coreutils,util-linux,procps,findutils,grep,sed,gawk,tar,gzip,xz-utils,iproute2,iputils-ping,netbase,ca-certificates,sudo,passwd,login,locales,tzdata,e2fsprogs,less,nano,curl,wget,openssh-client \
+  "$SUITE" "$ROOTFS" https://deb.debian.org/debian
+printf '%s\n' mintosh > "$ROOTFS/etc/hostname"
+cat > "$ROOTFS/etc/hosts" <<'EOF'
+127.0.0.1 localhost
+127.0.1.1 mintosh
+::1 localhost ip6-localhost ip6-loopback
+EOF
+cat > "$ROOTFS/etc/os-release" <<'EOF'
+NAME="Mintosh"
+PRETTY_NAME="Mintosh 0.1.0"
+ID=mintosh
+ID_LIKE=debian
+VERSION_ID="0.1.0"
+VERSION_CODENAME=seed
+HOME_URL="https://github.com/lstudiolab/Linux-Mintosh"
+EOF
+cat > "$ROOTFS/etc/issue" <<'EOF'
+Mintosh 0.1.0 \n \l
+EOF
+cat > "$ROOTFS/etc/fstab" <<'EOF'
+proc /proc proc defaults 0 0
+sysfs /sys sysfs defaults 0 0
+devtmpfs /dev devtmpfs mode=0755,nosuid 0 0
+tmpfs /run tmpfs mode=0755,nosuid,nodev 0 0
+EOF
+mkdir -p "$ROOTFS/etc/systemd/network" "$ROOTFS/etc/systemd/system"
+cat > "$ROOTFS/etc/systemd/network/20-wired.network" <<'EOF'
+[Match]
+Name=en* eth*
+[Network]
+DHCP=yes
+IPv6AcceptRA=yes
+EOF
+cat > "$ROOTFS/etc/systemd/system/mintosh-ready.service" <<'EOF'
+[Unit]
+Description=Mintosh Base boot completion marker
+After=multi-user.target
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/echo Mintosh Base is ready
+StandardOutput=journal+console
+[Install]
+WantedBy=multi-user.target
+EOF
+cat > "$ROOTFS/etc/motd" <<'EOF'
+Welcome to Mintosh.
+A Linux system designed with a simple, consistent desktop experience.
+EOF
+chroot "$ROOTFS" useradd --create-home --shell /bin/bash --groups sudo "$TARGET_USER"
+if [ -n "$TARGET_PASSWORD" ]; then
+  printf '%s:%s\n' "$TARGET_USER" "$TARGET_PASSWORD" | chroot "$ROOTFS" chpasswd
+else
+  chroot "$ROOTFS" passwd --lock "$TARGET_USER"
+  echo "Created $TARGET_USER with a locked password. Set MINTOSH_PASSWORD when rebuilding to enable login."
+fi
+chroot "$ROOTFS" passwd --lock root
+chroot "$ROOTFS" locale-gen en_US.UTF-8 || true
+chroot "$ROOTFS" update-locale LANG=en_US.UTF-8 || true
+ln -snf /usr/share/zoneinfo/UTC "$ROOTFS/etc/localtime"
+: > "$ROOTFS/etc/machine-id"
+mkdir -p "$ROOTFS/var/lib/dbus"
+ln -snf /etc/machine-id "$ROOTFS/var/lib/dbus/machine-id"
+systemctl --root="$ROOTFS" enable systemd-networkd.service systemd-resolved.service serial-getty@ttyS0.service mintosh-ready.service
+ln -snf /run/systemd/resolve/stub-resolv.conf "$ROOTFS/etc/resolv.conf"
+rm -rf "$ROOTFS/var/lib/apt/lists/"*
+echo "Mintosh root filesystem created at out/rootfs."
