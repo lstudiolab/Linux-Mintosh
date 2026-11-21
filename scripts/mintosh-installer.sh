@@ -29,7 +29,8 @@ ACTION=$(dialog --stdout --clear --title "$TITLE" --menu "What would you like to
 case "$ACTION" in
   try)
     dialog --title "$TITLE" --msgbox "You are now using the Mintosh live system.\n\nYour internal disks have not been modified. Close this terminal to return to the installer." 10 70
-    exec /bin/bash -l
+    /bin/bash -l
+    exec "$0"
     ;;
   reboot) reboot ;;
   poweroff) poweroff ;;
