@@ -13,7 +13,7 @@ LIBSYS_SOURCES = ../LibSys/filesystem.c ../LibSys/file_descriptor.c ../LibSys/un
 LIBSYS_OBJECTS = $(patsubst ../LibSys/%.c,$(BUILD)/libsys-%.o,$(LIBSYS_SOURCES))
 PROGRAMS = darl launch7762 launch-client launch511 ioplus iopsctl gvdctl hp-compat kextctl mintosh-log security-audit mintoshctl mstore
 
-all: $(addprefix $(BUILD)/,$(PROGRAMS)) $(BUILD)/libcsf.a $(BUILD)/libfoundation.a
+all: $(addprefix $(BUILD)/,$(PROGRAMS)) $(BUILD)/libcsf.a $(BUILD)/libfoundation.a $(BUILD)/libgvd.a
 
 $(BUILD):
 	mkdir -p $@
@@ -64,6 +64,10 @@ $(BUILD)/libcsf.a: ../CSF/darl_request.c $(LIBSYS_OBJECTS) | $(BUILD)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c ../CSF/darl_request.c -o $(BUILD)/csf-darl-request.o
 	$(AR) rcs $@ $(BUILD)/csf-darl-request.o $(LIBSYS_OBJECTS)
 
+$(BUILD)/libgvd.a: ../GVD/dispatch_queue.c ../GVD/include/GVD.h | $(BUILD)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -pthread -c ../GVD/dispatch_queue.c -o $(BUILD)/gvd-dispatch-queue.o
+	$(AR) rcs $@ $(BUILD)/gvd-dispatch-queue.o
+
 $(BUILD)/libfoundation.a: ../Foundation/string.c ../Foundation/path.c ../Foundation/data.c ../Foundation/array.c ../Foundation/dictionary.c ../Foundation/url.c ../Foundation/error.c ../Foundation/filesystem.c | $(BUILD)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c ../Foundation/string.c -o $(BUILD)/foundation-string.o
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c ../Foundation/path.c -o $(BUILD)/foundation-path.o
@@ -74,6 +78,9 @@ $(BUILD)/libfoundation.a: ../Foundation/string.c ../Foundation/path.c ../Foundat
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c ../Foundation/error.c -o $(BUILD)/foundation-error.o
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c ../Foundation/filesystem.c -o $(BUILD)/foundation-filesystem.o
 	$(AR) rcs $@ $(BUILD)/foundation-string.o $(BUILD)/foundation-path.o $(BUILD)/foundation-data.o $(BUILD)/foundation-array.o $(BUILD)/foundation-dictionary.o $(BUILD)/foundation-url.o $(BUILD)/foundation-error.o $(BUILD)/foundation-filesystem.o
+
+$(BUILD)/gvd-dispatch-tests: ../GVD/tests/gvd_tests.c ../GVD/dispatch_queue.c | $(BUILD)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -pthread -I../GVD/include $^ -o $@
 
 $(BUILD)/foundation-tests: ../Foundation/tests/foundation_tests.c ../Foundation/string.c ../Foundation/path.c ../Foundation/data.c ../Foundation/array.c ../Foundation/dictionary.c ../Foundation/url.c ../Foundation/error.c ../Foundation/filesystem.c | $(BUILD)
 	$(CC) $(CPPFLAGS) $(CFLAGS) $^ -o $@
@@ -105,7 +112,7 @@ $(BUILD)/security-tests: ../Security/tests/security_tests.c ../Security/permissi
 $(BUILD)/service-control-tests: ../Launch7762/tests/service_control_tests.c ../Launch7762/service_control.c ../LibSys/file_descriptor.c | $(BUILD)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -I../Launch7762 $^ -o $@
 
-test-foundation: $(BUILD)/foundation-tests $(BUILD)/package-validation-tests $(BUILD)/service-control-tests $(BUILD)/libsys-tests $(BUILD)/libsys-filesystem-tests $(BUILD)/darl-protocol-tests $(BUILD)/ioplus-uevent-tests $(BUILD)/gvd-tests $(BUILD)/iops-tests $(BUILD)/security-tests
+test-foundation: $(BUILD)/foundation-tests $(BUILD)/package-validation-tests $(BUILD)/service-control-tests $(BUILD)/libsys-tests $(BUILD)/libsys-filesystem-tests $(BUILD)/darl-protocol-tests $(BUILD)/ioplus-uevent-tests $(BUILD)/gvd-tests $(BUILD)/iops-tests $(BUILD)/gvd-dispatch-tests $(BUILD)/security-tests
 	$(BUILD)/foundation-tests
 	$(BUILD)/package-validation-tests
 	$(BUILD)/service-control-tests
@@ -115,13 +122,14 @@ test-foundation: $(BUILD)/foundation-tests $(BUILD)/package-validation-tests $(B
 	$(BUILD)/ioplus-uevent-tests
 	$(BUILD)/gvd-tests
 	$(BUILD)/iops-tests
+	$(BUILD)/gvd-dispatch-tests
 	$(BUILD)/security-tests
 	@echo 'Foundation, package validation and service control tests passed.'
 
 install: all
 	install -d $(BINDIR) $(LIBDIR) $(INCLUDEDIR)
 	install -m 0755 $(addprefix $(BUILD)/,$(PROGRAMS)) $(BINDIR)/
-	install -m 0644 $(BUILD)/libcsf.a $(BUILD)/libfoundation.a $(LIBDIR)/
+	install -m 0644 $(BUILD)/libcsf.a $(BUILD)/libfoundation.a $(BUILD)/libgvd.a $(LIBDIR)/
 	install -m 0644 ../LibSys/include/libsys.h ../CSF/include/csf.h ../Foundation/include/Foundation.h $(INCLUDEDIR)/
 
 clean:
