@@ -5,6 +5,7 @@
 #include <errno.h>
 #include <signal.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <sys/select.h>
 #include <sys/socket.h>
@@ -25,8 +26,10 @@ static void handle_client(MintoshServiceManager *manager, int descriptor) {
 int main(int argc, char **argv) {
     if (argc > 1 && strcmp(argv[1], "--version") == 0) { puts("launch7762 0.1.0"); return 0; }
     if (ms_mkdir_p(ms_runtime_directory(), 0755) < 0) { perror("launch7762: runtime directory"); return 1; }
+    const char *service_directory = getenv("MINTOSH_SERVICE_DIR");
+    if (!service_directory || !service_directory[0]) service_directory = "/etc/mintosh/services";
     MintoshServiceManager manager = {0};
-    if (ms_services_load(&manager, "/etc/mintosh/services") < 0) perror("launch7762: service directory");
+    if (ms_services_load(&manager, service_directory) < 0) perror("launch7762: service directory");
     int server = ms_service_socket_open();
     if (server < 0) { perror("launch7762: control socket"); return 1; }
     signal(SIGTERM, request_shutdown);

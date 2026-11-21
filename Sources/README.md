@@ -7,7 +7,7 @@ Every source file is named for the responsibility it implements. Executable entr
 - `MOSF/`: `mosf_daemon.c` owns the daemon lifecycle; `mosf_protocol.c` implements its request/response protocol.
 - `Launch7762/`: service configuration parsing, process lifecycle, control protocol, Unix socket and daemon entry point are separate translation units.
 - `Launch511/`: command argument handling and process execution are separate.
-- `LibSys/`: filesystem, file-descriptor I/O, Unix-domain socket transport and system logging.
+- `LibSys/`: filesystem, file-descriptor I/O, Unix-domain socket transport, runtime paths and system logging.
 - `CSF/`: client request API for MOSF.
 - `Foundation/`: owned string values and path operations.
 - `IOPlus/`: kernel information, sysfs inventory, memory information and command entry point.
@@ -21,7 +21,7 @@ Every source file is named for the responsibility it implements. Executable entr
     make -C Sources/MintoshCore clean all
     sh Sources/MintoshCore/tests/smoke.sh
 
-The smoke test compiles every component, checks executable entry points and exercises MOSF through its real Unix-domain socket API.
+The smoke test compiles every component, checks executable entry points, exercises MOSF over its Unix-domain socket, and starts/stops a real child process through launch7762. Tests use temporary runtime and service directories; production defaults remain `/run/mintosh` and `/etc/mintosh/services`.
 
 ## Runtime interfaces
 
