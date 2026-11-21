@@ -1,0 +1,51 @@
+name: Mintosh Base QEMU boot test
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "Makefile"
+      - "configs/**"
+      - "kernel/**"
+      - "scripts/**"
+      - ".github/workflows/mintosh-base.yml"
+  pull_request:
+    paths:
+      - "Makefile"
+      - "configs/**"
+      - "kernel/**"
+      - "scripts/**"
+      - ".github/workflows/mintosh-base.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  qemu-boot:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - name: Check out Mintosh
+        uses: actions/checkout@v4
+
+      - name: Install build dependencies
+        run: make host-deps
+
+      - name: Build and boot Mintosh in QEMU
+        env:
+          MINTOSH_PASSWORD: mintosh-ci-only
+          JOBS: "4"
+        run: |
+          make kernel-fetch
+          make kernel-config
+          make kernel
+          make test-qemu
+
+      - name: Upload QEMU serial log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mintosh-qemu-serial-log
+          path: out/qemu-boot.log
+          if-no-files-found: ignore
