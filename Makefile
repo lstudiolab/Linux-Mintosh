@@ -20,7 +20,7 @@ else
 KERNEL_IMAGE := bzImage
 endif
 
-.PHONY: help check-host check-release check-scripts verify release-info host-deps kernel-fetch kernel-config kernel kernel-install rootfs initramfs iso image qemu test-qemu usb clean
+.PHONY: help test-native-core check-host check-release check-scripts verify release-info host-deps kernel-fetch kernel-config kernel kernel-install rootfs initramfs iso image qemu test-qemu usb clean
 
 help:
 	@printf '%s\n' \
@@ -54,8 +54,11 @@ check-scripts:
 	@python3 -c 'import ast,pathlib; ast.parse(pathlib.Path("scripts/check-release.py").read_text(encoding="utf-8"))'
 	@echo 'Shell and Python scripts are syntactically valid.'
 
-verify: check-release check-scripts
-	@echo 'Mintosh offline validation passed.'
+test-native-core:
+	@sh Sources/MintoshCore/tests/smoke.sh
+
+verify: check-release check-scripts test-native-core
+	@echo 'Mintosh validation and native core tests passed.'
 
 release-info: check-release
 	@python3 -c 'import json; d=json.load(open("configs/release.json")); print("Mintosh", d["release"]); print("Linux", d["kernel"]["version"]); print("Debian", d["debian_suite"]); print("Architectures:", ", ".join(d["architectures"])); print("Bootable ISO:", d["image"]["primary_architecture"])'
