@@ -22,8 +22,8 @@ static void handle_client(MintoshServiceManager *manager, int descriptor) {
                                      &peer, &peer_size) == 0;
     char request[256];
     if (ms_read_line(descriptor, request, sizeof request, 2000) < 0) {
-        (void)ms_write_all(descriptor, "ERROR invalid request\\n",
-                           sizeof("ERROR invalid request\\n") - 1);
+        (void)ms_write_all(descriptor, "ERROR invalid request\n",
+                           sizeof("ERROR invalid request\n") - 1);
         return;
     }
     if (strcmp(request, "LIST") == 0) {

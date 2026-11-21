@@ -32,7 +32,7 @@ int mf_string_append(MFString *value, const char *text) {
     if (!updated) return -1;
     const char *source = source_aliases_value ? updated + source_offset : text;
     memmove(updated + value->length, source, extra);
-    updated[value->length + extra] = '\\0';
+    updated[value->length + extra] = '\0';
     value->data = updated;
     value->length += extra;
     return 0;

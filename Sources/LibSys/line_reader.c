@@ -21,7 +21,7 @@ int ms_read_line(int descriptor, char *buffer, size_t capacity, int timeout_ms) 
     }
 
     size_t used = 0;
-    while (used + 1 < capacity) {
+    for (;;) {
         struct timespec now;
         if (clock_gettime(CLOCK_MONOTONIC, &now) < 0) return -1;
         int64_t remaining = (int64_t)(deadline.tv_sec - now.tv_sec) * 1000 +
@@ -50,9 +50,11 @@ int ms_read_line(int descriptor, char *buffer, size_t capacity, int timeout_ms) 
             if (!used) { errno = EINVAL; return -1; }
             return (int)used;
         }
+        if (used + 1 >= capacity) {
+            buffer[used] = '\0';
+            errno = EMSGSIZE;
+            return -1;
+        }
         buffer[used++] = byte;
     }
-    buffer[used] = '\0';
-    errno = EMSGSIZE;
-    return -1;
 }
