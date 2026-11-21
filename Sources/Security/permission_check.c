@@ -14,12 +14,12 @@ int security_check_file_group_permissions(const char *path, mode_t expected_mode
     if (!S_ISREG(metadata.st_mode) || metadata.st_uid != expected_owner ||
         metadata.st_gid != expected_group ||
         (metadata.st_mode & 07777) != expected_mode) {
-        fprintf(stderr, "WARNING: unsafe file %s owner=%lu group=%lu mode=%04o\\n",
+        fprintf(stderr, "WARNING: unsafe file %s owner=%lu group=%lu mode=%04o\n",
                 path, (unsigned long)metadata.st_uid, (unsigned long)metadata.st_gid,
                 metadata.st_mode & 07777);
         return 1;
     }
-    printf("OK: %s (uid %lu gid %lu mode %04o)\\n", path,
+    printf("OK: %s (uid %lu gid %lu mode %04o)\n", path,
            (unsigned long)expected_owner, (unsigned long)expected_group, expected_mode);
     return 0;
 }
@@ -31,12 +31,12 @@ int security_check_socket_permissions(const char *path, uid_t expected_owner,
     if (!S_ISSOCK(metadata.st_mode) || metadata.st_uid != expected_owner ||
         metadata.st_gid != expected_group ||
         (metadata.st_mode & 07777) != expected_mode) {
-        fprintf(stderr, "WARNING: unsafe socket %s owner=%lu group=%lu mode=%04o\\n",
+        fprintf(stderr, "WARNING: unsafe socket %s owner=%lu group=%lu mode=%04o\n",
                 path, (unsigned long)metadata.st_uid, (unsigned long)metadata.st_gid,
                 metadata.st_mode & 07777);
         return 1;
     }
-    printf("OK: %s socket (uid %lu gid %lu mode %04o)\\n", path,
+    printf("OK: %s socket (uid %lu gid %lu mode %04o)\n", path,
            (unsigned long)expected_owner, (unsigned long)expected_group, expected_mode);
     return 0;
 }
