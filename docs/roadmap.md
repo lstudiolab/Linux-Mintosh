@@ -10,6 +10,7 @@ This roadmap separates implemented source from verified release behavior. A dire
 - [x] x86_64 and ARM64 kernel build mappings
 - [x] Local release-manifest validation
 - [~] Native foundation verification workflow (workflow added; successful hosted run still needs confirmation)
+- [~] Manual QEMU boot workflow (pinned kernel/ISO build and QEMU test defined; successful run still needs confirmation)
 - [ ] Reproducible-build verification across clean hosts
 - [ ] ARM64 root filesystem, boot image and installer
 
