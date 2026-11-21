@@ -147,7 +147,8 @@ int mf_url_parse(const char *text, MFURL *url, MFError *error) {
                 host_end = first_colon;
                 port_start = first_colon + 1;
             }
-            if (host_end == host_start) goto invalid_authority;
+            if (host_end == host_start && strcmp(parsed.scheme, "file") != 0)
+                goto invalid_authority;
             parsed.host = copy_range(host_start, (size_t)(host_end - host_start));
             if (!parsed.host) goto memory_error;
         }
