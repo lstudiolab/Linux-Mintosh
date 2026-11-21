@@ -51,7 +51,7 @@ $(BUILD)/dmctl: ../DM/dmctl.c | $(BUILD)
 $(BUILD)/ioplus: ../IOPlus/hardware_inventory.c ../IOPlus/kernel_information.c ../IOPlus/sysfs_inventory.c ../IOPlus/memory_information.c ../IOPlus/json_inventory.c ../IOPlus/uevent_parser.c ../IOPlus/uevent_monitor.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $^ -o $@
 
-$(BUILD)/kextctl: ../Kexts/module_manager.c ../Kexts/module_command.c
+$(BUILD)/kextctl: ../Kexts/module_manager.c ../Kexts/module_command.c ../Kexts/module_policy.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $^ -o $@
 
 $(BUILD)/mintosh-log: ../SystemLogging/log_command.c ../SystemLogging/log_writer.c $(LIBSYS_OBJECTS)
@@ -117,13 +117,13 @@ $(BUILD)/libsys-filesystem-tests: ../LibSys/tests/filesystem_tests.c ../LibSys/f
 $(BUILD)/package-validation-tests: ../PackageManager/tests/package_validation_tests.c ../PackageManager/package_validation.c | $(BUILD)
 	$(CC) $(CPPFLAGS) $(CFLAGS) $^ -o $@
 
-$(BUILD)/security-tests: ../Security/tests/security_tests.c ../Security/permission_check.c | $(BUILD)
+$(BUILD)/kext-policy-tests: ../Kexts/tests/module_policy_tests.c ../Kexts/module_policy.c | $(BUILD)\n\t$(CC) $(CPPFLAGS) $(CFLAGS) -I../Kexts $^ -o $@\n\n$(BUILD)/security-tests: ../Security/tests/security_tests.c ../Security/permission_check.c | $(BUILD)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -I../Security $^ -o $@
 
 $(BUILD)/service-control-tests: ../Launch7762/tests/service_control_tests.c ../Launch7762/service_control.c ../LibSys/file_descriptor.c | $(BUILD)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -I../Launch7762 $^ -o $@
 
-test-foundation: $(BUILD)/foundation-tests $(BUILD)/package-validation-tests $(BUILD)/service-control-tests $(BUILD)/libsys-tests $(BUILD)/libsys-filesystem-tests $(BUILD)/darl-protocol-tests $(BUILD)/ioplus-uevent-tests $(BUILD)/gvd-tests $(BUILD)/iops-tests $(BUILD)/gvd-dispatch-tests $(BUILD)/csf-tests $(BUILD)/security-tests
+test-foundation: $(BUILD)/foundation-tests $(BUILD)/package-validation-tests $(BUILD)/service-control-tests $(BUILD)/libsys-tests $(BUILD)/libsys-filesystem-tests $(BUILD)/darl-protocol-tests $(BUILD)/ioplus-uevent-tests $(BUILD)/gvd-tests $(BUILD)/iops-tests $(BUILD)/gvd-dispatch-tests $(BUILD)/csf-tests $(BUILD)/kext-policy-tests $(BUILD)/security-tests
 	$(BUILD)/foundation-tests
 	$(BUILD)/package-validation-tests
 	$(BUILD)/service-control-tests
@@ -135,6 +135,7 @@ test-foundation: $(BUILD)/foundation-tests $(BUILD)/package-validation-tests $(B
 	$(BUILD)/iops-tests
 	$(BUILD)/gvd-dispatch-tests
 	$(BUILD)/csf-tests
+	$(BUILD)/kext-policy-tests
 	$(BUILD)/security-tests
 	@echo 'Foundation, package validation and service control tests passed.'
 
