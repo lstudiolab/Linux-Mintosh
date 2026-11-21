@@ -16,7 +16,7 @@ fi
 rm -rf "$ROOTFS"
 echo "Creating Mintosh root filesystem from Debian $SUITE..."
 debootstrap --arch=amd64 --variant=minbase \
-  --include=systemd,systemd-sysv,systemd-resolved,udev,dbus,kmod,bash,coreutils,util-linux,procps,findutils,grep,sed,gawk,tar,gzip,xz-utils,iproute2,iputils-ping,netbase,ca-certificates,sudo,passwd,login,locales,tzdata,e2fsprogs,less,nano,curl,wget,openssh-client,dialog,parted,dosfstools,rsync,os-prober,efibootmgr,ntfs-3g,initramfs-tools,grub-common,grub-pc-bin,grub-efi-amd64-bin,python3,systemd-sysv \
+  --include=systemd,systemd-sysv,systemd-resolved,udev,dbus,kmod,bash,coreutils,util-linux,procps,findutils,grep,sed,gawk,tar,gzip,xz-utils,iproute2,iputils-ping,netbase,ca-certificates,sudo,passwd,login,locales,tzdata,e2fsprogs,less,nano,curl,wget,openssh-client,dialog,parted,dosfstools,rsync,os-prober,efibootmgr,ntfs-3g,initramfs-tools,grub-common,grub-pc-bin,grub-efi-amd64-bin,python3,grub2-common \
   "$SUITE" "$ROOTFS" https://deb.debian.org/debian
 printf '%s\n' mintosh > "$ROOTFS/etc/hostname"
 cat > "$ROOTFS/etc/hosts" <<'EOF'
