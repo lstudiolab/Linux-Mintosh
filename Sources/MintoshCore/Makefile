@@ -30,7 +30,7 @@ $(BUILD)/launch7762: ../Launch7762/service_manager_main.c ../Launch7762/service_
 $(BUILD)/launch-client: ../LaunchClient/launch_client.c $(LIBSYS_OBJECTS)
 	$(CC) $(CPPFLAGS) $(CFLAGS) $^ -o $@
 
-$(BUILD)/launch511: ../Launch511/command_runner.c ../Launch511/command_arguments.c ../Launch511/command_exec.c
+$(BUILD)/launch511: ../Launch511/command_runner.c ../Launch511/command_arguments.c ../Launch511/command_exec.c | $(BUILD)
 	$(CC) $(CPPFLAGS) $(CFLAGS) $^ -o $@
 
 $(BUILD)/hp-compat: ../HPCompatibility/hp_compatibility.c | $(BUILD)
@@ -48,22 +48,22 @@ $(BUILD)/fmsctl: ../FMS/fmsctl.c | $(BUILD)
 $(BUILD)/dmctl: ../DM/dmctl.c | $(BUILD)
 	$(CC) $(CPPFLAGS) $(CFLAGS) $^ -o $@
 
-$(BUILD)/ioplus: ../IOPlus/hardware_inventory.c ../IOPlus/kernel_information.c ../IOPlus/sysfs_inventory.c ../IOPlus/memory_information.c ../IOPlus/json_inventory.c ../IOPlus/uevent_parser.c ../IOPlus/uevent_monitor.c
+$(BUILD)/ioplus: ../IOPlus/hardware_inventory.c ../IOPlus/kernel_information.c ../IOPlus/sysfs_inventory.c ../IOPlus/memory_information.c ../IOPlus/json_inventory.c ../IOPlus/uevent_parser.c ../IOPlus/uevent_monitor.c | $(BUILD)
 	$(CC) $(CPPFLAGS) $(CFLAGS) $^ -o $@
 
-$(BUILD)/kextctl: ../Kexts/module_manager.c ../Kexts/module_command.c ../Kexts/module_policy.c
+$(BUILD)/kextctl: ../Kexts/module_manager.c ../Kexts/module_command.c ../Kexts/module_policy.c | $(BUILD)
 	$(CC) $(CPPFLAGS) $(CFLAGS) $^ -o $@
 
 $(BUILD)/mintosh-log: ../SystemLogging/log_command.c ../SystemLogging/log_writer.c $(LIBSYS_OBJECTS)
 	$(CC) $(CPPFLAGS) $(CFLAGS) $^ -o $@
 
-$(BUILD)/security-audit: ../Security/permission_audit.c ../Security/permission_check.c ../Kexts/module_policy.c
+$(BUILD)/security-audit: ../Security/permission_audit.c ../Security/permission_check.c ../Kexts/module_policy.c | $(BUILD)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -I../Kexts $^ -o $@
 
 $(BUILD)/mintoshctl: ../MintoshCtl/control_command.c ../MintoshCtl/darl_client.c ../MintoshCtl/service_client.c $(LIBSYS_OBJECTS)
 	$(CC) $(CPPFLAGS) $(CFLAGS) $^ -o $@
 
-$(BUILD)/mstore: ../PackageManager/package_command.c ../PackageManager/package_validation.c ../PackageManager/package_exec.c
+$(BUILD)/mstore: ../PackageManager/package_command.c ../PackageManager/package_validation.c ../PackageManager/package_exec.c | $(BUILD)
 	$(CC) $(CPPFLAGS) $(CFLAGS) $^ -o $@
 
 $(BUILD)/libcsf.a: ../CSF/darl_request.c ../CSF/system_info.c ../CSF/service_api.c $(LIBSYS_OBJECTS) | $(BUILD)
