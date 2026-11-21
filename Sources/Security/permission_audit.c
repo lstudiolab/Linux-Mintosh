@@ -1,4 +1,4 @@
-#include "permission_check.h"
+#include "permission_check.h"\n#include "module_policy.h"\n#include <grp.h>\n#include <sys/stat.h>
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
@@ -26,6 +26,29 @@ int main(int argc, char **argv) {
     warnings += security_check_directory_permissions("/etc/mintosh", 0);
     warnings += security_check_directory_permissions("/etc/mintosh/services", 0);
     warnings += security_check_service_directory("/etc/mintosh/services", 0);
+    warnings += security_check_directory_permissions("/run/mintosh", 0);
+    warnings += security_check_directory_permissions("/var/lib/mintosh", 0);
+
+    struct group *service_group = getgrnam("mintosh-services");
+    if (!service_group) {
+        fputs("WARNING: mintosh-services group is missing\\n", stderr);
+        ++warnings;
+    } else {
+        warnings += security_check_socket_permissions("/run/mintosh/darl.sock", 0,
+                                                       service_group->gr_gid, 0660);
+        warnings += security_check_socket_permissions("/run/mintosh/launch.sock", 0,
+                                                       service_group->gr_gid, 0660);
+        if (access("/var/lib/mintosh/fms.db", F_OK) == 0)
+            warnings += security_check_file_group_permissions("/var/lib/mintosh/fms.db",
+                                                               0640, 0, service_group->gr_gid);
+    }
+    int module_signatures = kexts_module_signatures_enforced();
+    if (module_signatures != 1) {
+        fputs("WARNING: kernel module signature enforcement is not active\\n", stderr);
+        ++warnings;
+    } else {
+        puts("OK: kernel enforces signed module loading");
+    }
 
     static const char *const executables[] = {
         "/usr/bin/darl", "/usr/bin/launch7762", "/usr/bin/launch-client", "/usr/bin/launch511",
