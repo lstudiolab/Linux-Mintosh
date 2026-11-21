@@ -78,7 +78,7 @@ Restart=no
 EOF
 cat > "$RUNTIME/environment-service.sh" <<EOF
 #!/bin/sh
-printf '%s' "${MINTOSH_TEST_ENV:-missing}" > "$RUNTIME/inherited-environment"
+printf '%s' "\${MINTOSH_TEST_ENV:-missing}" > "$RUNTIME/inherited-environment"
 EOF
 chmod 0755 "$RUNTIME/environment-service.sh"
 export MINTOSH_TEST_ENV="mintosh-user-environment"
