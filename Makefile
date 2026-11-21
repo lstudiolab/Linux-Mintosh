@@ -1,5 +1,6 @@
 SHELL := /bin/sh
 ARCH ?= x86_64
+export ARCH MINTOSH_USER MINTOSH_PASSWORD
 JOBS ?= $(shell getconf _NPROCESSORS_ONLN 2>/dev/null || echo 2)
 KERNEL_DIR := kernel/linux
 KERNEL_OUT := out/kernel/$(ARCH)
@@ -78,7 +79,7 @@ kernel-install: kernel
 
 rootfs: check-host
 	@test "$(ARCH)" = x86_64 || { echo 'Rootfs/ISO packaging currently targets x86_64.' >&2; exit 1; }
-	@sudo ARCH="$(ARCH)" MINTOSH_USER="$(MINTOSH_USER)" MINTOSH_PASSWORD="$(MINTOSH_PASSWORD)" sh ./scripts/build-rootfs.sh
+	@sudo --preserve-env=ARCH,MINTOSH_USER,MINTOSH_PASSWORD sh ./scripts/build-rootfs.sh
 
 initramfs: rootfs kernel-install
 	@sudo sh ./scripts/build-initramfs.sh
