@@ -6,6 +6,7 @@ RELEASE="$ROOT/configs/release.json"
 SUITE=$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["debian_suite"])' "$RELEASE")
 VERSION=$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["release"])' "$RELEASE")
 TARGET_USER=${MINTOSH_USER:-mintosh}
+[ "$TARGET_USER" = "mintosh" ] || { echo "The installer currently requires the live account name mintosh." >&2; exit 1; }
 TARGET_PASSWORD=${MINTOSH_PASSWORD:-}
 ARCH=${ARCH:-x86_64}
 [ "$ARCH" = x86_64 ] || { echo "The Mintosh root filesystem currently targets x86_64." >&2; exit 1; }
@@ -95,6 +96,7 @@ Welcome to Mintosh.
 A Linux system designed with a simple, consistent desktop experience.
 EOF
 chroot "$ROOTFS" groupadd --system mintosh
+chroot "$ROOTFS" groupadd --system mintosh-services
 chroot "$ROOTFS" useradd --create-home --shell /bin/bash --groups sudo,mintosh-services "$TARGET_USER"
 if [ -n "$TARGET_PASSWORD" ]; then
   printf '%s:%s\n' "$TARGET_USER" "$TARGET_PASSWORD" | chroot "$ROOTFS" chpasswd
