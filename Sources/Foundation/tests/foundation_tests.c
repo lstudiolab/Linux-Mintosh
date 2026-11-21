@@ -30,11 +30,16 @@ int main(void) {
     int numbers[] = {4, 8, 15};
     MFArray array;
     assert(mf_array_init(&array, sizeof(int)) == 0);
-    for (size_t i = 0; i < 3; ++i) assert(mf_array_append(&array, &numbers[i]) == 0);
-    assert(array.count == 3 && *(int *)mf_array_get(&array, 1) == 8);
+    for (size_t i = 0; i < 8; ++i)
+        assert(mf_array_append(&array, &numbers[i % 3]) == 0);
+    int first = *(int *)mf_array_get(&array, 0);
+    assert(mf_array_append(&array, mf_array_get(&array, 0)) == 0);
+    assert(array.count == 9 && *(int *)mf_array_get(&array, 8) == first);
+    assert(mf_array_append(&array, mf_array_get(&array, 2)) == 0);
+    assert(array.count == 10 && *(int *)mf_array_get(&array, 9) == numbers[2]);
     assert(mf_array_remove(&array, 1) == 0);
-    assert(array.count == 2 && *(const int *)mf_array_get_const(&array, 1) == 15);
-    assert(mf_array_get(&array, 2) == NULL);
+    assert(array.count == 9 && *(const int *)mf_array_get_const(&array, 1) == numbers[2]);
+    assert(mf_array_get(&array, 9) == NULL);
     mf_array_clear(&array); assert(array.count == 0);
     mf_array_destroy(&array); assert(array.elements == NULL);
 
