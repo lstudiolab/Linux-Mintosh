@@ -28,11 +28,10 @@ static int run_packages(int argc, char **argv, const char *operation) {
     char **arguments = calloc((size_t)argc + 5, sizeof *arguments);
     if (!arguments) { perror("mstore: allocate arguments"); return 1; }
     arguments[0] = "apt-get";
-    arguments[1] = (char *)operation;
-    arguments[2] = "--yes";
-    int offset = 3;
+    arguments[1] = "--yes";
+    int offset = 2;
     if (strcmp(operation, "install") == 0) arguments[offset++] = "--no-install-recommends";
-    arguments[offset++] = "--";
+    arguments[offset++] = (char *)operation;
     for (int index = 2; index < argc; ++index) arguments[offset++] = argv[index];
     arguments[offset] = NULL;
     return mstore_execute(arguments);
