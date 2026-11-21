@@ -10,8 +10,8 @@ command -v debootstrap >/dev/null || { echo "Install debootstrap (make host-deps
 case "$TARGET_USER" in *[!a-zA-Z0-9_-]*|'') echo "Invalid MINTOSH_USER." >&2; exit 1 ;; esac
 mkdir -p "$ROOT/out"
 if [ -e "$ROOTFS/etc/os-release" ]; then
-  echo "Root filesystem already exists at $ROOTFS (run make clean to rebuild)." >&2
-  exit 1
+  echo "Root filesystem already exists at $ROOTFS (run make clean to rebuild it)."
+  exit 0
 fi
 rm -rf "$ROOTFS"
 echo "Creating Mintosh root filesystem from Debian $SUITE..."
