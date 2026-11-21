@@ -1,68 +1,48 @@
 # Mintosh
 
-Mintosh is a Linux-based operating system project. It uses the upstream Linux kernel and will grow into a complete, installable desktop operating system.
+Mintosh is a Linux-based operating system project. It uses the upstream Linux kernel and is being developed into an installable desktop operating system.
 
-## Project status
+## Current milestone: Mintosh Base
 
-This repository is the starting point. It currently contains the project structure and scripts to obtain and build a real Linux kernel. It is **not yet a bootable operating system**.
+The repository now contains the first complete base-system build pipeline:
 
-## Goals
+- Release-pinned upstream Linux kernel source and x86_64 kernel configuration.
+- Debian Trixie root filesystem with systemd as PID 1.
+- GNU core utilities, Bash, util-linux, procps, essential libraries, and administration tools.
+- systemd-networkd DHCP configuration and systemd-resolved.
+- Local user and sudo-group creation with locked-by-default credentials.
+- A full-rootfs initramfs, GRUB BIOS/UEFI ISO, and QEMU boot smoke test.
 
-- Linux kernel as the foundation; do not write a new kernel.
-- A small, maintainable userspace and clear separation between system components.
-- Support for x86_64 first, with AArch64 as a planned target.
-- Reproducible build steps and documented dependencies.
-- A consistent, minimalist Mintosh identity.
-
-## Repository layout
-
-```text
-Mintosh/
-├── boot/                 # Bootloader integration (planned)
-├── configs/              # Kernel and system build configuration
-├── docs/                 # Architecture and development notes
-├── kernel/               # Upstream Linux kernel workspace (downloaded)
-├── rootfs/               # Mintosh root filesystem (planned)
-├── scripts/              # Build and development scripts
-├── .gitignore
-├── Makefile
-└── README.md
-```
-
-The upstream kernel source is downloaded into `kernel/linux/` when requested. It is not copied into this repository: the Linux source tree is very large and has its own release cadence and GPL-2.0 license.
-
-## Requirements
-
-For an x86_64 Linux build host:
-
-- Git
-- curl
-- Python 3
-- xz
-- make
-- GCC or Clang and the standard build tools
-- Linux kernel build dependencies (including flex, bison, bc, openssl development headers, and elfutils)
-
-Install the build dependencies using your host distribution's package manager.
+The first image is a RAM-backed live boot image. It is a bootable base-system milestone, not yet a disk installer or desktop release.
 
 ## Quick start
 
-```sh
-make help
-make kernel-fetch
-make kernel-config
-make kernel
-```
+On a Debian/Ubuntu x86_64 build host:
 
-The first build uses the kernel's default configuration for the selected architecture. Build output is written under `out/kernel/`.
+    make host-deps
+    export MINTOSH_PASSWORD='choose-a-local-password'
+    make kernel-fetch
+    make kernel-config
+    make kernel
+    make iso
+    make test-qemu
 
-Select an architecture with:
+The image is written to out/mintosh-x86_64.iso. Run it interactively with make qemu.
 
-```sh
-make ARCH=x86_64 kernel-fetch
-make ARCH=arm64 kernel-fetch
-```
+If MINTOSH_PASSWORD is omitted, the mintosh account is created with a locked password. Root login is locked.
 
-## Important
+## Build targets
 
-Building the kernel alone does not produce a usable operating system. Mintosh still needs a bootloader, an init system, a root filesystem, device management, networking, graphics, audio, installer, and update system. Those will be added as separate, testable components.
+Run make help for the full target list. The main stages are kernel-fetch, kernel-config, kernel, rootfs, initramfs, iso, qemu, and test-qemu.
+
+## Architecture
+
+See docs/architecture.md for the boot sequence and system layers, and docs/development.md for build requirements and limitations.
+
+## Kernel source
+
+The upstream Linux source is fetched at build time using the version in configs/release.json. It is not vendored into this repository. The source is GPL-2.0-only; see the kernel source tree's COPYING file and the Linux kernel licensing documentation.
+
+## Current limitations
+
+The initial image embeds its complete root filesystem in initramfs, so changes are lost on reboot. The project does not yet include a graphical desktop, persistent disk image, installer, package manager frontend, update framework, secure-boot signing, or ARM64 image builder. Validate in QEMU before attempting physical hardware.
