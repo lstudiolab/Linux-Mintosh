@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Disk discovery shared by the live installer and its safety tests.
-MINTOSH_LIVE_LABEL=${MINTOSH_LIVE_LABEL:-MINTOSH}
+MINTOSH_LIVE_LABEL=MINTOSH
 MINTOSH_PROTECTED_DISKS=()
 
 mintosh_discover_protected_disks() {
