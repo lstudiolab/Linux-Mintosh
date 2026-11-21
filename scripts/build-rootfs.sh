@@ -16,7 +16,7 @@ fi
 rm -rf "$ROOTFS"
 echo "Creating Mintosh root filesystem from Debian $SUITE..."
 debootstrap --arch=amd64 --variant=minbase \
-  --include=systemd,systemd-sysv,systemd-resolved,udev,dbus,kmod,bash,coreutils,util-linux,procps,findutils,grep,sed,gawk,tar,gzip,xz-utils,iproute2,iputils-ping,netbase,ca-certificates,sudo,passwd,login,locales,tzdata,e2fsprogs,less,nano,curl,wget,openssh-client \
+  --include=systemd,systemd-sysv,systemd-resolved,udev,dbus,kmod,bash,coreutils,util-linux,procps,findutils,grep,sed,gawk,tar,gzip,xz-utils,iproute2,iputils-ping,netbase,ca-certificates,sudo,passwd,login,locales,tzdata,e2fsprogs,less,nano,curl,wget,openssh-client,dialog,parted,dosfstools,rsync,os-prober,efibootmgr,ntfs-3g,initramfs-tools,grub-common,grub-pc-bin,grub-efi-amd64-bin,python3,systemd-sysv \
   "$SUITE" "$ROOTFS" https://deb.debian.org/debian
 printf '%s\n' mintosh > "$ROOTFS/etc/hostname"
 cat > "$ROOTFS/etc/hosts" <<'EOF'
@@ -26,15 +26,15 @@ cat > "$ROOTFS/etc/hosts" <<'EOF'
 EOF
 cat > "$ROOTFS/etc/os-release" <<'EOF'
 NAME="Mintosh"
-PRETTY_NAME="Mintosh 0.1.0"
+PRETTY_NAME="Mintosh 0.2.0"
 ID=mintosh
 ID_LIKE=debian
-VERSION_ID="0.1.0"
+VERSION_ID="0.2.0"
 VERSION_CODENAME=seed
 HOME_URL="https://github.com/lstudiolab/Linux-Mintosh"
 EOF
 cat > "$ROOTFS/etc/issue" <<'EOF'
-Mintosh 0.1.0 \n \l
+Mintosh 0.2.0 \n \l
 EOF
 cat > "$ROOTFS/etc/fstab" <<'EOF'
 proc /proc proc defaults 0 0
@@ -61,6 +61,27 @@ StandardOutput=journal+console
 [Install]
 WantedBy=multi-user.target
 EOF
+cat > "$ROOTFS/etc/systemd/system/mintosh-installer.service" <<'EOF'
+[Unit]
+Description=Mintosh live installer
+After=multi-user.target
+Conflicts=getty@tty1.service
+[Service]
+Type=simple
+ExecStart=/usr/bin/mintosh-installer
+StandardInput=tty
+StandardOutput=tty
+StandardError=journal
+TTYPath=/dev/tty1
+TTYReset=yes
+TTYVHangup=yes
+TTYVTDisallocate=yes
+Restart=on-failure
+RestartSec=2
+[Install]
+WantedBy=multi-user.target
+EOF
+ln -snf /usr/local/sbin/mintosh-installer "$ROOTFS/usr/bin/mintosh-installer"
 cat > "$ROOTFS/etc/motd" <<'EOF'
 Welcome to Mintosh.
 A Linux system designed with a simple, consistent desktop experience.
@@ -79,7 +100,7 @@ ln -snf /usr/share/zoneinfo/UTC "$ROOTFS/etc/localtime"
 : > "$ROOTFS/etc/machine-id"
 mkdir -p "$ROOTFS/var/lib/dbus"
 ln -snf /etc/machine-id "$ROOTFS/var/lib/dbus/machine-id"
-systemctl --root="$ROOTFS" enable systemd-networkd.service systemd-resolved.service serial-getty@ttyS0.service mintosh-ready.service
+systemctl --root="$ROOTFS" enable systemd-networkd.service systemd-resolved.service serial-getty@ttyS0.service mintosh-ready.service mintosh-installer.service
 ln -snf /run/systemd/resolve/stub-resolv.conf "$ROOTFS/etc/resolv.conf"
 rm -rf "$ROOTFS/var/lib/apt/lists/"*
 echo "Mintosh root filesystem created at out/rootfs."
