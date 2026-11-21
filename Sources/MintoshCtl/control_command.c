@@ -6,14 +6,14 @@ int mintosh_service_request(const char *command, char *response, size_t capacity
 static int select_user_runtime(void) {
     const char *runtime = getenv("XDG_RUNTIME_DIR");
     if (!runtime || runtime[0] != '/') {
-        fputs("mintoshctl: --user requires an absolute XDG_RUNTIME_DIR\\n", stderr);
+        fputs("mintoshctl: --user requires an absolute XDG_RUNTIME_DIR\n", stderr);
         return -1;
     }
     char path[4096];
     int length = snprintf(path, sizeof path, "%s/mintosh", runtime);
     if (length < 0 || (size_t)length >= sizeof path ||
         setenv("MINTOSH_RUN_DIR", path, 1) < 0) {
-        fputs("mintoshctl: invalid user runtime directory\\n", stderr);
+        fputs("mintoshctl: invalid user runtime directory\n", stderr);
         return -1;
     }
     return 0;
@@ -39,7 +39,7 @@ int main(int argc, char **argv) {
             }
             fputs(response, stdout); return strncmp(response, "OK", 2) != 0;
         }
-        fputs("usage: mintoshctl --user services|start NAME|stop NAME|restart NAME\\n", stderr);
+        fputs("usage: mintoshctl --user services|start NAME|stop NAME|restart NAME\n", stderr);
         return 64;
     }
     if (argc == 2 && strcmp(argv[1], "--version") == 0) { puts("mintoshctl 0.1.0"); return 0; }

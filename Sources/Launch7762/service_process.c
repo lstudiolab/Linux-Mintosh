@@ -11,6 +11,8 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
+extern char **environ;
+
 #define SERVICE_STOP_GRACE_SECONDS 3
 #define SERVICE_RESTART_MAX_SECONDS 60
 #define SERVICE_ARGUMENT_LIMIT 32
@@ -77,12 +79,13 @@ int ms_service_start(MintoshService *service) {
             for (int descriptor = 3; descriptor < maximum; ++descriptor)
                 (void)close(descriptor);
         }
-        char *const environment[] = {
+        char *environment[] = {
             "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
             "LANG=C.UTF-8",
             NULL
         };
-        execve(arguments[0], arguments, environment);
+        char **child_environment = geteuid() == 0 ? environment : environ;
+        execve(arguments[0], arguments, child_environment);
         _exit(errno == ENOENT ? 127 : 126);
     }
     service->process_id = child;

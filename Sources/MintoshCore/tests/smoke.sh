@@ -22,6 +22,15 @@ trap cleanup EXIT INT TERM
 
 "$B/darl" --version | grep -q 'Darl 0.2.0'
 "$B/launch7762" --version | grep -q '0.2.0'
+"$B/launch-client" --version | grep -q '0.1.0'
+set +e
+env -u XDG_RUNTIME_DIR HOME=/tmp "$B/launch-client" >/dev/null 2>&1
+LAUNCH_CLIENT_ENV_STATUS=$?
+env -u XDG_RUNTIME_DIR "$B/mintoshctl" --user services >/dev/null 2>&1
+MINTOSHCTL_USER_ENV_STATUS=$?
+set -e
+[ "$LAUNCH_CLIENT_ENV_STATUS" -eq 2 ]
+[ "$MINTOSHCTL_USER_ENV_STATUS" -eq 2 ]
 set +e
 "$B/launch511" >/dev/null 2>&1
 LAUNCH511_STATUS=$?
@@ -67,12 +76,23 @@ ExecStart=/bin/sleep 30
 Enabled=yes
 Restart=no
 EOF
+cat > "$RUNTIME/environment-service.sh" <<EOF
+#!/bin/sh
+printf '%s' "${MINTOSH_TEST_ENV:-missing}" > "$RUNTIME/inherited-environment"
+EOF
+chmod 0755 "$RUNTIME/environment-service.sh"
+export MINTOSH_TEST_ENV="mintosh-user-environment"
 cat > "$RUNTIME/retry-service.sh" <<EOF
 #!/bin/sh
 echo x >> "$RUNTIME/restarts"
 exit 1
 EOF
 chmod 0755 "$RUNTIME/retry-service.sh"
+cat > "$MINTOSH_SERVICE_DIR/environment-service.service" <<EOF
+ExecStart=/bin/sh $RUNTIME/environment-service.sh
+Enabled=yes
+Restart=no
+EOF
 cat > "$MINTOSH_SERVICE_DIR/retry-service.service" <<EOF
 ExecStart=/bin/sh $RUNTIME/retry-service.sh
 Enabled=yes
@@ -100,6 +120,13 @@ while [ ! -S "$RUNTIME/launch.sock" ]; do
 done
 sleep 0.3
 "$B/mintoshctl" services | grep -q 'test-service running'
+attempt=0
+while [ ! -f "$RUNTIME/inherited-environment" ]; do
+    attempt=$((attempt + 1))
+    [ "$attempt" -lt 50 ] || { echo "user service environment was not inherited" >&2; exit 1; }
+    sleep 0.1
+done
+[ "$(cat "$RUNTIME/inherited-environment")" = "$MINTOSH_TEST_ENV" ]
 if "$B/mintoshctl" services | grep -Eq '^(unsafe|shell-string) '; then
     echo "launch7762 loaded an unsafe service definition" >&2
     exit 1
