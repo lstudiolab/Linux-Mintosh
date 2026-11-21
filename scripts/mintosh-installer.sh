@@ -42,7 +42,7 @@ MODE=$(dialog --stdout --title "$TITLE" --menu "Choose an installation type." 15
   erase "Erase a disk and install Mintosh") || exit 0
 
 mapfile -t DISKS < <(lsblk -dpno NAME,SIZE,MODEL,TYPE,RM | awk '$NF=="0" { $NF=""; sub(/[[:space:]]+$/, ""); print }')
-(("${#DISKS[@]}" > 0)) || fail "No installable disks were detected."
+(( ${#DISKS[@]} > 0 )) || fail "No installable disks were detected."
 MENU=()
 for item in "${DISKS[@]}"; do
   dev=${item%% *}
