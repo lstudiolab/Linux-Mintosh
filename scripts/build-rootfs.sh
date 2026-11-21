@@ -90,7 +90,8 @@ cat > "$ROOTFS/etc/motd" <<'EOF'
 Welcome to Mintosh.
 A Linux system designed with a simple, consistent desktop experience.
 EOF
-chroot "$ROOTFS" useradd --create-home --shell /bin/bash --groups sudo "$TARGET_USER"
+chroot "$ROOTFS" groupadd --system mintosh
+chroot "$ROOTFS" useradd --create-home --shell /bin/bash --groups sudo,mintosh "$TARGET_USER"
 if [ -n "$TARGET_PASSWORD" ]; then
   printf '%s:%s\n' "$TARGET_USER" "$TARGET_PASSWORD" | chroot "$ROOTFS" chpasswd
 else

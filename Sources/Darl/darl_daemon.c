@@ -10,6 +10,7 @@
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/time.h>
+#include <sys/types.h>
 #include <sys/un.h>
 #include <unistd.h>
 
@@ -17,9 +18,13 @@ static volatile sig_atomic_t shutdown_requested;
 static void request_shutdown(int signal_number) { (void)signal_number; shutdown_requested = 1; }
 
 int main(int argc, char **argv) {
-    if (argc > 1 && strcmp(argv[1], "--version") == 0) {
+    if (argc == 2 && strcmp(argv[1], "--version") == 0) {
         puts("Darl 0.2.0");
         return 0;
+    }
+    if (argc != 1) {
+        fputs("Usage: darl [--version]\n", stderr);
+        return 64;
     }
     if (getpid() == 1) {
         fputs("Darl is not the PID 1 init process.\n", stderr);
@@ -32,6 +37,28 @@ int main(int argc, char **argv) {
         perror("darl: runtime directory");
         return 1;
     }
+    struct stat directory_metadata;
+    if (lstat(runtime_directory, &directory_metadata) < 0 ||
+        !S_ISDIR(directory_metadata.st_mode) ||
+        directory_metadata.st_uid != geteuid() ||
+        (directory_metadata.st_mode & 0022) != 0) {
+        fputs("darl: refusing an untrusted runtime directory\\n", stderr);
+        return 1;
+    }
+    struct stat existing;
+    if (lstat(socket_path, &existing) == 0) {
+        if (!S_ISSOCK(existing.st_mode) || existing.st_uid != geteuid()) {
+            fputs("darl: refusing to replace an untrusted socket path\\n", stderr);
+            return 1;
+        }
+        if (unlink(socket_path) < 0) {
+            perror("darl: remove stale socket");
+            return 1;
+        }
+    } else if (errno != ENOENT) {
+        perror("darl: inspect socket path");
+        return 1;
+    }
     int server = socket(AF_UNIX, SOCK_STREAM | SOCK_CLOEXEC, 0);
     if (server < 0) { perror("darl: socket"); return 1; }
     struct sockaddr_un address = {.sun_family = AF_UNIX};
@@ -41,7 +68,6 @@ int main(int argc, char **argv) {
         return 1;
     }
     strcpy(address.sun_path, socket_path);
-    (void)unlink(socket_path);
     if (bind(server, (struct sockaddr *)&address, sizeof address) < 0) {
         perror("darl: bind");
         close(server);
