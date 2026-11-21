@@ -1,6 +1,6 @@
 # Mintosh
 
-Mintosh is a Linux-based operating system built around the upstream Linux kernel, systemd, GNU userspace and a custom installation flow. The project aims for a consistent, minimalist desktop experience while retaining Linux hardware and application compatibility.
+Mintosh is a Linux-based operating system built around the upstream Linux kernel and systemd. Mintosh-owned native userspace components are developed under `Sources/` and installed into the base image.
 
 ## Current release
 
@@ -24,32 +24,36 @@ On a Debian/Ubuntu x86_64 build host with internet access and sudo:
     make kernel
     make iso
 
-The ISO is created at:
+The ISO is created at `out/mintosh-x86_64.iso`.
 
-    out/mintosh-x86_64.iso
+Run it interactively with `make qemu`, or run the serial-console boot test with `make test-qemu`.
 
-Run it interactively:
+## Native Mintosh source
 
-    make qemu
+`Sources/` contains the native source for MOSF, launch7762, launch511, LibSys, CSF, Foundation, I/O+, Kexts, Security, and System Logging. The target root filesystem compiles these programs inside its own Debian userspace and installs them into the image.
 
-Run the serial-console smoke test:
+After boot, use:
 
-    make test-qemu
+    mintoshctl status
+    mintoshctl version
+    mintoshctl services
+    ioplus
+    kextctl list
+    security-audit
 
-The automated GitHub Actions workflow performs the same validation and build, runs QEMU, and uploads the ISO and serial log.
+`make verify` also compiles the native core and runs its CLI smoke tests.
 
 ## Build stages
 
 - `make check-release`: validate the release manifest.
-- `make verify`: validate release metadata and shell syntax.
+- `make verify`: validate release metadata, shell syntax, and native source build/tests.
 - `make host-deps`: install Debian/Ubuntu build dependencies.
 - `make kernel-fetch`: download and verify the pinned upstream Linux source.
-- `make kernel-config`: configure the kernel for Mintosh and QEMU.
+- `make kernel-config`: configure the kernel for Mintosh.
 - `make kernel`: compile the kernel and modules.
-- `make rootfs`: bootstrap the Debian-based Mintosh Base.
-- `make initramfs`: assemble the live initramfs.
+- `make rootfs`: bootstrap the Debian-based base and compile/install native Mintosh components.
 - `make iso`: create BIOS/UEFI GRUB installer media.
-- `make test-qemu`: verify that systemd reaches the Mintosh ready service.
+- `make test-qemu`: verify the live environment reaches the Mintosh readiness check.
 - `make usb USB=/dev/sdX`: write the ISO to a USB drive after explicit confirmation.
 
 A GitHub source ZIP is not bootable. Firmware needs the built ISO written to a USB device.
@@ -62,4 +66,4 @@ See [installation](docs/installation.md), [architecture](docs/architecture.md), 
 
 ## Current limitations
 
-The desktop, graphical application catalog, Mintosh update service, Secure Boot, disk encryption, automatic partition resizing and ARM64 installer are not implemented yet. The QEMU boot script and CI workflow exist; a successful run is required before calling a release boot-verified.
+The graphical desktop (AppKit, Tarts, GT, BlueE, Dock and Finder), graphical application catalog, Mintosh update service, Secure Boot, disk encryption, automatic partition resizing and ARM64 installer are not implemented yet. The QEMU boot script and CI workflow exist; a successful run is required before calling a release boot-verified.
