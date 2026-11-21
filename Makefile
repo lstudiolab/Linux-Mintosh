@@ -20,7 +20,7 @@ else
 KERNEL_IMAGE := bzImage
 endif
 
-.PHONY: help test-native-core test-kernel-config check-host check-release check-scripts verify release-info host-deps kernel-fetch kernel-config kernel kernel-install rootfs initramfs iso image qemu test-qemu usb clean
+.PHONY: help test-native-core test-kernel-config test-installer-safety check-host check-release check-scripts verify release-info host-deps kernel-fetch kernel-config kernel kernel-install rootfs initramfs iso image qemu test-qemu usb clean
 
 help:
 	@printf '%s\n' \
@@ -61,7 +61,10 @@ test-native-core:
 test-kernel-config:
 	@sh scripts/test-kernel-config.sh
 
-verify: check-release check-scripts test-kernel-config test-native-core
+test-installer-safety:
+	@bash scripts/test-installer-disk-safety.sh
+
+verify: check-release check-scripts test-kernel-config test-installer-safety test-native-core
 	@echo 'Mintosh validation and native core tests passed.'
 
 release-info: check-release
