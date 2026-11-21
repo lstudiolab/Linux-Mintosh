@@ -36,7 +36,7 @@ Replace /dev/sdX with the whole USB device, not a partition such as /dev/sdX1. T
 
 Mintosh uses only already-unallocated free space on the selected disk. It does not shrink, format, or overwrite existing partitions. Create at least 20 GiB of unallocated space in Windows Disk Management or the existing OS partition manager before starting. On UEFI systems, an existing EFI System Partition is required and is mounted without formatting.
 
-The installer creates a Mintosh ext4 partition in the largest suitable free region, installs GRUB, and enables OS probing so supported existing operating systems (including Windows) can appear in the boot menu.
+The installer first identifies the ISO9660 volume labeled `MINTOSH` and excludes its parent disk even if firmware reports the USB as non-removable. If it cannot identify the live boot medium, it refuses to display installation disks. It creates a Mintosh ext4 partition in the largest suitable free region, installs GRUB, and enables OS probing so supported existing operating systems (including Windows) can appear in the boot menu.
 
 ### Erase disk and install Mintosh
 
