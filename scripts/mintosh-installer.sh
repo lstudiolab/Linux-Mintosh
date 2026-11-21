@@ -135,7 +135,8 @@ rsync -aHAXx --numeric-ids \
   --exclude=/tmp/*** --exclude=/mnt/*** --exclude=/media/*** --exclude=/lost+found \
   --exclude=/init / "$TARGET/" >>"$LOG" 2>&1 || fail "Could not copy the Mintosh base system."
 
-rm -f "$TARGET/etc/systemd/system/multi-user.target.wants/mintosh-installer.service"\nROOT_UUID=$(blkid -s UUID -o value "$ROOT_PART")
+rm -f "$TARGET/etc/systemd/system/multi-user.target.wants/mintosh-installer.service"
+ROOT_UUID=$(blkid -s UUID -o value "$ROOT_PART")
 if (( UEFI )); then
   EFI_UUID=$(blkid -s UUID -o value "$EFI_PART")
   printf 'UUID=%s / ext4 defaults,noatime 0 1\nUUID=%s /boot/efi vfat umask=0077 0 1\n' "$ROOT_UUID" "$EFI_UUID" > "$TARGET/etc/fstab"
