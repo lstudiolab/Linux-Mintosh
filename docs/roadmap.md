@@ -55,6 +55,7 @@ This roadmap separates implemented source from verified release behavior. A dire
 - [x] GRUB BIOS/UEFI ISO assembly
 - [x] Live environment and text installer
 - [ ] QEMU boot test on the current release commit (must pass before physical installation is considered safe)
+- [~] Installer boot-media exclusion test (live ISO label and parent disk protected, including non-removable USB devices)
 - [ ] Installer destructive-operation test suite
 - [ ] Physical-machine installation test on representative HP ProBook Intel and AMD models
 - [ ] ARM64 bootable image and installer
