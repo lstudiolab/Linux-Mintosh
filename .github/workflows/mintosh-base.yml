@@ -29,6 +29,9 @@ jobs:
       - name: Check out Mintosh
         uses: actions/checkout@v4
 
+      - name: Validate build scripts
+        run: make check-scripts
+
       - name: Install build dependencies
         run: make host-deps
 
