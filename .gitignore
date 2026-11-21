@@ -1,0 +1,19 @@
+# Downloaded upstream kernel source
+/kernel/linux/
+
+# Build output
+/out/
+/build/
+/dist/
+
+# Host and editor files
+*.swp
+*.swo
+*~
+.DS_Store
+.idea/
+.vscode/
+
+# Python
+__pycache__/
+*.py[cod]
