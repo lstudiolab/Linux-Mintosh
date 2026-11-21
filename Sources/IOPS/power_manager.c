@@ -52,7 +52,7 @@ static int write_value(const char *path, const char *value) {
     size_t length = strlen(value);
     if (!length || length + 1 >= sizeof buffer) { errno = EINVAL; return -1; }
     memcpy(buffer, value, length);
-    buffer[length++] = '\\n';
+    buffer[length++] = '\n';
     int descriptor = open(path, O_WRONLY | O_CLOEXEC);
     if (descriptor < 0) return -1;
     ssize_t written;
