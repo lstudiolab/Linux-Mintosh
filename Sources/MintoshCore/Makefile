@@ -11,7 +11,7 @@ BUILD = build
 
 LIBSYS_SOURCES = ../LibSys/filesystem.c ../LibSys/file_descriptor.c ../LibSys/unix_socket.c ../LibSys/line_reader.c ../LibSys/system_log.c ../LibSys/runtime_paths.c
 LIBSYS_OBJECTS = $(patsubst ../LibSys/%.c,$(BUILD)/libsys-%.o,$(LIBSYS_SOURCES))
-PROGRAMS = darl launch7762 launch-client launch511 ioplus hp-compat kextctl mintosh-log security-audit mintoshctl mstore
+PROGRAMS = darl launch7762 launch-client launch511 ioplus iopsctl gvdctl hp-compat kextctl mintosh-log security-audit mintoshctl mstore
 
 all: $(addprefix $(BUILD)/,$(PROGRAMS)) $(BUILD)/libcsf.a $(BUILD)/libfoundation.a
 
@@ -35,6 +35,12 @@ $(BUILD)/launch511: ../Launch511/command_runner.c ../Launch511/command_arguments
 
 $(BUILD)/hp-compat: ../HPCompatibility/hp_compatibility.c | $(BUILD)
 	$(CC) $(CPPFLAGS) $(CFLAGS) $^ -o $@
+
+$(BUILD)/gvdctl: ../GVD/task_manager.c ../GVD/task_policy.c | $(BUILD)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -I../GVD $^ -o $@
+
+$(BUILD)/iopsctl: ../IOPS/power_manager.c ../IOPS/power_control.c | $(BUILD)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -I../IOPS $^ -o $@
 
 $(BUILD)/ioplus: ../IOPlus/hardware_inventory.c ../IOPlus/kernel_information.c ../IOPlus/sysfs_inventory.c ../IOPlus/memory_information.c ../IOPlus/json_inventory.c ../IOPlus/uevent_parser.c ../IOPlus/uevent_monitor.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $^ -o $@
@@ -75,6 +81,12 @@ $(BUILD)/foundation-tests: ../Foundation/tests/foundation_tests.c ../Foundation/
 $(BUILD)/libsys-tests: ../LibSys/tests/line_reader_tests.c ../LibSys/line_reader.c | $(BUILD)
 	$(CC) $(CPPFLAGS) $(CFLAGS) $^ -o $@
 
+$(BUILD)/gvd-tests: ../GVD/tests/task_policy_tests.c ../GVD/task_policy.c | $(BUILD)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -I../GVD $^ -o $@
+
+$(BUILD)/iops-tests: ../IOPS/tests/power_control_tests.c ../IOPS/power_control.c | $(BUILD)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -I../IOPS $^ -o $@
+
 $(BUILD)/ioplus-uevent-tests: ../IOPlus/tests/uevent_tests.c ../IOPlus/uevent_parser.c | $(BUILD)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -I../IOPlus $^ -o $@
 
@@ -93,7 +105,7 @@ $(BUILD)/security-tests: ../Security/tests/security_tests.c ../Security/permissi
 $(BUILD)/service-control-tests: ../Launch7762/tests/service_control_tests.c ../Launch7762/service_control.c ../LibSys/file_descriptor.c | $(BUILD)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -I../Launch7762 $^ -o $@
 
-test-foundation: $(BUILD)/foundation-tests $(BUILD)/package-validation-tests $(BUILD)/service-control-tests $(BUILD)/libsys-tests $(BUILD)/libsys-filesystem-tests $(BUILD)/darl-protocol-tests $(BUILD)/ioplus-uevent-tests $(BUILD)/security-tests
+test-foundation: $(BUILD)/foundation-tests $(BUILD)/package-validation-tests $(BUILD)/service-control-tests $(BUILD)/libsys-tests $(BUILD)/libsys-filesystem-tests $(BUILD)/darl-protocol-tests $(BUILD)/ioplus-uevent-tests $(BUILD)/gvd-tests $(BUILD)/iops-tests $(BUILD)/security-tests
 	$(BUILD)/foundation-tests
 	$(BUILD)/package-validation-tests
 	$(BUILD)/service-control-tests
@@ -101,6 +113,8 @@ test-foundation: $(BUILD)/foundation-tests $(BUILD)/package-validation-tests $(B
 	$(BUILD)/libsys-filesystem-tests
 	$(BUILD)/darl-protocol-tests
 	$(BUILD)/ioplus-uevent-tests
+	$(BUILD)/gvd-tests
+	$(BUILD)/iops-tests
 	$(BUILD)/security-tests
 	@echo 'Foundation, package validation and service control tests passed.'
 
