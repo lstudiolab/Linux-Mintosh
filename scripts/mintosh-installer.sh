@@ -79,12 +79,18 @@ if [[ "$MODE" == erase ]]; then
     parted -s "$DISK" mkpart ESP fat32 1MiB 1025MiB >>"$LOG" 2>&1
     parted -s "$DISK" set 1 esp on >>"$LOG" 2>&1
     parted -s "$DISK" mkpart primary ext4 1025MiB 100% >>"$LOG" 2>&1
-    EFI_PART=$(lsblk -nrpo NAME "$DISK" | sed -n '2p')
-    ROOT_PART=$(lsblk -nrpo NAME "$DISK" | sed -n '3p')
+  
   else
     parted -s "$DISK" mkpart BIOSBOOT 1MiB 3MiB >>"$LOG" 2>&1
     parted -s "$DISK" set 1 bios_grub on >>"$LOG" 2>&1
     parted -s "$DISK" mkpart primary ext4 3MiB 100% >>"$LOG" 2>&1
+  fi
+  partprobe "$DISK" || true
+  udevadm settle || true
+  if (( UEFI )); then
+    EFI_PART=$(lsblk -nrpo NAME "$DISK" | sed -n '2p')
+    ROOT_PART=$(lsblk -nrpo NAME "$DISK" | sed -n '3p')
+  else
     ROOT_PART=$(lsblk -nrpo NAME "$DISK" | sed -n '3p')
   fi
 else
