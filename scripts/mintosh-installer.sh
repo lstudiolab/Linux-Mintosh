@@ -64,6 +64,10 @@ command -v grub-install >/dev/null && command -v update-grub >/dev/null && comma
 
 read -r USERNAME < <(dialog --stdout --title "$TITLE" --inputbox "Choose your Mintosh account username." 9 60 mintosh) || exit 0
 [[ "$USERNAME" =~ ^[a-z_][a-z0-9_-]*$ ]] || fail "Invalid username."
+if [[ "$USERNAME" != "mintosh" ]]; then
+  getent passwd "$USERNAME" >/dev/null && fail "That username already exists."
+  getent group "$USERNAME" >/dev/null && fail "That username conflicts with an existing group."
+fi
 PASSWORD=$(dialog --stdout --insecure --title "$TITLE" --passwordbox "Choose a password for $USERNAME." 9 60) || exit 0
 [[ "${#PASSWORD}" -ge 8 ]] || fail "Use a password with at least 8 characters."
 PASSWORD2=$(dialog --stdout --insecure --title "$TITLE" --passwordbox "Enter the password again." 9 60) || exit 0
@@ -164,12 +168,12 @@ fi
 : > "$TARGET/etc/machine-id"
 rm -f "$TARGET/var/lib/dbus/machine-id"
 ln -s /etc/machine-id "$TARGET/var/lib/dbus/machine-id"
-rm -f "$TARGET/etc/resolv.conf"
-cp -L /etc/resolv.conf "$TARGET/etc/resolv.conf" 2>/dev/null || true
+ln -snf /run/systemd/resolve/stub-resolv.conf "$TARGET/etc/resolv.conf"
 printf '%s\n' mintosh > "$TARGET/etc/hostname"
 
 for dir in dev proc sys run; do mount --rbind "/$dir" "$TARGET/$dir"; mount --make-rslave "$TARGET/$dir"; done
 if [[ "$USERNAME" != "mintosh" ]]; then
+  chroot "$TARGET" groupmod -n "$USERNAME" mintosh >>"$LOG" 2>&1 || fail "Could not rename the primary user group."
   chroot "$TARGET" usermod -l "$USERNAME" mintosh >>"$LOG" 2>&1 || fail "Could not configure the user account."
 fi
 chroot "$TARGET" usermod -d "/home/$USERNAME" -m "$USERNAME" >>"$LOG" 2>&1 || fail "Could not configure the home directory."
