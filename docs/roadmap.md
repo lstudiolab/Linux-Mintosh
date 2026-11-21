@@ -23,6 +23,8 @@ This roadmap distinguishes source implementation from release verification. A di
 - [x] Kexts kernel-module control frontend
 - [x] System Logging syslog frontend
 - [x] Security basic critical-file permission audit
+- [x] mstore package manager frontend for signed Debian package repositories
+- [ ] Mintosh-signed package repository and curated catalog
 - [ ] AppKit native GUI framework
 - [ ] Tarts widget toolkit
 - [ ] GT graphics backend and BlueE compositor

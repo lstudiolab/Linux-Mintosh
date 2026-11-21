@@ -11,7 +11,7 @@ BUILD = build
 
 LIBSYS_SOURCES = ../LibSys/filesystem.c ../LibSys/file_descriptor.c ../LibSys/unix_socket.c ../LibSys/system_log.c ../LibSys/runtime_paths.c
 LIBSYS_OBJECTS = $(patsubst ../LibSys/%.c,$(BUILD)/libsys-%.o,$(LIBSYS_SOURCES))
-PROGRAMS = mosf launch7762 launch511 ioplus kextctl mosflog security-audit mintoshctl
+PROGRAMS = mosf launch7762 launch511 ioplus kextctl mosflog security-audit mintoshctl mstore
 
 all: $(addprefix $(BUILD)/,$(PROGRAMS)) $(BUILD)/libcsf.a $(BUILD)/libfoundation.a
 
@@ -43,6 +43,9 @@ $(BUILD)/security-audit: ../Security/permission_audit.c ../Security/permission_c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $^ -o $@
 
 $(BUILD)/mintoshctl: ../MintoshCtl/control_command.c ../MintoshCtl/mosf_client.c ../MintoshCtl/service_client.c $(LIBSYS_OBJECTS)
+	$(CC) $(CPPFLAGS) $(CFLAGS) $^ -o $@
+
+$(BUILD)/mstore: ../PackageManager/package_command.c ../PackageManager/package_validation.c ../PackageManager/package_exec.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $^ -o $@
 
 $(BUILD)/libcsf.a: ../CSF/mosf_request.c $(LIBSYS_OBJECTS) | $(BUILD)

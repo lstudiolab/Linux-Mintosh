@@ -15,6 +15,7 @@ Every source file is named for the responsibility it implements. Executable entr
 - `Security/`: file permission inspection and audit command.
 - `SystemLogging/`: log writer and CLI.
 - `MintoshCtl/`: MOSF client, service-manager client and CLI.
+- `PackageManager/`: native mstore command interface, package-name validation and APT execution.
 
 ## Build and test
 
