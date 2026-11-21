@@ -13,7 +13,7 @@ This roadmap distinguishes source implementation from release verification. A di
 
 ### Mintosh-owned native source
 - [x] LibSys shared POSIX utility library
-- [x] MOSF local foundation daemon and Unix-socket API
+- [x] Darl local foundation daemon and Unix-socket API
 - [x] launch7762 native child-process service supervisor
 - [x] launch7762 restart policies, stop escalation and protected service definitions
 - [x] launch511 command execution helper
@@ -27,7 +27,7 @@ This roadmap distinguishes source implementation from release verification. A di
 - [ ] Mintosh-signed package repository and curated catalog
 - [ ] AppKit native GUI framework
 - [ ] Tarts widget toolkit
-- [ ] GT graphics backend and BlueE compositor
+- [ ] GT graphics backend and Window Server compositor
 - [ ] Finder and Dock applications
 
 ### Mintosh Base
@@ -35,7 +35,7 @@ This roadmap distinguishes source implementation from release verification. A di
 - [x] systemd as PID 1
 - [x] GNU core utilities and Bash
 - [x] Native Mintosh programs compiled in the target root filesystem
-- [x] Native service manager and MOSF started during boot
+- [x] Native service manager and Darl started during boot
 - [x] systemd-networkd DHCP configuration
 - [x] sudo user creation and root-account lock
 - [ ] Hardware matrix beyond QEMU

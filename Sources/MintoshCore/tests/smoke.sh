@@ -13,15 +13,15 @@ cleanup() {
         kill "$LAUNCH_PID" 2>/dev/null || true
         wait "$LAUNCH_PID" 2>/dev/null || true
     fi
-    if [ -n "${MOSF_PID:-}" ]; then
-        kill "$MOSF_PID" 2>/dev/null || true
-        wait "$MOSF_PID" 2>/dev/null || true
+    if [ -n "${Darl_PID:-}" ]; then
+        kill "$Darl_PID" 2>/dev/null || true
+        wait "$Darl_PID" 2>/dev/null || true
     fi
     rm -rf "$RUNTIME"
 }
 trap cleanup EXIT INT TERM
 
-"$B/mosf" --version | grep -q '0.1.0'
+"$B/darl" --version | grep -q '0.1.0'
 "$B/launch7762" --version | grep -q '0.1.0'
 set +e
 "$B/launch511" >/dev/null 2>&1
@@ -30,7 +30,7 @@ set -e
 [ "$LAUNCH511_STATUS" -eq 64 ]
 "$B/ioplus" --version | grep -q '0.1.0'
 "$B/kextctl" --version | grep -q '0.1.0'
-"$B/mosflog" --version | grep -q '0.1.0'
+"$B/darllog" --version | grep -q '0.1.0'
 "$B/security-audit" --version | grep -q '0.1.0'
 "$B/mintoshctl" --version | grep -q '0.1.0'
 "$B/mstore" --version | grep -q '0.1.0'
@@ -40,16 +40,16 @@ MSTORE_INVALID_STATUS=$?
 set -e
 [ "$MSTORE_INVALID_STATUS" -eq 64 ]
 
-# Exercise the real MOSF Unix-socket protocol as an unprivileged user.
-"$B/mosf" &
-MOSF_PID=$!
+# Exercise the real Darl Unix-socket protocol as an unprivileged user.
+"$B/darl" &
+Darl_PID=$!
 attempt=0
-while [ ! -S "$RUNTIME/mosf.sock" ]; do
+while [ ! -S "$RUNTIME/darl.sock" ]; do
     attempt=$((attempt + 1))
-    [ "$attempt" -lt 50 ] || { echo "MOSF socket did not appear" >&2; exit 1; }
+    [ "$attempt" -lt 50 ] || { echo "Darl socket did not appear" >&2; exit 1; }
     sleep 0.1
 done
-"$B/mintoshctl" status | grep -q 'MOSF=running'
+"$B/mintoshctl" status | grep -q 'Darl=running'
 "$B/mintoshctl" version | grep -q 'Mintosh 0.1.0'
 
 # Exercise service parsing, process lifecycle, restart policy and socket control.
@@ -95,6 +95,6 @@ done
 "$B/mintoshctl" stop retry-service | grep -q 'OK'
 "$B/mintoshctl" stop test-service | grep -q 'OK'
 cleanup
-unset MOSF_PID LAUNCH_PID
+unset Darl_PID LAUNCH_PID
 trap - EXIT INT TERM
-echo "Mintosh native build, MOSF protocol, service security and supervision tests passed."
+echo "Mintosh native build, Darl protocol, service security and supervision tests passed."

@@ -11,7 +11,7 @@ BUILD = build
 
 LIBSYS_SOURCES = ../LibSys/filesystem.c ../LibSys/file_descriptor.c ../LibSys/unix_socket.c ../LibSys/system_log.c ../LibSys/runtime_paths.c
 LIBSYS_OBJECTS = $(patsubst ../LibSys/%.c,$(BUILD)/libsys-%.o,$(LIBSYS_SOURCES))
-PROGRAMS = mosf launch7762 launch511 ioplus kextctl mosflog security-audit mintoshctl mstore
+PROGRAMS = darl launch7762 launch511 ioplus kextctl darllog security-audit mintoshctl mstore
 
 all: $(addprefix $(BUILD)/,$(PROGRAMS)) $(BUILD)/libcsf.a $(BUILD)/libfoundation.a
 
@@ -21,7 +21,7 @@ $(BUILD):
 $(BUILD)/libsys-%.o: ../LibSys/%.c ../LibSys/include/libsys.h | $(BUILD)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
 
-$(BUILD)/mosf: ../MOSF/mosf_daemon.c ../MOSF/mosf_protocol.c $(LIBSYS_OBJECTS)
+$(BUILD)/darl: ../Darl/darl_daemon.c ../Darl/darl_protocol.c $(LIBSYS_OBJECTS)
 	$(CC) $(CPPFLAGS) $(CFLAGS) $^ -o $@
 
 $(BUILD)/launch7762: ../Launch7762/service_manager_main.c ../Launch7762/service_config.c ../Launch7762/service_process.c ../Launch7762/service_control.c ../Launch7762/service_socket.c $(LIBSYS_OBJECTS)
@@ -36,21 +36,21 @@ $(BUILD)/ioplus: ../IOPlus/hardware_inventory.c ../IOPlus/kernel_information.c .
 $(BUILD)/kextctl: ../Kexts/module_manager.c ../Kexts/module_command.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $^ -o $@
 
-$(BUILD)/mosflog: ../SystemLogging/log_command.c ../SystemLogging/log_writer.c $(LIBSYS_OBJECTS)
+$(BUILD)/darllog: ../SystemLogging/log_command.c ../SystemLogging/log_writer.c $(LIBSYS_OBJECTS)
 	$(CC) $(CPPFLAGS) $(CFLAGS) $^ -o $@
 
 $(BUILD)/security-audit: ../Security/permission_audit.c ../Security/permission_check.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $^ -o $@
 
-$(BUILD)/mintoshctl: ../MintoshCtl/control_command.c ../MintoshCtl/mosf_client.c ../MintoshCtl/service_client.c $(LIBSYS_OBJECTS)
+$(BUILD)/mintoshctl: ../MintoshCtl/control_command.c ../MintoshCtl/darl_client.c ../MintoshCtl/service_client.c $(LIBSYS_OBJECTS)
 	$(CC) $(CPPFLAGS) $(CFLAGS) $^ -o $@
 
 $(BUILD)/mstore: ../PackageManager/package_command.c ../PackageManager/package_validation.c ../PackageManager/package_exec.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $^ -o $@
 
-$(BUILD)/libcsf.a: ../CSF/mosf_request.c $(LIBSYS_OBJECTS) | $(BUILD)
-	$(CC) $(CPPFLAGS) $(CFLAGS) -c ../CSF/mosf_request.c -o $(BUILD)/csf-mosf-request.o
-	$(AR) rcs $@ $(BUILD)/csf-mosf-request.o $(LIBSYS_OBJECTS)
+$(BUILD)/libcsf.a: ../CSF/darl_request.c $(LIBSYS_OBJECTS) | $(BUILD)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c ../CSF/darl_request.c -o $(BUILD)/csf-darl-request.o
+	$(AR) rcs $@ $(BUILD)/csf-darl-request.o $(LIBSYS_OBJECTS)
 
 $(BUILD)/libfoundation.a: ../Foundation/string.c ../Foundation/path.c | $(BUILD)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c ../Foundation/string.c -o $(BUILD)/foundation-string.o

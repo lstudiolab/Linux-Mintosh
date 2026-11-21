@@ -64,7 +64,7 @@ chroot "$ROOTFS" make -C /usr/src/mintosh/Sources/MintoshCore install
 rm -rf "$ROOTFS/usr/src/mintosh"
 install -m 0644 "$ROOT/Sources/Services/launch7762.service" "$ROOTFS/etc/systemd/system/launch7762.service"
 install -m 0644 "$ROOT/Sources/Services/mintosh-ready.service" "$ROOTFS/etc/systemd/system/mintosh-ready.service"
-install -m 0644 "$ROOT/Sources/Services/mosf.service" "$ROOTFS/etc/mintosh/services/mosf.service"
+install -m 0644 "$ROOT/Sources/Services/darl.service" "$ROOTFS/etc/mintosh/services/darl.service"
 cat > "$ROOTFS/etc/systemd/system/mintosh-installer.service" <<'EOF'
 [Unit]
 Description=Mintosh live installer

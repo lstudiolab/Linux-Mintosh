@@ -9,17 +9,17 @@ Mintosh is a Linux distribution, not a replacement kernel. The upstream Linux ke
 3. The initramfs mounts devtmpfs, procfs, sysfs, and /run.
 4. systemd starts as PID 1.
 5. systemd starts device management, networking, the serial console, launch7762, and the Mintosh installer on tty1.
-6. launch7762 starts enabled Mintosh-managed services, including MOSF.
+6. launch7762 starts enabled Mintosh-managed services, including Darl.
 
 ## Mintosh-owned native core
 
 Native source code lives under `Sources/`. The current core is compiled inside the Debian target root filesystem, so its binaries link against the target userspace rather than the build host.
 
-- **MOSF**: local Unix-socket system foundation API for status and version queries.
+- **Darl**: local Unix-socket system foundation API for status and version queries.
 - **launch7762**: native service supervisor. It reads `/etc/mintosh/services/*.service`, starts enabled processes, tracks child exits and applies restart policy.
 - **launch511**: command execution helper used by launch7762.
 - **LibSys**: shared POSIX system utilities, Unix-socket transport and syslog integration.
-- **CSF**: C client API for the MOSF local service endpoint.
+- **CSF**: C client API for the Darl local service endpoint.
 - **Foundation**: reusable string and path primitives.
 - **I/O+**: live hardware inventory using Linux sysfs and procfs.
 - **Kexts**: kernel module operations delegated to Linux modprobe/kmod.
@@ -62,4 +62,4 @@ The build creates a GRUB BIOS/UEFI hybrid ISO intended to be written to USB medi
 
 ## Graphical stack
 
-AppKit, Tarts, GT, BlueE, Finder and Dock are not implemented yet. They must be real graphical components with defined rendering, input, accessibility and application-lifecycle interfaces; the current native core does not pretend to provide them.
+AppKit, Tarts, GT, Window Server, Finder and Dock are not implemented yet. They must be real graphical components with defined rendering, input, accessibility and application-lifecycle interfaces; the current native core does not pretend to provide them.

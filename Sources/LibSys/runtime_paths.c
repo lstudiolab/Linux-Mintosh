@@ -13,5 +13,5 @@ static const char *socket_path(const char *filename) {
     return length < 0 || (size_t)length >= sizeof path ? "" : path;
 }
 
-const char *ms_mosf_socket_path(void) { return socket_path("mosf.sock"); }
+const char *ms_darl_socket_path(void) { return socket_path("darl.sock"); }
 const char *ms_launch_socket_path(void) { return socket_path("launch.sock"); }

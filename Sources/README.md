@@ -4,17 +4,17 @@ Every source file is named for the responsibility it implements. Executable entr
 
 ## Source layout
 
-- `MOSF/`: daemon lifecycle and request/response protocol.
+- `Darl/`: daemon lifecycle and request/response protocol.
 - `Launch7762/`: service configuration parsing, process lifecycle, restart policy, control protocol, Unix socket and daemon entry point.
 - `Launch511/`: command argument handling and process execution.
 - `LibSys/`: filesystem, file-descriptor I/O, Unix-domain socket transport, runtime paths and system logging.
-- `CSF/`: client request API for MOSF.
+- `CSF/`: client request API for Darl.
 - `Foundation/`: reusable string and path primitives.
 - `IOPlus/`: kernel information, sysfs inventory, memory information and command entry point.
 - `Kexts/`: Linux kernel module operations through kmod.
 - `Security/`: file permission inspection and audit command.
 - `SystemLogging/`: log writer and CLI.
-- `MintoshCtl/`: MOSF client, service-manager client and CLI.
+- `MintoshCtl/`: Darl client, service-manager client and CLI.
 - `PackageManager/`: native mstore command interface, package-name validation and APT execution.
 
 ## Build and test
@@ -22,11 +22,11 @@ Every source file is named for the responsibility it implements. Executable entr
     make -C Sources/MintoshCore clean all
     sh Sources/MintoshCore/tests/smoke.sh
 
-The smoke test compiles every component, exercises MOSF over its Unix-domain socket, and starts/stops real child processes through launch7762. It verifies failure-based restart behavior and rejects group/world-writable service definitions. Tests use temporary runtime and service directories; production defaults remain `/run/mintosh` and `/etc/mintosh/services`.
+The smoke test compiles every component, exercises Darl over its Unix-domain socket, and starts/stops real child processes through launch7762. It verifies failure-based restart behavior and rejects group/world-writable service definitions. Tests use temporary runtime and service directories; production defaults remain `/run/mintosh` and `/etc/mintosh/services`.
 
 ## Runtime interfaces
 
-- MOSF: `/run/mintosh/mosf.sock`; supports `PING`, `VERSION` and `STATUS`.
+- Darl: `/run/mintosh/darl.sock`; supports `PING`, `VERSION` and `STATUS`.
 - launch7762: `/run/mintosh/launch.sock`; supports `LIST`, `START NAME`, `STOP NAME` and `RESTART NAME`.
 - Service definitions: `/etc/mintosh/services/*.service`; fields are `ExecStart`, `Enabled` and `Restart`. Restart policies are `no`, `on-failure` and `always`.
 

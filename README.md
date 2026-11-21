@@ -30,7 +30,7 @@ Run it interactively with `make qemu`, or run the serial-console boot test with 
 
 ## Native Mintosh source
 
-`Sources/` contains the native source for MOSF, launch7762, launch511, LibSys, CSF, Foundation, I/O+, Kexts, Security, and System Logging. The target root filesystem compiles these programs inside its own Debian userspace and installs them into the image.
+`Sources/` contains the native source for Darl, launch7762, launch511, LibSys, CSF, Foundation, I/O+, Kexts, Security, and System Logging. The target root filesystem compiles these programs inside its own Debian userspace and installs them into the image.
 
 After boot, use:
 
@@ -68,4 +68,4 @@ See [installation](docs/installation.md), [architecture](docs/architecture.md), 
 
 ## Current limitations
 
-The graphical desktop (AppKit, Tarts, GT, BlueE, Dock and Finder), graphical application catalog, Mintosh update service, Secure Boot, disk encryption, automatic partition resizing and ARM64 installer are not implemented yet. The QEMU boot script and CI workflow exist; a successful run is required before calling a release boot-verified.
+The graphical desktop (AppKit, Tarts, GT, Window Server, Dock and Finder), graphical application catalog, Mintosh update service, Secure Boot, disk encryption, automatic partition resizing and ARM64 installer are not implemented yet. The QEMU boot script and CI workflow exist; a successful run is required before calling a release boot-verified.

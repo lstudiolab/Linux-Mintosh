@@ -1,5 +1,5 @@
 #define _GNU_SOURCE
-#include "mosf_protocol.h"
+#include "darl_protocol.h"
 #include "libsys.h"
 #include <errno.h>
 #include <signal.h>
@@ -15,23 +15,23 @@ static volatile sig_atomic_t shutdown_requested;
 static void request_shutdown(int signal_number) { (void)signal_number; shutdown_requested = 1; }
 
 int main(int argc, char **argv) {
-    if (argc > 1 && strcmp(argv[1], "--version") == 0) { puts("MOSF 0.1.0"); return 0; }
-    if (getpid() == 1) { fputs("MOSF is not the PID 1 init process.\n", stderr); return 2; }
+    if (argc > 1 && strcmp(argv[1], "--version") == 0) { puts("Darl 0.1.0"); return 0; }
+    if (getpid() == 1) { fputs("Darl is not the PID 1 init process.\n", stderr); return 2; }
     const char *runtime_directory = ms_runtime_directory();
-    const char *socket_path = ms_mosf_socket_path();
-    if (!socket_path[0] || ms_mkdir_p(runtime_directory, 0755) < 0) { perror("mosf: runtime directory"); return 1; }
+    const char *socket_path = ms_darl_socket_path();
+    if (!socket_path[0] || ms_mkdir_p(runtime_directory, 0755) < 0) { perror("darl: runtime directory"); return 1; }
     int server = socket(AF_UNIX, SOCK_STREAM | SOCK_CLOEXEC, 0);
-    if (server < 0) { perror("mosf: socket"); return 1; }
+    if (server < 0) { perror("darl: socket"); return 1; }
     struct sockaddr_un address = { .sun_family = AF_UNIX };
-    if (strlen(socket_path) >= sizeof address.sun_path) { fputs("mosf: socket path too long\n", stderr); close(server); return 1; }
+    if (strlen(socket_path) >= sizeof address.sun_path) { fputs("darl: socket path too long\n", stderr); close(server); return 1; }
     strcpy(address.sun_path, socket_path);
     (void)unlink(socket_path);
     if (bind(server, (struct sockaddr *)&address, sizeof address) < 0 ||
         chmod(socket_path, 0666) < 0 || listen(server, 16) < 0) {
-        perror("mosf: listen"); close(server); unlink(socket_path); return 1;
+        perror("darl: listen"); close(server); unlink(socket_path); return 1;
     }
     signal(SIGTERM, request_shutdown); signal(SIGINT, request_shutdown);
-    ms_log("mosf", "info", "MOSF started");
+    ms_log("darl", "info", "Darl started");
     while (!shutdown_requested) {
         fd_set readable; FD_ZERO(&readable); FD_SET(server, &readable);
         struct timeval timeout = { .tv_sec = 1 };
@@ -44,12 +44,12 @@ int main(int argc, char **argv) {
         ssize_t received = read(client, request, sizeof request - 1);
         if (received > 0) {
             request[strcspn(request, "\r\n")] = '\0';
-            mosf_format_response(request, response, sizeof response);
+            darl_format_response(request, response, sizeof response);
             (void)ms_write_all(client, response, strlen(response));
         }
         close(client);
     }
     close(server); unlink(socket_path);
-    ms_log("mosf", "info", "MOSF stopped");
+    ms_log("darl", "info", "Darl stopped");
     return 0;
 }

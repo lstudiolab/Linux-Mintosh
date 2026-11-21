@@ -4,7 +4,7 @@
 #include <sys/types.h>
 
 const char *ms_runtime_directory(void);
-const char *ms_mosf_socket_path(void);
+const char *ms_darl_socket_path(void);
 const char *ms_launch_socket_path(void);
 int ms_mkdir_p(const char *path, mode_t mode);
 int ms_write_all(int descriptor, const void *data, size_t length);
