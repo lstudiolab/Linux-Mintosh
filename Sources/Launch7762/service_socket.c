@@ -47,7 +47,7 @@ int ms_service_socket_open(void) {
         return -1;
     }
 
-    struct group *mintosh_group = getgrnam("mintosh");
+    struct group *mintosh_group = getgrnam("mintosh-services");
     gid_t socket_group = mintosh_group ? mintosh_group->gr_gid : getegid();
     if (chown(socket_path, geteuid(), socket_group) < 0 ||
         chmod(socket_path, 0660) < 0 || listen(descriptor, 16) < 0) {
