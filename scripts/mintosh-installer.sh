@@ -40,7 +40,7 @@ MODE=$(dialog --stdout --title "$TITLE" --menu "Choose an installation type." 15
   alongside "Install alongside an existing operating system" \
   erase "Erase a disk and install Mintosh") || exit 0
 
-mapfile -t DISKS < <(lsblk -dpno NAME,SIZE,MODEL,TYPE | awk '$4=="disk" { $4=""; sub(/[[:space:]]+$/, ""); print }')
+mapfile -t DISKS < <(lsblk -dpno NAME,SIZE,MODEL,TYPE | awk '$NF=="disk" { $NF=""; sub(/[[:space:]]+$/, ""); print }')
 (("${#DISKS[@]}" > 0)) || fail "No installable disks were detected."
 MENU=()
 for item in "${DISKS[@]}"; do
@@ -135,7 +135,7 @@ rsync -aHAXx --numeric-ids \
   --exclude=/tmp/*** --exclude=/mnt/*** --exclude=/media/*** --exclude=/lost+found \
   --exclude=/init / "$TARGET/" >>"$LOG" 2>&1 || fail "Could not copy the Mintosh base system."
 
-ROOT_UUID=$(blkid -s UUID -o value "$ROOT_PART")
+rm -f "$TARGET/etc/systemd/system/multi-user.target.wants/mintosh-installer.service"\nROOT_UUID=$(blkid -s UUID -o value "$ROOT_PART")
 if (( UEFI )); then
   EFI_UUID=$(blkid -s UUID -o value "$EFI_PART")
   printf 'UUID=%s / ext4 defaults,noatime 0 1\nUUID=%s /boot/efi vfat umask=0077 0 1\n' "$ROOT_UUID" "$EFI_UUID" > "$TARGET/etc/fstab"
