@@ -53,7 +53,7 @@ EOF
 cat > "$ROOTFS/etc/systemd/system/mintosh-ready.service" <<'EOF'
 [Unit]
 Description=Mintosh Base boot completion marker
-After=multi-user.target
+After=basic.target
 [Service]
 Type=oneshot
 ExecStart=/usr/bin/echo Mintosh Base is ready
