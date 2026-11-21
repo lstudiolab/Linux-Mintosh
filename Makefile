@@ -49,7 +49,7 @@ check-release:
 	@python3 -m json.tool configs/release.json >/dev/null
 
 check-scripts:
-	@python3 -c 'import pathlib, subprocess; bash={"mintosh-installer.sh", "installer-disk-safety.sh", "test-installer-disk-safety.sh"}; [subprocess.run(["bash" if p.name in bash else "sh", "-n", str(p)], check=True) for p in pathlib.Path("scripts").glob("*.sh")]
+	@python3 -c 'import pathlib, subprocess; bash={"mintosh-installer.sh", "installer-disk-safety.sh", "installer-storage.sh", "test-installer-disk-safety.sh", "test-installer-partitioning.sh"}; [subprocess.run(["bash" if p.name in bash else "sh", "-n", str(p)], check=True) for p in pathlib.Path("scripts").glob("*.sh")]
 	@python3 -c 'import ast,pathlib; ast.parse(pathlib.Path("scripts/check-release.py").read_text(encoding="utf-8"))'
 	@sh -n scripts/configure-hp-probook.sh
 	@echo 'Shell and Python scripts are syntactically valid.'
@@ -62,6 +62,7 @@ test-kernel-config:
 
 test-installer-safety:
 	@bash scripts/test-installer-disk-safety.sh
+	@bash scripts/test-installer-partitioning.sh
 
 verify: check-release check-scripts test-kernel-config test-installer-safety test-native-core
 	@echo 'Mintosh validation and native core tests passed.'
@@ -80,7 +81,7 @@ host-deps:
 	@sudo apt-get update
 	@sudo apt-get install -y bc bison build-essential cpio curl debootstrap flex gcc g++ \
 	  grub-common grub-pc-bin grub-efi-amd64-bin kmod libelf-dev libncurses-dev \
-	  libssl-dev libsqlite3-dev make mtools python3 qemu-system-x86 rsync gcc-aarch64-linux-gnu binutils-aarch64-linux-gnu xorriso xz-utils
+	  libssl-dev libsqlite3-dev make mtools parted python3 qemu-system-x86 rsync gcc-aarch64-linux-gnu binutils-aarch64-linux-gnu xorriso xz-utils
 
 kernel-fetch: check-host check-release
 	@ARCH="$(ARCH)" sh ./scripts/fetch-kernel.sh
