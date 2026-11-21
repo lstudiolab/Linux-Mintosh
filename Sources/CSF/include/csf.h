@@ -7,6 +7,7 @@
 
 typedef struct {
     int darl_running;
+    int launch_manager_running;
     char mintosh_version[CSF_VERSION_MAX];
     char darl_version[CSF_VERSION_MAX];
 } CSFSystemStatus;
