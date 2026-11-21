@@ -11,7 +11,7 @@ int mf_array_init(MFArray *array, size_t element_size) {
 
 int mf_array_append(MFArray *array, const void *element) {
     if (!array || !element || !array->element_size) return -1;
-    if (array->count == SIZE_MAX / array->element_size) return -1;
+    if (array->count >= SIZE_MAX / array->element_size) return -1;
     if (array->count == array->capacity) {
         size_t capacity = array->capacity ? array->capacity : 8;
         if (capacity > SIZE_MAX / 2) capacity = array->count + 1;
