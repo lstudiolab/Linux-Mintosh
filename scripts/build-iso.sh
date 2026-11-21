@@ -8,7 +8,9 @@ ROOTFS="$ROOT/out/rootfs"
 [ -s "$ROOT/out/initramfs.cpio.gz" ] || { echo "Run make initramfs first." >&2; exit 1; }
 rm -rf "$ISO_ROOT"
 mkdir -p "$ISO_ROOT/boot/grub"
-KERNEL_IMAGE=$(find "$ROOTFS/boot" -maxdepth 1 -type f -name 'vmlinuz-*' -print -quit)\n[ -n "$KERNEL_IMAGE" ] || { echo "Kernel image missing from rootfs." >&2; exit 1; }\ninstall -m 0644 "$KERNEL_IMAGE" "$ISO_ROOT/boot/vmlinuz"
+KERNEL_IMAGE=$(find "$ROOTFS/boot" -maxdepth 1 -type f -name 'vmlinuz-*' -print -quit)
+[ -n "$KERNEL_IMAGE" ] || { echo "Kernel image missing from rootfs." >&2; exit 1; }
+install -m 0644 "$KERNEL_IMAGE" "$ISO_ROOT/boot/vmlinuz"
 install -m 0644 "$ROOT/out/initramfs.cpio.gz" "$ISO_ROOT/boot/initramfs.cpio.gz"
 cat > "$ISO_ROOT/boot/grub/grub.cfg" <<'EOF'
 set timeout=5
