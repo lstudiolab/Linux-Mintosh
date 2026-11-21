@@ -20,7 +20,7 @@ else
 KERNEL_IMAGE := bzImage
 endif
 
-.PHONY: help check-host host-deps kernel-fetch kernel-config kernel kernel-install rootfs initramfs iso image qemu test-qemu clean
+.PHONY: help check-host host-deps kernel-fetch kernel-config kernel kernel-install rootfs initramfs iso image qemu test-qemu usb clean
 
 help:
 	@printf '%s\n' \
@@ -34,6 +34,7 @@ help:
 	  '  make iso             Build a bootable BIOS/UEFI GRUB ISO' \
 	  '  make qemu            Boot the ISO in QEMU interactively' \
 	  '  make test-qemu       Run a serial-console boot smoke test' \
+	  '  make usb USB=/dev/sdX  Write ISO to USB (erases that drive)' \
 	  '  make clean           Remove generated output' \
 	  '' \
 	  'Options: ARCH=x86_64|arm64 JOBS=<parallel jobs>' \
@@ -94,6 +95,10 @@ qemu: iso
 
 test-qemu: iso
 	@sh ./scripts/test-qemu.sh "$(ISO)"
+
+usb: iso
+	@test -n "$(USB)" || { echo 'Specify USB=/dev/sdX' >&2; exit 1; }
+	sudo sh ./scripts/write-usb.sh "$(ISO)" "$(USB)"
 
 clean:
 	@sudo rm -rf out
