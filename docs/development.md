@@ -32,6 +32,16 @@ Automated serial-console smoke test:
 
 The test passes only when the systemd-managed mintosh-ready.service prints its boot marker. The serial log is saved to out/qemu-boot.log.
 
+## ARM64 kernel build
+
+The kernel can also be cross-compiled for ARM64 from an x86_64 host:
+
+    make ARCH=arm64 kernel-fetch
+    make ARCH=arm64 kernel-config
+    make ARCH=arm64 kernel
+
+ARM64 uses a separate output directory and the aarch64-linux-gnu cross-compiler. Root filesystem, GRUB ISO, and QEMU packaging currently remain x86_64-only.
+
 ## Build stages
 
 - make kernel-fetch: download the pinned upstream Linux source.
