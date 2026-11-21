@@ -64,7 +64,7 @@ EOF
 cat > "$ROOTFS/etc/systemd/system/mintosh-installer.service" <<'EOF'
 [Unit]
 Description=Mintosh live installer
-After=multi-user.target
+After=systemd-user-sessions.service
 Conflicts=getty@tty1.service
 [Service]
 Type=simple
