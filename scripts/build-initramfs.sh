@@ -9,6 +9,7 @@ KERNEL_IMAGE=$(find "$ROOTFS/boot" -maxdepth 1 -type f -name 'vmlinuz-*' -print 
 [ -n "$KERNEL_IMAGE" ] || { echo "Versioned kernel image missing. Run make kernel-install first." >&2; exit 1; }
 install -m 0755 "$ROOT/scripts/mintosh-installer.sh" "$ROOTFS/usr/local/sbin/mintosh-installer"
 install -m 0644 "$ROOT/scripts/installer-disk-safety.sh" "$ROOTFS/usr/local/sbin/installer-disk-safety.sh"
+install -m 0644 "$ROOT/scripts/installer-storage.sh" "$ROOTFS/usr/local/sbin/installer-storage.sh"
 cat > "$ROOTFS/init" <<'EOF'
 #!/bin/sh
 mount -t devtmpfs devtmpfs /dev 2>/dev/null || true
