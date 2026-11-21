@@ -1,6 +1,6 @@
 CC ?= cc
 AR ?= ar
-CFLAGS ?= -O2 -std=c17 -Wall -Wextra -Wpedantic -Wformat=2 -fstack-protector-strong -D_FORTIFY_SOURCE=2
+CFLAGS ?= -O2 -std=c17 -Wall -Wextra -Wpedantic -Wformat=2 -Werror=implicit-function-declaration -fstack-protector-strong -D_FORTIFY_SOURCE=2
 CPPFLAGS += -I../LibSys/include -I../CSF/include -I../Foundation/include -I../Launch7762
 PREFIX ?= /usr
 DESTDIR ?=
