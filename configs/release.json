@@ -1,6 +1,6 @@
 {
   "distribution": "Mintosh",
-  "release": "0.2.0",
+  "release": "0.1.0",
   "debian_suite": "trixie",
   "architectures": ["x86_64", "arm64"],
   "kernel": {
