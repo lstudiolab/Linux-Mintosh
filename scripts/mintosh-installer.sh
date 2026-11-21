@@ -2,6 +2,8 @@
 set -Eeuo pipefail
 
 export TERM=${TERM:-linux}
+SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+. "$SCRIPT_DIR/installer-disk-safety.sh"
 TITLE="Mintosh Installer"
 TARGET=/mnt/mintosh
 LOG=/var/log/mintosh-installer.log
@@ -41,7 +43,9 @@ MODE=$(dialog --stdout --title "$TITLE" --menu "Choose an installation type." 15
   alongside "Install alongside an existing operating system" \
   erase "Erase a disk and install Mintosh") || exit 0
 
-mapfile -t DISKS < <(lsblk -dpno NAME,SIZE,MODEL,TYPE,RM | awk '$NF=="0" { $NF=""; sub(/[[:space:]]+$/, ""); print }')
+mintosh_discover_protected_disks || fail "Could not identify the live Mintosh boot medium. Disk selection is disabled to protect the installer USB."
+DISK_LIST=$(mintosh_list_installable_disks) || fail "No safe installable disks were detected."
+mapfile -t DISKS <<<"$DISK_LIST"
 (( ${#DISKS[@]} > 0 )) || fail "No installable disks were detected."
 MENU=()
 for item in "${DISKS[@]}"; do
@@ -49,8 +53,10 @@ for item in "${DISKS[@]}"; do
   label=${item#* }
   MENU+=("$dev" "$label")
 done
-DISK=$(dialog --stdout --title "$TITLE" --menu "Select the destination disk. Removable USB devices are hidden to protect the live installer." 18 78 8 "${MENU[@]}") || exit 0
+DISK=$(dialog --stdout --title "$TITLE" --menu "Select the destination disk. The live boot medium and removable devices are hidden." 18 78 8 "${MENU[@]}") || exit 0
 [[ -b "$DISK" ]] || fail "The selected disk is no longer available."
+mintosh_disk_is_protected "$DISK" && fail "The selected disk contains the live Mintosh boot medium. It is protected from installation."
+[[ "$(lsblk -dnro TYPE "$DISK")" == "disk" ]] || fail "Only whole physical disks can be selected."
 
 if [[ "$MODE" == erase ]]; then
   dialog --title "Erase disk warning" --yesno "ALL DATA AND ALL OPERATING SYSTEMS ON:\n\n$DISK\n\nWILL BE PERMANENTLY DELETED.\n\nThis cannot be undone. Continue?" 13 76 || exit 0
