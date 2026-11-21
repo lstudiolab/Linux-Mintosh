@@ -33,7 +33,7 @@ $(BUILD)/launch511: ../Launch511/command_runner.c ../Launch511/command_arguments
 $(BUILD)/hp-compat: ../HPCompatibility/hp_compatibility.c | $(BUILD)
 	$(CC) $(CPPFLAGS) $(CFLAGS) $^ -o $@
 
-$(BUILD)/ioplus: ../IOPlus/hardware_inventory.c ../IOPlus/kernel_information.c ../IOPlus/sysfs_inventory.c ../IOPlus/memory_information.c ../IOPlus/json_inventory.c
+$(BUILD)/ioplus: ../IOPlus/hardware_inventory.c ../IOPlus/kernel_information.c ../IOPlus/sysfs_inventory.c ../IOPlus/memory_information.c ../IOPlus/json_inventory.c ../IOPlus/uevent_parser.c ../IOPlus/uevent_monitor.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $^ -o $@
 
 $(BUILD)/kextctl: ../Kexts/module_manager.c ../Kexts/module_command.c
@@ -70,6 +70,9 @@ $(BUILD)/foundation-tests: ../Foundation/tests/foundation_tests.c ../Foundation/
 $(BUILD)/libsys-tests: ../LibSys/tests/line_reader_tests.c ../LibSys/line_reader.c | $(BUILD)
 	$(CC) $(CPPFLAGS) $(CFLAGS) $^ -o $@
 
+$(BUILD)/ioplus-uevent-tests: ../IOPlus/tests/uevent_tests.c ../IOPlus/uevent_parser.c | $(BUILD)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -I../IOPlus $^ -o $@
+
 $(BUILD)/darl-protocol-tests: ../Darl/tests/darl_protocol_tests.c ../Darl/darl_protocol.c | $(BUILD)
 	$(CC) $(CPPFLAGS) $(CFLAGS) $^ -o $@
 
@@ -85,13 +88,14 @@ $(BUILD)/security-tests: ../Security/tests/security_tests.c ../Security/permissi
 $(BUILD)/service-control-tests: ../Launch7762/tests/service_control_tests.c ../Launch7762/service_control.c ../LibSys/file_descriptor.c | $(BUILD)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -I../Launch7762 $^ -o $@
 
-test-foundation: $(BUILD)/foundation-tests $(BUILD)/package-validation-tests $(BUILD)/service-control-tests $(BUILD)/libsys-tests $(BUILD)/libsys-filesystem-tests $(BUILD)/darl-protocol-tests $(BUILD)/security-tests
+test-foundation: $(BUILD)/foundation-tests $(BUILD)/package-validation-tests $(BUILD)/service-control-tests $(BUILD)/libsys-tests $(BUILD)/libsys-filesystem-tests $(BUILD)/darl-protocol-tests $(BUILD)/ioplus-uevent-tests $(BUILD)/security-tests
 	$(BUILD)/foundation-tests
 	$(BUILD)/package-validation-tests
 	$(BUILD)/service-control-tests
 	$(BUILD)/libsys-tests
 	$(BUILD)/libsys-filesystem-tests
 	$(BUILD)/darl-protocol-tests
+	$(BUILD)/ioplus-uevent-tests
 	$(BUILD)/security-tests
 	@echo 'Foundation, package validation and service control tests passed.'
 

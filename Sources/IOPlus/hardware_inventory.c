@@ -5,9 +5,12 @@ void ioplus_print_kernel(void);
 void ioplus_print_sysfs_inventory(void);
 void ioplus_print_memory(void);
 void ioplus_print_json(void);
+int ioplus_watch_uevents(void);
 
 int main(int argc, char **argv) {
-    if (argc > 1 && strcmp(argv[1], "--version") == 0) {
+    if (argc == 2 && strcmp(argv[1], "watch") == 0)
+        return ioplus_watch_uevents();
+    if (argc == 2 && strcmp(argv[1], "--version") == 0) {
         puts("I/O+ 0.2.0");
         return 0;
     }
@@ -16,7 +19,7 @@ int main(int argc, char **argv) {
         return 0;
     }
     if (argc > 1 && strcmp(argv[1], "--help") == 0) {
-        puts("Usage: ioplus [--json] [--version] [--help]");
+        puts("Usage: ioplus [--json|watch|--version|--help]");
         return 0;
     }
     if (argc > 1) {
