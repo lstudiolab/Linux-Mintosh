@@ -13,11 +13,11 @@
 static void json_string(const char *value) {
     putchar('"');
     for (const unsigned char *cursor = (const unsigned char *)value; *cursor; ++cursor) {
-        if (*cursor == '"' || *cursor == '\\\\') {
-            putchar('\\\\');
+        if (*cursor == '"' || *cursor == '\\') {
+            putchar('\\');
             putchar(*cursor);
         } else if (*cursor < 0x20) {
-            printf("\\\\u%04x", *cursor);
+            printf("\\u%04x", *cursor);
         } else {
             putchar(*cursor);
         }
