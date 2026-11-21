@@ -85,7 +85,7 @@ kernel-config: check-host
 	@mkdir -p "$(KERNEL_OUT)"
 	$(MAKE) -C "$(KERNEL_DIR)" O="$(CURDIR)/$(KERNEL_OUT)" ARCH="$(KERNEL_ARCH)" CROSS_COMPILE="$(CROSS_COMPILE)" $(KERNEL_DEFCONFIG)
 	@"$(KERNEL_DIR)/scripts/config" --file "$(KERNEL_OUT)/.config" \
-	  --enable MODULES --enable BLK_DEV_INITRD --enable DEVTMPFS --enable DEVTMPFS_MOUNT \
+	  --enable MODULES --enable MODULE_SIG --enable MODULE_SIG_ALL --enable MODULE_SIG_FORCE --enable MODULE_SIG_SHA256 --enable BLK_DEV_INITRD --enable DEVTMPFS --enable DEVTMPFS_MOUNT \
 	  --enable EXT4_FS --enable VIRTIO --enable VIRTIO_PCI --enable VIRTIO_BLK \
 	  --enable VIRTIO_NET --enable SERIAL_8250 --enable SERIAL_8250_CONSOLE \
 	  --enable EFI --enable EFI_STUB --enable EFI_PARTITION --enable EFI_VARS --enable FAT_FS --enable VFAT_FS --enable MSDOS_PARTITION \
