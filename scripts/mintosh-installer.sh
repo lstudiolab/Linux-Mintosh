@@ -103,7 +103,7 @@ else
     EFI_PART=$(lsblk -nrpo NAME,PARTTYPE,PARTFLAGS "$DISK" | awk 'tolower($0) ~ /c12a7328-f81f-11d2-ba4b-00a0c93ec93b|esp/ {print $1; exit}')
     [[ -n "$EFI_PART" ]] || fail "No EFI System Partition was found. Boot Mintosh in the same firmware mode as the installed operating system, or create an EFI System Partition first."
   elif [[ "$(lsblk -dnro PTTYPE "$DISK")" == "gpt" ]]; then
-    lsblk -nrpo PARTFLAGS "$DISK" | grep -qi bios_grub || fail "This GPT disk has no BIOS boot partition. Boot Mintosh in UEFI mode or prepare a BIOS boot partition first."
+    parted -s "$DISK" print | grep -qi bios_grub || fail "This GPT disk has no BIOS boot partition. Boot Mintosh in UEFI mode or prepare a BIOS boot partition first."
   fi
   FREE=$(python3 - "$DISK" <<'PY'
 import subprocess,sys
