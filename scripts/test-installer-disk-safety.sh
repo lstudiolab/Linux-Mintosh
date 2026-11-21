@@ -8,7 +8,7 @@ cat > "$TMP/bin/blkid" <<'SH'
 #!/bin/sh
 if [ "${MINTOSH_TEST_NO_LABEL:-0}" = 1 ]; then exit 2; fi
 [ "$1" = "-c" ] && [ "$2" = "/dev/null" ] && [ "$3" = "-t" ] && [ "$4" = "LABEL=MINTOSH" ] && [ "$5" = "-o" ] && [ "$6" = "device" ] || exit 64
-printf '%s\n' /dev/sdb1
+printf '%s\n' /dev/sdb1 /dev/sde
 SH
 cat > "$TMP/bin/lsblk" <<'SH'
 #!/bin/sh
@@ -18,6 +18,7 @@ if [ "$1" = "-nro" ] && [ "$2" = "PKNAME" ]; then
 fi
 if [ "$1" = "-nro" ] && [ "$2" = "NAME" ]; then
     [ "$3" = "/dev/sdb1" ] && printf '%s\n' sdb1
+    [ "$3" = "/dev/sde" ] && printf '%s\n' sde
     exit 0
 fi
 if [ "$1" = "-J" ]; then
