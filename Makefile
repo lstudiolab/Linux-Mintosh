@@ -23,7 +23,7 @@ check-host:
 	@case "$(ARCH)" in x86_64|arm64) ;; *) echo 'Unsupported ARCH: $(ARCH)' >&2; exit 1 ;; esac
 
 kernel-fetch: check-host
-	@ARCH="$(ARCH)" ./scripts/fetch-kernel.sh
+	@ARCH="$(ARCH)" sh ./scripts/fetch-kernel.sh
 
 kernel-config:
 	@test -d "$(KERNEL_DIR)" || { echo 'Run make kernel-fetch first.' >&2; exit 1; }
