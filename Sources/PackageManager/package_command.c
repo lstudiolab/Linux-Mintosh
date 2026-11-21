@@ -60,7 +60,7 @@ int main(int argc, char **argv) {
         return mstore_execute(arguments);
     }
     if (strcmp(argv[1], "list") == 0 && argc == 2) {
-        char *arguments[] = {"dpkg-query", "-W", "-f=\${binary:Package}\\t\${Version}\\n", NULL};
+        char *arguments[] = {"dpkg-query", "-W", "-f=${binary:Package}\\t${Version}\\n", NULL};
         return mstore_execute(arguments);
     }
     if (strcmp(argv[1], "install") == 0 || strcmp(argv[1], "remove") == 0)
