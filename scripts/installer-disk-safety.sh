@@ -12,11 +12,11 @@ mintosh_discover_protected_disks() {
     MINTOSH_PROTECTED_DISKS=()
     for source in "${sources[@]}"; do
         [[ "$source" == /dev/* ]] || continue
-        parent=$(lsblk -ndo PKNAME "$source" 2>/dev/null | head -n1 || true)
+        parent=$(lsblk -nro PKNAME "$source" 2>/dev/null | head -n1 || true)
         if [[ -n "$parent" ]]; then
             disk="/dev/$parent"
         else
-            name=$(lsblk -ndo NAME "$source" 2>/dev/null | head -n1 || true)
+            name=$(lsblk -nro NAME "$source" 2>/dev/null | head -n1 || true)
             [[ -n "$name" ]] || continue
             disk="/dev/$name"
         fi
