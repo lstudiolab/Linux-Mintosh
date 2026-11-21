@@ -9,6 +9,32 @@
 #include <fcntl.h>
 #include <unistd.h>
 
+
+static void json_string(const char *value) {
+    putchar('"');
+    for (const unsigned char *cursor = (const unsigned char *)value; *cursor; ++cursor) {
+        if (*cursor == '"' || *cursor == '\\\\') {
+            putchar('\\\\');
+            putchar(*cursor);
+        } else if (*cursor < 0x20) {
+            printf("\\\\u%04x", *cursor);
+        } else {
+            putchar(*cursor);
+        }
+    }
+    putchar('"');
+}
+
+static int numeric_value(const char *value) {
+    if (!value || !value[0]) return 0;
+    const unsigned char *cursor = (const unsigned char *)value;
+    if (*cursor == '-') ++cursor;
+    if (!*cursor) return 0;
+    for (; *cursor; ++cursor)
+        if (*cursor < '0' || *cursor > '9') return 0;
+    return 1;
+}
+
 static int read_value(const char *path, char *buffer, size_t capacity) {
     FILE *file = fopen(path, "r");
     if (!file) return -1;
