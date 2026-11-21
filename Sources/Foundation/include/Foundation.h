@@ -21,6 +21,29 @@ typedef struct {
     size_t element_size;
 } MFArray;
 
+typedef struct {
+    MFString key;
+    MFString value;
+} MFDictionaryEntry;
+
+typedef struct {
+    MFDictionaryEntry *entries;
+    size_t count;
+    size_t capacity;
+} MFDictionary;
+
+typedef struct {
+    char *scheme;
+    char *authority;
+    char *host;
+    char *path;
+    char *query;
+    char *fragment;
+    unsigned int port;
+    int has_authority;
+    int has_port;
+} MFURL;
+
 typedef enum {
     MF_ERROR_NONE = 0,
     MF_ERROR_INVALID_ARGUMENT,
@@ -57,6 +80,17 @@ const void *mf_array_get_const(const MFArray *array, size_t index);
 int mf_array_remove(MFArray *array, size_t index);
 void mf_array_clear(MFArray *array);
 void mf_array_destroy(MFArray *array);
+
+int mf_dictionary_init(MFDictionary *dictionary);
+int mf_dictionary_set(MFDictionary *dictionary, const char *key, const char *value);
+const char *mf_dictionary_get(const MFDictionary *dictionary, const char *key);
+int mf_dictionary_remove(MFDictionary *dictionary, const char *key);
+void mf_dictionary_clear(MFDictionary *dictionary);
+void mf_dictionary_destroy(MFDictionary *dictionary);
+
+int mf_url_parse(const char *text, MFURL *url, MFError *error);
+int mf_url_is_secure(const MFURL *url);
+void mf_url_destroy(MFURL *url);
 
 void mf_error_clear(MFError *error);
 void mf_error_set(MFError *error, MFErrorCode code, int system_code,
