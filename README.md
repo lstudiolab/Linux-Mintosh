@@ -49,7 +49,7 @@ After boot, use:
     fmsctl search documents
     kextctl status
     kextctl list
-    security-audit
+    sudo security-audit
 
 `make verify` also validates required boot/module-signing kernel options, compiles the native core, runs regression/CLI smoke tests, verifies live boot-media exclusion and tests alongside partition preservation plus confirmation-gated UEFI and BIOS erase layouts. The manual GitHub Actions workflow **Mintosh QEMU boot verification** builds the pinned kernel and ISO, then boots the image under QEMU.
 
