@@ -20,7 +20,7 @@ else
 KERNEL_IMAGE := bzImage
 endif
 
-.PHONY: help check-host host-deps kernel-fetch kernel-config kernel kernel-install rootfs initramfs iso image qemu test-qemu usb clean
+.PHONY: help check-host check-scripts host-deps kernel-fetch kernel-config kernel kernel-install rootfs initramfs iso image qemu test-qemu usb clean
 
 help:
 	@printf '%s\n' \
@@ -39,6 +39,12 @@ help:
 	  '' \
 	  'Options: ARCH=x86_64|arm64 JOBS=<parallel jobs>' \
 	  'Full ISO/QEMU image: ARCH=x86_64 (ARM64 kernel builds are supported separately).'
+
+check-scripts:
+	@bash -n scripts/mintosh-installer.sh
+	@for f in scripts/*.sh; do case "$f" in scripts/mintosh-installer.sh) ;; *) sh -n "$f" || exit 1 ;; esac; done
+	@python3 -m json.tool configs/release.json >/dev/null
+	@echo 'Shell scripts and release manifest are syntactically valid.'
 
 check-host:
 	@command -v make >/dev/null || { echo 'Missing dependency: make' >&2; exit 1; }
