@@ -61,8 +61,8 @@ for device in data.get("blockdevices", []):
     path = "/dev/" + str(device.get("name", ""))
     if path in protected:
         continue
-    size = str(device.get("size", "unknown")).replace("\\t", " ").replace("\\n", " ")
-    model = str(device.get("model") or "Unidentified disk").replace("\\t", " ").replace("\\n", " ")
+    size = str(device.get("size", "unknown")).replace("\t", " ").replace("\n", " ")
+    model = str(device.get("model") or "Unidentified disk").replace("\t", " ").replace("\n", " ")
     print(f"{path} {size} {model}")
     count += 1
 
