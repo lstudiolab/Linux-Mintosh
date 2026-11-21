@@ -3,18 +3,31 @@ ARCH ?= x86_64
 JOBS ?= $(shell getconf _NPROCESSORS_ONLN 2>/dev/null || echo 2)
 KERNEL_DIR := kernel/linux
 KERNEL_OUT := out/kernel
+ROOTFS := out/rootfs
+ISO_ROOT := out/iso
+ISO := out/mintosh-$(ARCH).iso
+KERNEL_ARCH_x86_64 := x86
+KERNEL_ARCH_arm64 := arm64
+KERNEL_ARCH := $(KERNEL_ARCH_$(ARCH))
 
-.PHONY: help check-host kernel-fetch kernel-config kernel kernel-clean
+.PHONY: help check-host host-deps kernel-fetch kernel-config kernel kernel-install rootfs initramfs iso image qemu test-qemu clean
 
 help:
 	@printf '%s\n' \
-	  'Mintosh build targets:' \
-	  '  make kernel-fetch   Download the latest stable Linux kernel source' \
-	  '  make kernel-config  Generate a default kernel configuration' \
-	  '  make kernel         Build the kernel' \
-	  '  make kernel-clean   Remove kernel build output' \
+	  'Mintosh Base targets:' \
+	  '  make host-deps       Install Debian/Ubuntu build dependencies' \
+	  '  make kernel-fetch    Fetch the release-pinned upstream Linux kernel' \
+	  '  make kernel-config   Configure the kernel for Mintosh/QEMU' \
+	  '  make kernel          Build the kernel and modules' \
+	  '  make rootfs          Build the Debian-based Mintosh root filesystem' \
+	  '  make initramfs       Package the root filesystem as an initramfs' \
+	  '  make iso             Build a bootable BIOS/UEFI GRUB ISO' \
+	  '  make qemu            Boot the ISO in QEMU interactively' \
+	  '  make test-qemu       Run a serial-console boot smoke test' \
+	  '  make clean           Remove generated output' \
 	  '' \
-	  'Options: ARCH=x86_64|arm64 JOBS=<parallel jobs>'
+	  'Options: ARCH=x86_64|arm64 JOBS=<parallel jobs>' \
+	  'Full ISO/QEMU image: ARCH=x86_64 (ARM64 kernel builds are supported separately).'
 
 check-host:
 	@command -v make >/dev/null || { echo 'Missing dependency: make' >&2; exit 1; }
@@ -22,18 +35,56 @@ check-host:
 	@command -v curl >/dev/null || { echo 'Missing dependency: curl' >&2; exit 1; }
 	@case "$(ARCH)" in x86_64|arm64) ;; *) echo 'Unsupported ARCH: $(ARCH)' >&2; exit 1 ;; esac
 
+host-deps:
+	@sudo apt-get update
+	@sudo apt-get install -y bc bison build-essential cpio curl debootstrap flex gcc g++ \
+	  grub-common grub-pc-bin grub-efi-amd64-bin kmod libelf-dev libncurses-dev \
+	  libssl-dev make mtools python3 qemu-system-x86 rsync xorriso xz-utils
+
 kernel-fetch: check-host
 	@ARCH="$(ARCH)" sh ./scripts/fetch-kernel.sh
 
 kernel-config:
 	@test -d "$(KERNEL_DIR)" || { echo 'Run make kernel-fetch first.' >&2; exit 1; }
 	@mkdir -p "$(KERNEL_OUT)"
-	$(MAKE) -C "$(KERNEL_DIR)" O="$(CURDIR)/$(KERNEL_OUT)" ARCH="$(ARCH)" defconfig
+	$(MAKE) -C "$(KERNEL_DIR)" O="$(CURDIR)/$(KERNEL_OUT)" ARCH="$(KERNEL_ARCH)" defconfig
+	@"$(KERNEL_DIR)/scripts/config" --file "$(KERNEL_OUT)/.config" \
+	  --enable MODULES --enable BLK_DEV_INITRD --enable DEVTMPFS --enable DEVTMPFS_MOUNT \
+	  --enable EXT4_FS --enable VIRTIO --enable VIRTIO_PCI --enable VIRTIO_BLK \
+	  --enable VIRTIO_NET --enable SERIAL_8250 --enable SERIAL_8250_CONSOLE \
+	  --enable EFI --enable EFI_STUB --enable PROC_FS --enable SYSFS --enable TMPFS \
+	  --set-str LOCALVERSION -mintosh
+	$(MAKE) -C "$(KERNEL_DIR)" O="$(CURDIR)/$(KERNEL_OUT)" ARCH="$(KERNEL_ARCH)" olddefconfig
 
 kernel:
 	@test -f "$(KERNEL_OUT)/.config" || { echo 'Run make kernel-config first.' >&2; exit 1; }
-	$(MAKE) -C "$(KERNEL_DIR)" O="$(CURDIR)/$(KERNEL_OUT)" ARCH="$(ARCH)" -j"$(JOBS)"
-	@echo 'Kernel build completed. Image and modules are in $(KERNEL_OUT).'
+	$(MAKE) -C "$(KERNEL_DIR)" O="$(CURDIR)/$(KERNEL_OUT)" ARCH="$(KERNEL_ARCH)" -j"$(JOBS)" bzImage modules
+	@echo 'Kernel build completed: $(KERNEL_OUT)'
 
-kernel-clean:
-	@rm -rf "$(KERNEL_OUT)"
+kernel-install: kernel
+	@test "$(ARCH)" = x86_64 || { echo 'Rootfs/ISO packaging currently targets x86_64.' >&2; exit 1; }
+	@sudo mkdir -p "$(ROOTFS)/lib/modules" "$(ROOTFS)/boot"
+	@sudo $(MAKE) -C "$(KERNEL_DIR)" O="$(CURDIR)/$(KERNEL_OUT)" ARCH="$(KERNEL_ARCH)" INSTALL_MOD_PATH="$(CURDIR)/$(ROOTFS)" modules_install
+	@sudo install -m 0644 "$(KERNEL_OUT)/arch/x86/boot/bzImage" "$(ROOTFS)/boot/vmlinuz-mintosh"
+
+rootfs: check-host
+	@test "$(ARCH)" = x86_64 || { echo 'Rootfs/ISO packaging currently targets x86_64.' >&2; exit 1; }
+	@sudo ARCH="$(ARCH)" MINTOSH_USER="$(MINTOSH_USER)" MINTOSH_PASSWORD="$(MINTOSH_PASSWORD)" sh ./scripts/build-rootfs.sh
+
+initramfs: rootfs kernel-install
+	@sudo sh ./scripts/build-initramfs.sh
+
+iso: initramfs
+	@sudo sh ./scripts/build-iso.sh
+
+image: iso
+
+qemu: iso
+	qemu-system-x86_64 -m 2048 -smp 2 -cdrom "$(ISO)" -boot d
+
+test-qemu: iso
+	@sh ./scripts/test-qemu.sh "$(ISO)"
+
+clean:
+	@sudo rm -rf out
+	@echo 'Removed Mintosh build output.'
