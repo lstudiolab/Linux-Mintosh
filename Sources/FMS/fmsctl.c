@@ -58,6 +58,10 @@ static int index_root(const char *root) {
         return 64;
     }
     const char *destination = database_path();
+    if (strcmp(destination, "/var/lib/mintosh/fms.db") == 0 && geteuid() != 0) {
+        fputs("fmsctl: indexing the system file database requires root; run sudo fmsctl index ROOT\\n", stderr);
+        return 2;
+    }
     char temporary[PATH_MAX];
     if (snprintf(temporary, sizeof temporary, "%s.new", destination) >= (int)sizeof temporary) {
         fputs("fmsctl: database path is too long\n", stderr);
