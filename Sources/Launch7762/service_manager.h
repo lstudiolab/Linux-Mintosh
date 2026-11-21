@@ -24,6 +24,7 @@ typedef struct {
     unsigned int restart_count;
     pid_t process_id;
     struct timespec restart_at;
+    struct timespec started_at;
     struct timespec stop_deadline;
 } MintoshService;
 
