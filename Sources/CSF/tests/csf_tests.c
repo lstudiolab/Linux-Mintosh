@@ -32,7 +32,7 @@ int main(void) {
     assert(!csf_service_name_is_valid("darl service"));
     assert(!csf_service_name_is_valid("Darl"));
     assert(!csf_service_name_is_valid("darl;id"));
-    assert(!csf_service_name_is_valid("a-name-that-is-longer-than-sixty-three-characters-and-invalid"));
+    assert(!csf_service_name_is_valid("a-name-that-is-longer-than-sixty-three-characters-and-definitely-invalid"));
 
     assert(csf_service_control("start", "darl") == 0);
     assert(strcmp(last_request, "START darl") == 0);
