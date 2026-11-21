@@ -45,4 +45,38 @@ if mintosh_find_largest_free_region "$IMAGE" 50000 >/dev/null 2>&1; then
     echo "Installer accepted insufficient free space." >&2
     exit 1
 fi
-echo "Installer alongside partition preservation tests passed."
+
+NO_CONFIRM_IMAGE="$TMP/no-confirm.img"
+truncate -s 8G "$NO_CONFIRM_IMAGE"
+BEFORE_HASH=$(sha256sum "$NO_CONFIRM_IMAGE" | cut -d' ' -f1)
+if mintosh_prepare_erase_layout "$NO_CONFIRM_IMAGE" 1 NO; then
+    echo "Erase layout accepted without the exact ERASE confirmation." >&2
+    exit 1
+fi
+AFTER_HASH=$(sha256sum "$NO_CONFIRM_IMAGE" | cut -d' ' -f1)
+[[ "$BEFORE_HASH" == "$AFTER_HASH" ]]
+
+UEFI_IMAGE="$TMP/uefi.img"
+truncate -s 8G "$UEFI_IMAGE"
+mintosh_prepare_erase_layout "$UEFI_IMAGE" 1 ERASE
+python3 - "$UEFI_IMAGE" <<'PY'
+import subprocess, sys
+text = subprocess.check_output(["parted", "-m", "-s", sys.argv[1], "unit", "MiB", "print"], text=True)
+parts = [line for line in text.splitlines() if line.split(":", 1)[0].isdigit()]
+assert len(parts) == 2, parts
+assert "esp" in parts[0].lower(), parts[0]
+assert "ext4" in parts[1].lower(), parts[1]
+PY
+
+BIOS_IMAGE="$TMP/bios.img"
+truncate -s 8G "$BIOS_IMAGE"
+mintosh_prepare_erase_layout "$BIOS_IMAGE" 0 ERASE
+python3 - "$BIOS_IMAGE" <<'PY'
+import subprocess, sys
+text = subprocess.check_output(["parted", "-m", "-s", sys.argv[1], "unit", "MiB", "print"], text=True)
+parts = [line for line in text.splitlines() if line.split(":", 1)[0].isdigit()]
+assert len(parts) == 2, parts
+assert "bios_grub" in parts[0].lower(), parts[0]
+assert "ext4" in parts[1].lower(), parts[1]
+PY
+echo "Installer alongside preservation and erase-layout confirmation tests passed."
