@@ -12,11 +12,11 @@ printf '%s\n' /dev/sdb1
 SH
 cat > "$TMP/bin/lsblk" <<'SH'
 #!/bin/sh
-if [ "$1" = "-ndo" ] && [ "$2" = "PKNAME" ]; then
+if [ "$1" = "-nro" ] && [ "$2" = "PKNAME" ]; then
     [ "$3" = "/dev/sdb1" ] && printf '%s\n' sdb
     exit 0
 fi
-if [ "$1" = "-ndo" ] && [ "$2" = "NAME" ]; then
+if [ "$1" = "-nro" ] && [ "$2" = "NAME" ]; then
     [ "$3" = "/dev/sdb1" ] && printf '%s\n' sdb1
     exit 0
 fi
