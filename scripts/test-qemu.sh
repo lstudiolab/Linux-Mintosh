@@ -9,7 +9,9 @@ command -v "$QEMU" >/dev/null || { echo "Missing $QEMU. Install qemu-system-x86.
 [ -s "$ISO" ] || { echo "ISO not found: $ISO" >&2; exit 1; }
 echo "Booting $ISO in QEMU (up to $TIMEOUT seconds)..."
 set +e
-timeout --signal=TERM "$TIMEOUT" "$QEMU" -m 2048 -smp 2 -cdrom "$ISO" -boot d -display none -serial stdio -monitor none -no-reboot > "$LOG" 2>&1
+timeout --signal=TERM "$TIMEOUT" "$QEMU" -m 2048 -smp 2 \
+  -netdev user,id=net0 -device virtio-net-pci,netdev=net0 \
+  -cdrom "$ISO" -boot d -display none -serial stdio -monitor none -no-reboot > "$LOG" 2>&1
 STATUS=$?
 set -e
 if grep -q "Mintosh Base is ready" "$LOG"; then
