@@ -24,12 +24,18 @@ static void handle_client(MintoshServiceManager *manager, int descriptor) {
                                      &peer, &peer_size) == 0;
     char request[256];
     size_t used = 0;
+    int complete = 0;
     while (used + 1 < sizeof request) {
         char byte;
         ssize_t count = read(descriptor, &byte, 1);
         if (count < 0 && errno == EINTR) continue;
-        if (count <= 0 || byte == '\n' || byte == '\r') break;
+        if (count <= 0) break;
+        if (byte == '\n' || byte == '\r') { complete = 1; break; }
         request[used++] = byte;
+    }
+    if (!complete) {
+        (void)ms_write_all(descriptor, "ERROR incomplete or oversized request\n", sizeof("ERROR incomplete or oversized request\n") - 1);
+        return;
     }
     request[used] = '\0';
     if (!used) return;

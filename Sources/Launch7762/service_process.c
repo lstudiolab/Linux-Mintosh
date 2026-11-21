@@ -29,7 +29,7 @@ static int time_reached(struct timespec now, struct timespec deadline) {
            (now.tv_sec == deadline.tv_sec && now.tv_nsec >= deadline.tv_nsec);
 }
 
-/* ExecStart is a plain whitespace-separated argv, never a shell program. */
+/* ExecStart is a plain whitespace-separated argument vector, never a shell program. */
 static int parse_arguments(char *command, char **arguments, size_t capacity) {
     size_t count = 0;
     char *cursor = command;
@@ -43,18 +43,15 @@ static int parse_arguments(char *command, char **arguments, size_t capacity) {
     }
     arguments[count] = NULL;
     if (!count || arguments[0][0] != '/') return -1;
-    for (size_t index = 0; index < count; ++index) {
+    for (size_t index = 0; index < count; ++index)
         for (const unsigned char *p = (const unsigned char *)arguments[index]; *p; ++p)
             if (*p < 0x20 || *p == 0x7f) return -1;
-    }
     return (int)count;
 }
 
 int ms_service_start(MintoshService *service) {
-    if (!service || service->process_id > 0 || !service->command[0]) {
-        errno = EINVAL;
-        return -1;
-    }
+    if (!service || !service->command[0]) { errno = EINVAL; return -1; }
+    if (service->process_id > 0) return 0;
     pid_t child = fork();
     if (child < 0) {
         ms_log("launch7762", "error", "unable to fork service process");
@@ -101,7 +98,7 @@ void ms_service_stop(MintoshService *service) {
 }
 
 static void schedule_restart(MintoshService *service, struct timespec now) {
-    unsigned int shift = service->restart_count > 6 ? 6 : service->restart_count;
+    unsigned int shift = service->restart_count > 5 ? 5 : service->restart_count;
     time_t delay = (time_t)1 << shift;
     if (delay > SERVICE_RESTART_MAX_SECONDS) delay = SERVICE_RESTART_MAX_SECONDS;
     if (service->restart_count < 32) ++service->restart_count;

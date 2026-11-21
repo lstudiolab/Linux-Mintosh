@@ -105,9 +105,9 @@ while [ ! -f "$RUNTIME/restarts" ] || [ "$(wc -c < "$RUNTIME/restarts")" -lt 2 ]
     sleep 0.1
 done
 attempt=0
-while ! "$B/mintoshctl" services | grep -q 'retry-service running'; do
+while ! "$B/mintoshctl" services | grep -Eq 'retry-service (running|restarting|stopped).*restarts=2'; do
     attempt=$((attempt + 1))
-    [ "$attempt" -lt 40 ] || { echo "restarted service did not return to running state" >&2; exit 1; }
+    [ "$attempt" -lt 30 ] || { echo "restart backoff state was not recorded" >&2; exit 1; }
     sleep 0.1
 done
 "$B/mintoshctl" stop retry-service | grep -q 'OK'

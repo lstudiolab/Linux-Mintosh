@@ -63,10 +63,14 @@ $(BUILD)/foundation-tests: ../Foundation/tests/foundation_tests.c ../Foundation/
 $(BUILD)/package-validation-tests: ../PackageManager/tests/package_validation_tests.c ../PackageManager/package_validation.c | $(BUILD)
 	$(CC) $(CPPFLAGS) $(CFLAGS) $^ -o $@
 
-test-foundation: $(BUILD)/foundation-tests $(BUILD)/package-validation-tests
+$(BUILD)/service-control-tests: ../Launch7762/tests/service_control_tests.c ../Launch7762/service_control.c ../LibSys/file_descriptor.c | $(BUILD)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -I../Launch7762 $^ -o $@
+
+test-foundation: $(BUILD)/foundation-tests $(BUILD)/package-validation-tests $(BUILD)/service-control-tests
 	$(BUILD)/foundation-tests
 	$(BUILD)/package-validation-tests
-	@echo 'Foundation and package validation tests passed.'
+	$(BUILD)/service-control-tests
+	@echo 'Foundation, package validation and service control tests passed.'
 
 install: all
 	install -d $(BINDIR) $(LIBDIR) $(INCLUDEDIR)
