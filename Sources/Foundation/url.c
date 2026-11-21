@@ -28,12 +28,13 @@ static int valid_percent_encoding(const char *text) {
     return 1;
 }
 
-static int parse_port(const char *text, unsigned int *port) {
-    if (!text || !text[0]) return -1;
+static int parse_port(const char *text, size_t length, unsigned int *port) {
+    if (!text || !length) return -1;
     unsigned int value = 0;
-    for (const unsigned char *cursor = (const unsigned char *)text; *cursor; ++cursor) {
-        if (*cursor < '0' || *cursor > '9') return -1;
-        unsigned int digit = (unsigned int)(*cursor - '0');
+    for (size_t index = 0; index < length; ++index) {
+        unsigned char character = (unsigned char)text[index];
+        if (character < '0' || character > '9') return -1;
+        unsigned int digit = (unsigned int)(character - '0');
         if (value > (65535u - digit) / 10u) return -1;
         value = value * 10u + digit;
     }
@@ -151,7 +152,8 @@ int mf_url_parse(const char *text, MFURL *url, MFError *error) {
             if (!parsed.host) goto memory_error;
         }
         if (port_start) {
-            if (parse_port(port_start, &parsed.port) < 0) goto invalid_authority;
+            if (parse_port(port_start, (size_t)(authority_end - port_start),
+                           &parsed.port) < 0) goto invalid_authority;
             parsed.has_port = 1;
         }
         for (char *host = parsed.host; host && *host; ++host)
