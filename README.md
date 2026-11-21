@@ -47,6 +47,7 @@ After boot, use:
     dmctl list
     fmsctl index /home
     fmsctl search documents
+    kextctl status
     kextctl list
     security-audit
 
