@@ -9,6 +9,12 @@ ISO := out/mintosh-$(ARCH).iso
 KERNEL_ARCH_x86_64 := x86
 KERNEL_ARCH_arm64 := arm64
 KERNEL_ARCH := $(KERNEL_ARCH_$(ARCH))
+ifeq ($(ARCH),arm64)
+CROSS_COMPILE ?= aarch64-linux-gnu-
+KERNEL_IMAGE := Image
+else
+KERNEL_IMAGE := bzImage
+endif
 
 .PHONY: help check-host host-deps kernel-fetch kernel-config kernel kernel-install rootfs initramfs iso image qemu test-qemu clean
 
@@ -39,26 +45,26 @@ host-deps:
 	@sudo apt-get update
 	@sudo apt-get install -y bc bison build-essential cpio curl debootstrap flex gcc g++ \
 	  grub-common grub-pc-bin grub-efi-amd64-bin kmod libelf-dev libncurses-dev \
-	  libssl-dev make mtools python3 qemu-system-x86 rsync xorriso xz-utils
+	  libssl-dev make mtools python3 qemu-system-x86 rsync gcc-aarch64-linux-gnu binutils-aarch64-linux-gnu xorriso xz-utils
 
 kernel-fetch: check-host
 	@ARCH="$(ARCH)" sh ./scripts/fetch-kernel.sh
 
-kernel-config:
+kernel-config: check-host
 	@test -d "$(KERNEL_DIR)" || { echo 'Run make kernel-fetch first.' >&2; exit 1; }
 	@mkdir -p "$(KERNEL_OUT)"
-	$(MAKE) -C "$(KERNEL_DIR)" O="$(CURDIR)/$(KERNEL_OUT)" ARCH="$(KERNEL_ARCH)" defconfig
+	$(MAKE) -C "$(KERNEL_DIR)" O="$(CURDIR)/$(KERNEL_OUT)" ARCH="$(KERNEL_ARCH)" CROSS_COMPILE="$(CROSS_COMPILE)" defconfig
 	@"$(KERNEL_DIR)/scripts/config" --file "$(KERNEL_OUT)/.config" \
 	  --enable MODULES --enable BLK_DEV_INITRD --enable DEVTMPFS --enable DEVTMPFS_MOUNT \
 	  --enable EXT4_FS --enable VIRTIO --enable VIRTIO_PCI --enable VIRTIO_BLK \
 	  --enable VIRTIO_NET --enable SERIAL_8250 --enable SERIAL_8250_CONSOLE \
 	  --enable EFI --enable EFI_STUB --enable PROC_FS --enable SYSFS --enable TMPFS \
 	  --set-str LOCALVERSION -mintosh
-	$(MAKE) -C "$(KERNEL_DIR)" O="$(CURDIR)/$(KERNEL_OUT)" ARCH="$(KERNEL_ARCH)" olddefconfig
+	$(MAKE) -C "$(KERNEL_DIR)" O="$(CURDIR)/$(KERNEL_OUT)" ARCH="$(KERNEL_ARCH)" CROSS_COMPILE="$(CROSS_COMPILE)" olddefconfig
 
-kernel:
+kernel: check-host
 	@test -f "$(KERNEL_OUT)/.config" || { echo 'Run make kernel-config first.' >&2; exit 1; }
-	$(MAKE) -C "$(KERNEL_DIR)" O="$(CURDIR)/$(KERNEL_OUT)" ARCH="$(KERNEL_ARCH)" -j"$(JOBS)" bzImage modules
+	$(MAKE) -C "$(KERNEL_DIR)" O="$(CURDIR)/$(KERNEL_OUT)" ARCH="$(KERNEL_ARCH)" CROSS_COMPILE="$(CROSS_COMPILE)" -j"$(JOBS)" $(KERNEL_IMAGE) modules
 	@echo 'Kernel build completed: $(KERNEL_OUT)'
 
 kernel-install: kernel
