@@ -1,4 +1,5 @@
 #include "Foundation.h"
+#include <arpa/inet.h>
 #include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
@@ -26,6 +27,27 @@ static int valid_percent_encoding(const char *text) {
         cursor += 2;
     }
     return 1;
+}
+
+
+static int valid_hostname(const char *host) {
+    if (!host || !host[0]) return 0;
+    size_t label_length = 0;
+    for (const unsigned char *cursor = (const unsigned char *)host; ; ++cursor) {
+        unsigned char value = *cursor;
+        if (value == '.' || value == '\\0') {
+            if (!label_length || host[cursor - (const unsigned char *)host - 1] == '-')
+                return 0;
+            label_length = 0;
+            if (!value) return 1;
+            continue;
+        }
+        if (!((value >= 'a' && value <= 'z') ||
+              (value >= '0' && value <= '9') || value == '-')) return 0;
+        if (!label_length && value == '-') return 0;
+        ++label_length;
+        if (label_length > 63) return 0;
+    }
 }
 
 static int parse_port(const char *text, size_t length, unsigned int *port) {
@@ -133,6 +155,9 @@ int mf_url_parse(const char *text, MFURL *url, MFError *error) {
             parsed.host = copy_range(host_start + 1,
                                      (size_t)(closing - host_start - 1));
             if (!parsed.host) goto memory_error;
+            struct in6_addr ipv6_address;
+            if (inet_pton(AF_INET6, parsed.host, &ipv6_address) != 1)
+                goto invalid_authority;
             if (closing + 1 < authority_end) {
                 if (closing[1] != ':') goto invalid_authority;
                 port_start = closing + 2;
@@ -151,6 +176,8 @@ int mf_url_parse(const char *text, MFURL *url, MFError *error) {
                 goto invalid_authority;
             parsed.host = copy_range(host_start, (size_t)(host_end - host_start));
             if (!parsed.host) goto memory_error;
+            if (parsed.host[0] && !valid_hostname(parsed.host))
+                goto invalid_authority;
         }
         if (port_start) {
             if (parse_port(port_start, (size_t)(authority_end - port_start),
