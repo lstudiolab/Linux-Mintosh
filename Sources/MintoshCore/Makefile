@@ -65,7 +65,7 @@ $(BUILD)/libcsf.a: ../CSF/darl_request.c $(LIBSYS_OBJECTS) | $(BUILD)
 	$(AR) rcs $@ $(BUILD)/csf-darl-request.o $(LIBSYS_OBJECTS)
 
 $(BUILD)/libgvd.a: ../GVD/dispatch_queue.c ../GVD/include/GVD.h | $(BUILD)
-	$(CC) $(CPPFLAGS) $(CFLAGS) -pthread -c ../GVD/dispatch_queue.c -o $(BUILD)/gvd-dispatch-queue.o
+	$(CC) $(CPPFLAGS) $(CFLAGS) -pthread -I../GVD/include -c ../GVD/dispatch_queue.c -o $(BUILD)/gvd-dispatch-queue.o
 	$(AR) rcs $@ $(BUILD)/gvd-dispatch-queue.o
 
 $(BUILD)/libfoundation.a: ../Foundation/string.c ../Foundation/path.c ../Foundation/data.c ../Foundation/array.c ../Foundation/dictionary.c ../Foundation/url.c ../Foundation/error.c ../Foundation/filesystem.c | $(BUILD)
