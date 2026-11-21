@@ -8,6 +8,7 @@ on:
       - "configs/**"
       - "kernel/**"
       - "scripts/**"
+      - "Sources/**"
       - ".github/workflows/mintosh-base.yml"
   pull_request:
     paths:
