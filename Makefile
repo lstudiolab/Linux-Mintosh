@@ -75,7 +75,7 @@ host-deps:
 	@sudo apt-get update
 	@sudo apt-get install -y bc bison build-essential cpio curl debootstrap flex gcc g++ \
 	  grub-common grub-pc-bin grub-efi-amd64-bin kmod libelf-dev libncurses-dev \
-	  libssl-dev make mtools python3 qemu-system-x86 rsync gcc-aarch64-linux-gnu binutils-aarch64-linux-gnu xorriso xz-utils
+	  libssl-dev libsqlite3-dev make mtools python3 qemu-system-x86 rsync gcc-aarch64-linux-gnu binutils-aarch64-linux-gnu xorriso xz-utils
 
 kernel-fetch: check-host check-release
 	@ARCH="$(ARCH)" sh ./scripts/fetch-kernel.sh
