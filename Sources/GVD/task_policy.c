@@ -1,3 +1,4 @@
+#define _GNU_SOURCE
 #include "task_policy.h"
 #include <errno.h>
 #include <limits.h>
