@@ -9,6 +9,7 @@ This roadmap separates implemented source from verified release behavior. A dire
 - [x] Separate kernel build output by architecture
 - [x] x86_64 and ARM64 kernel build mappings
 - [x] Local release-manifest validation
+- [~] Native foundation verification workflow (workflow added; successful hosted run still needs confirmation)
 - [ ] Reproducible-build verification across clean hosts
 - [ ] ARM64 root filesystem, boot image and installer
 
@@ -19,13 +20,11 @@ This roadmap separates implemented source from verified release behavior. A dire
 - [~] launch511 command execution helper (direct argv execution; policy and privilege model remain)
 - [~] CSF client library (Darl request transport only; higher-level system APIs remain)
 - [~] Foundation library (strings, byte buffers, arrays, dictionaries, URL parsing, errors, lexical paths and bounded atomic file I/O; date/time, localization, serialization and broader filesystem APIs remain)
-- [~] GVD task management and dispatch (process scheduling controls and bounded worker queue; cancellation, priorities and cross-process task policy remain)
-- [~] IOPS power services (power, thermal and CPU governor inventory/control; battery policy daemon and power event API remain)
+- [~] GVD task management and dispatch (bounded worker queue, process inventory, nice values and non-realtime scheduler policies; cancellation, cgroup resource controls and cross-process task policy remain)
+- [~] IOPS power services (battery/thermal telemetry, CPU governor and platform profile controls; vendor-specific policy daemon, suspend integration and power event API remain)
 - [~] I/O+ inventory and kernel uevent monitor (structured device data and live hotplug events; driver capability probing and stable device identity remain)
-- [~] GVD task manager (process inventory, safe nice values and non-realtime scheduler policies; cgroup resource controls and lifecycle integration remain)
 - [~] FMS metadata search (atomic SQLite file index and bounded search; incremental indexing, content search and query service remain)
 - [~] DM disk manager (sysfs disk inventory and restricted mount/unmount operations; filesystem health, encryption and partition planning remain)
-- [~] IOPS power services (battery/thermal telemetry and validated CPU/platform profile controls; vendor-specific power policy and suspend integration remain)
 - [~] HP ProBook compatibility baseline (multi-generation x86-64 driver profile, vendor firmware packages and DMI diagnostics; model-by-model hardware certification remains)
 - [~] Kexts Linux module frontend (list/load/unload wrapper; signed module policy and lifecycle integration remain)
 - [~] System Logging syslog frontend (write path exists; structured querying, rotation policy and retention remain)
@@ -54,7 +53,7 @@ This roadmap separates implemented source from verified release behavior. A dire
 - [x] Custom initramfs assembly
 - [x] GRUB BIOS/UEFI ISO assembly
 - [x] Live environment and text installer
-- [x] Passing QEMU boot test on the release commit
+- [ ] QEMU boot test on the current release commit (must pass before physical installation is considered safe)
 - [ ] Installer destructive-operation test suite
 - [ ] Physical-machine installation test on representative HP ProBook Intel and AMD models
 - [ ] ARM64 bootable image and installer
