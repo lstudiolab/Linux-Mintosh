@@ -1,47 +1,66 @@
 CC ?= cc
 AR ?= ar
-CFLAGS ?= -O2 -Wall -Wextra
-CPPFLAGS += -I../LibSys/include -I../CSF/include -I../Foundation/include
+CFLAGS ?= -O2 -Wall -Wextra -Wpedantic
+CPPFLAGS += -I../LibSys/include -I../CSF/include -I../Foundation/include -I../Launch7762
 PREFIX ?= /usr
 DESTDIR ?=
 BINDIR = $(DESTDIR)$(PREFIX)/bin
 LIBDIR = $(DESTDIR)$(PREFIX)/lib
 INCLUDEDIR = $(DESTDIR)$(PREFIX)/include/mintosh
 BUILD = build
-LIBSYS = $(BUILD)/libsys.o
+
+LIBSYS_SOURCES = ../LibSys/filesystem.c ../LibSys/file_descriptor.c ../LibSys/unix_socket.c ../LibSys/system_log.c
+LIBSYS_OBJECTS = $(patsubst ../LibSys/%.c,$(BUILD)/libsys-%.o,$(LIBSYS_SOURCES))
 PROGRAMS = mosf launch7762 launch511 ioplus kextctl mosflog security-audit mintoshctl
+
 all: $(addprefix $(BUILD)/,$(PROGRAMS)) $(BUILD)/libcsf.a $(BUILD)/libfoundation.a
+
 $(BUILD):
 	mkdir -p $@
-$(LIBSYS): ../LibSys/libsys.c ../LibSys/include/libsys.h | $(BUILD)
+
+$(BUILD)/libsys-%.o: ../LibSys/%.c ../LibSys/include/libsys.h | $(BUILD)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
-$(BUILD)/mosf: ../MOSF/main.c $(LIBSYS)
+
+$(BUILD)/mosf: ../MOSF/mosf_daemon.c ../MOSF/mosf_protocol.c $(LIBSYS_OBJECTS)
 	$(CC) $(CPPFLAGS) $(CFLAGS) $^ -o $@
-$(BUILD)/launch7762: ../Launch7762/main.c $(LIBSYS)
+
+$(BUILD)/launch7762: ../Launch7762/service_manager_main.c ../Launch7762/service_config.c ../Launch7762/service_process.c ../Launch7762/service_control.c ../Launch7762/service_socket.c $(LIBSYS_OBJECTS)
 	$(CC) $(CPPFLAGS) $(CFLAGS) $^ -o $@
-$(BUILD)/launch511: ../Launch511/main.c
-	$(CC) $(CPPFLAGS) $(CFLAGS) $< -o $@
-$(BUILD)/ioplus: ../IOPlus/main.c
-	$(CC) $(CPPFLAGS) $(CFLAGS) $< -o $@
-$(BUILD)/kextctl: ../Kexts/main.c
-	$(CC) $(CPPFLAGS) $(CFLAGS) $< -o $@
-$(BUILD)/mosflog: ../SystemLogging/main.c $(LIBSYS)
+
+$(BUILD)/launch511: ../Launch511/command_runner.c ../Launch511/command_arguments.c ../Launch511/command_exec.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $^ -o $@
-$(BUILD)/security-audit: ../Security/main.c
-	$(CC) $(CPPFLAGS) $(CFLAGS) $< -o $@
-$(BUILD)/mintoshctl: ../MintoshCtl/main.c $(LIBSYS)
+
+$(BUILD)/ioplus: ../IOPlus/hardware_inventory.c ../IOPlus/kernel_information.c ../IOPlus/sysfs_inventory.c ../IOPlus/memory_information.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $^ -o $@
-$(BUILD)/libcsf.a: ../CSF/csf.c $(LIBSYS)
-	$(CC) $(CPPFLAGS) $(CFLAGS) -c ../CSF/csf.c -o $(BUILD)/csf.o
-	$(AR) rcs $@ $(BUILD)/csf.o $(LIBSYS)
-$(BUILD)/libfoundation.a: ../Foundation/Foundation.c | $(BUILD)
-	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $(BUILD)/foundation.o
-	$(AR) rcs $@ $(BUILD)/foundation.o
+
+$(BUILD)/kextctl: ../Kexts/module_manager.c ../Kexts/module_command.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) $^ -o $@
+
+$(BUILD)/mosflog: ../SystemLogging/log_command.c ../SystemLogging/log_writer.c $(LIBSYS_OBJECTS)
+	$(CC) $(CPPFLAGS) $(CFLAGS) $^ -o $@
+
+$(BUILD)/security-audit: ../Security/permission_audit.c ../Security/permission_check.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) $^ -o $@
+
+$(BUILD)/mintoshctl: ../MintoshCtl/control_command.c ../MintoshCtl/mosf_client.c ../MintoshCtl/service_client.c $(LIBSYS_OBJECTS)
+	$(CC) $(CPPFLAGS) $(CFLAGS) $^ -o $@
+
+$(BUILD)/libcsf.a: ../CSF/mosf_request.c $(LIBSYS_OBJECTS) | $(BUILD)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c ../CSF/mosf_request.c -o $(BUILD)/csf-mosf-request.o
+	$(AR) rcs $@ $(BUILD)/csf-mosf-request.o $(LIBSYS_OBJECTS)
+
+$(BUILD)/libfoundation.a: ../Foundation/string.c ../Foundation/path.c | $(BUILD)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c ../Foundation/string.c -o $(BUILD)/foundation-string.o
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c ../Foundation/path.c -o $(BUILD)/foundation-path.o
+	$(AR) rcs $@ $(BUILD)/foundation-string.o $(BUILD)/foundation-path.o
+
 install: all
 	install -d $(BINDIR) $(LIBDIR) $(INCLUDEDIR)
 	install -m 0755 $(addprefix $(BUILD)/,$(PROGRAMS)) $(BINDIR)/
 	install -m 0644 $(BUILD)/libcsf.a $(BUILD)/libfoundation.a $(LIBDIR)/
 	install -m 0644 ../LibSys/include/libsys.h ../CSF/include/csf.h ../Foundation/include/Foundation.h $(INCLUDEDIR)/
+
 clean:
 	rm -rf $(BUILD)
+
 .PHONY: all install clean
