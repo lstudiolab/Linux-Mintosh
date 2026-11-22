@@ -205,7 +205,7 @@ static void handle_client(int client, gid_t service_gid) {
                   XCM_RESPONSE_PAYLOAD_NONE, NULL, 0);
 }
 
-static int prepare_socket(const char *path, gid_t group_id) {
+static int prepare_socket(const char *path) {
     char directory[sizeof(((struct sockaddr_un *)0)->sun_path)];
     size_t length = strlen(path);
     if (length == 0 || length >= sizeof(directory)) { errno = ENAMETOOLONG; return -1; }
@@ -273,7 +273,7 @@ int main(int argc, char **argv) {
     if (socket_path == NULL || socket_path[0] == '\0')
         socket_path = XCM_SOCKET_DEFAULT;
 
-    int server = prepare_socket(socket_path, services->gr_gid);
+    int server = prepare_socket(socket_path);
     if (server < 0) {
         perror("xcmd: prepare socket");
         return 1;
