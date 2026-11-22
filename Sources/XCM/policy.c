@@ -10,6 +10,12 @@ static enum xcm_policy_result require_capability(
         ? XCM_POLICY_ALLOW : XCM_POLICY_CAPABILITY_DENIED;
 }
 
+static bool payload_is(const struct xcm_request *request, uint32_t type)
+{
+    return request->payload_type == type &&
+           ((type == XCM_PAYLOAD_NONE) == (request->payload_size == 0));
+}
+
 enum xcm_policy_result xcm_policy_authorize(
     const struct xcm_request *request,
     const struct xcm_policy_context *context)
@@ -47,7 +53,7 @@ enum xcm_policy_result xcm_policy_authorize(
 
         if (request->operation == XCM_OP_PRESENT_TOKENS) {
             if (request->target != XCM_TARGET_PRESENTATION ||
-                request->payload_type != XCM_PAYLOAD_UI_TOKENS)
+                !payload_is(request, XCM_PAYLOAD_UI_TOKENS))
                 return XCM_POLICY_TARGET_MISMATCH;
             return require_capability(context, XCM_CAP_PRESENT);
         }
@@ -58,34 +64,35 @@ enum xcm_policy_result xcm_policy_authorize(
 
         switch (request->operation) {
         case XCM_OP_READ_SYSTEM_INFO:
-            if (request->target != XCM_TARGET_SYSTEM_INFO)
+            if (request->target != XCM_TARGET_SYSTEM_INFO ||
+                !payload_is(request, XCM_PAYLOAD_NONE))
                 return XCM_POLICY_TARGET_MISMATCH;
             return require_capability(context, XCM_CAP_READ_SYSTEM);
 
         case XCM_OP_LIST_USER_DATA:
-            if (request->target != XCM_TARGET_USER_DATA)
+            if (request->target != XCM_TARGET_USER_DATA || request->object_id != 0 ||
+                !payload_is(request, XCM_PAYLOAD_NONE))
                 return XCM_POLICY_TARGET_MISMATCH;
             return require_capability(context, XCM_CAP_READ_USER_DATA);
 
         case XCM_OP_READ_USER_DATA:
-            if (request->target != XCM_TARGET_USER_DATA || request->object_id == 0)
+            if (request->target != XCM_TARGET_USER_DATA || request->object_id == 0 ||
+                !payload_is(request, XCM_PAYLOAD_NONE))
                 return XCM_POLICY_TARGET_MISMATCH;
             return require_capability(context, XCM_CAP_READ_USER_DATA);
 
         case XCM_OP_WRITE_USER_DATA:
-            if (request->target != XCM_TARGET_USER_DATA || request->object_id == 0)
+            if (request->target != XCM_TARGET_USER_DATA || request->object_id == 0 ||
+                !payload_is(request, XCM_PAYLOAD_TYPED_DATA))
                 return XCM_POLICY_TARGET_MISMATCH;
-            if (request->payload_type != XCM_PAYLOAD_TYPED_DATA ||
-                request->payload_size == 0)
-                return XCM_POLICY_BAD_PAYLOAD;
             return require_capability(context, XCM_CAP_WRITE_USER_DATA);
 
         case XCM_OP_DELETE_USER_DATA:
-            if (request->target != XCM_TARGET_USER_DATA || request->object_id == 0)
+            if (request->target != XCM_TARGET_USER_DATA || request->object_id == 0 ||
+                !payload_is(request, XCM_PAYLOAD_NONE))
                 return XCM_POLICY_TARGET_MISMATCH;
-            if (request->payload_type != XCM_PAYLOAD_NONE || request->payload_size != 0)
-                return XCM_POLICY_BAD_PAYLOAD;
-            if ((request->flags & XCM_FLAG_USER_CONFIRMED) == 0)
+            if ((request->flags & XCM_FLAG_USER_CONFIRMED) == 0 ||
+                !context->confirmation_grant_valid)
                 return XCM_POLICY_CONFIRMATION_REQUIRED;
             return require_capability(context, XCM_CAP_DELETE_USER_DATA);
 
@@ -96,7 +103,8 @@ enum xcm_policy_result xcm_policy_authorize(
 
     if (context->authenticated_peer == XCM_PEER_UPDATE_SERVICE) {
         if (request->operation != XCM_OP_UPDATE_DARKIN ||
-            request->target != XCM_TARGET_DARKIN_CORE)
+            request->target != XCM_TARGET_DARKIN_CORE ||
+            !payload_is(request, XCM_PAYLOAD_TYPED_DATA))
             return XCM_POLICY_PROTECTED_TARGET;
         if (!context->verified_update_bundle)
             return XCM_POLICY_UNVERIFIED_UPDATE;
