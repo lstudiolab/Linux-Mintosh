@@ -9,13 +9,13 @@ OUT="$ROOT/out/initramfs.cpio.gz"
 KERNEL_IMAGE=$(find "$ROOTFS/boot" -maxdepth 1 -type f -name 'vmlinuz-*' -print -quit)
 [ -n "$KERNEL_IMAGE" ] || { echo "Versioned kernel image missing. Run make kernel-install first." >&2; exit 1; }
 
-SOURCE_COMMIT=$(git -C "$ROOT" rev-parse HEAD 2>/dev/null || true)
+SOURCE_COMMIT=$(git -c safe.directory="$ROOT" -C "$ROOT" rev-parse HEAD 2>/dev/null || true)
 [ "$(printf '%s' "$SOURCE_COMMIT" | wc -c)" -eq 40 ] &&
   printf '%s' "$SOURCE_COMMIT" | grep -Eq '^[0-9a-f]+$' || {
     echo "Build the installer from a Git checkout with a full commit ID." >&2
     exit 1
   }
-git -C "$ROOT" diff --quiet && git -C "$ROOT" diff --cached --quiet || {
+git -c safe.directory="$ROOT" -C "$ROOT" diff --quiet && git -c safe.directory="$ROOT" -C "$ROOT" diff --cached --quiet || {
   echo "Commit source changes before building the installer; the ISO pins a Git commit." >&2
   exit 1
 }
