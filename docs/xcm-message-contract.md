@@ -1,17 +1,17 @@
 # XCM message contract
 
-XCM is a standalone message broker between Choca and Darkin, not a shared-memory backdoor. The first transport uses Linux Unix-domain `SOCK_SEQPACKET` sockets so each request arrives as one bounded packet.
+XCM is a standalone message broker between Cacao and Tarts, not a shared-memory backdoor. The first transport uses Linux Unix-domain `SOCK_SEQPACKET` sockets so each request arrives as one bounded packet.
 
 ## Message directions and payloads
 
 | Direction | Message class | Meaning |
 |---|---|---|
-| Choca → XCM → Choca renderer | UI token stream | USI presentation output: layout, text, controls and visual state |
-| Choca → XCM → Darkin service | Typed request | Declared operation against a capability-scoped object |
-| Darkin service → XCM → Choca | Darkin data | Structured system state or query result |
-| Darkin service → XCM → Choca | Darkin event | Hardware, storage, network, power or service state change |
-| Darkin service → XCM → Choca | Service status | Success, denial, unavailable or bounded error result |
-| Darkin service → XCM → Choca | App event | Application lifecycle and package-operation status |
+| Cacao → XCM → Cacao renderer | UI token stream | USI presentation output: layout, text, controls and visual state |
+| Cacao → XCM → Tarts service | Typed request | Declared operation against a capability-scoped object |
+| Tarts service → XCM → Cacao | Tarts data | Structured system state or query result |
+| Tarts service → XCM → Cacao | Tarts event | Hardware, storage, network, power or service state change |
+| Tarts service → XCM → Cacao | Service status | Success, denial, unavailable or bounded error result |
+| Tarts service → XCM → Cacao | App event | Application lifecycle and package-operation status |
 
 USI tokens are a restricted presentation language. They are not shell commands, executable code, filesystem paths or kernel requests. The v1 token contract supports bounded UTF-8 text, balanced row/column containers, spacers, buttons with numeric action IDs and images with numeric resource IDs.
 
@@ -26,17 +26,17 @@ USI tokens are a restricted presentation language. They are not shell commands, 
 - Presentation streams pass strict token count/depth, UTF-8, payload-size and token-type validation before they can be routed.
 - The first broker grants only presentation and read-only system-information capabilities.
 - User-data operations and foundation updates remain disabled until their backend, grant lifecycle and update-verification services exist.
-- Darkin kernel, boot assets, security policy, Choca core and XCM core have no Choca mutation operation.
-- Darkin services independently authorize each request.
+- Tarts kernel, boot assets, security policy, Cacao core and XCM core have no Cacao mutation operation.
+- Tarts services independently authorize each request.
 
 ## Current broker behavior
 
-The C17 broker and client library are built by `Sources/XCM/Makefile`. The broker listens at `/run/mintosh/xcm.sock`, validates requests, maintains a bounded recent-request replay cache keyed by authenticated UID/PID and request ID, and audits policy decisions through the system authentication log.
+The C17 broker and client library are built by `Sources/XCM/Makefile`. The broker listens at `/run/mintosh/xpu.sock`, validates requests, maintains a bounded recent-request replay cache keyed by authenticated UID/PID and request ID, and audits policy decisions through the system authentication log.
 
-For a system-information query, XCM forwards a separate typed request to the Darkin system service over `/run/mintosh-darkin/system.sock`. That backend socket is root-only and authenticates the XCM service credentials. Darkin independently validates the operation and returns a bounded typed response. Presentation streams are structurally validated but return `UNAVAILABLE` until a Choca renderer endpoint is registered.
+For a system-information query, XCM forwards a separate typed request to the Tarts system service over `/run/tarts/system.sock`. That backend socket is root-only and authenticates the XCM service credentials. Tarts independently validates the operation and returns a bounded typed response. Presentation streams are structurally validated but return `UNAVAILABLE` until a Cacao renderer endpoint is registered.
 
 The replay cache is bounded and is not a substitute for a durable session protocol. A production release still requires session-bound nonces, a stronger replay window, parser fuzzing, endpoint registration and per-application capabilities.
 
 ## Trust separation
 
-Darkin is the backend foundation and does not depend on Choca. Choca cannot directly open privileged Darkin interfaces. XCM validates and routes typed messages but does not grant privileges that Darkin itself does not enforce.
+Tarts is the backend foundation and does not depend on Cacao. Cacao cannot directly open privileged Tarts interfaces. XCM validates and routes typed messages but does not grant privileges that Tarts itself does not enforce.
