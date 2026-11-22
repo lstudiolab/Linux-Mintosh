@@ -1,32 +1,17 @@
-# Darkin — Mintosh system foundation
+# Tarts — backend foundation (legacy source location)
 
-Darkin is the complete backend foundation. It owns XNV (the Linux-based kernel architecture), boot/runtime, hardware and device services, process and memory services, storage, filesystems, networking, security, logging, power and all non-graphical system services.
+The backend foundation's final name is **Tarts**. This directory remains named `Sources/Darkin/` temporarily so existing references and build integration are not broken during migration.
 
-Darkin is independent of the graphical platform. It does not contain USI, a window server, graphical frameworks, desktop shell or app manager.
+Tarts owns the complete non-graphical foundation:
+- Linux kernel integration through XCU.
+- Boot and runtime infrastructure.
+- Hardware, device, memory and process services.
+- Storage, filesystems and networking.
+- Security enforcement, logging and power management.
+- System service lifecycle, launch, dependency ordering, supervision and recovery.
 
-Existing backend prototypes in `Sources/` are Darkin-owned candidates. Their current Linux/POSIX dependencies and service boundaries must be audited before they are treated as final Darkin components.
+Shared, stable user-space APIs and reusable system functionality are organized as **Core Services**. Tarts owns and supervises their service processes, but Core Services is a distinct API/service layer.
 
-Darkin exposes typed, versioned service APIs. It does not accept arbitrary code, pointers, paths or untrusted UI tokens as privileged commands. Choca reaches Darkin only through the separate XCM broker. Each Darkin service must enforce authorization itself even when XCM has already checked the request.
+Tarts is independent of Cacao. It does not contain the desktop, graphical UI, Window Server, graphical framework or app-manager interface. Cacao reaches Tarts-owned services through the XPU security and IPC boundary.
 
-The first protected backend endpoint is `darkin-system`, which serves read-only system information only to the root XCM service over `/run/mintosh-darkin/system.sock`. The socket lives in a root-only runtime directory and is not accessible to Choca.
-
-XNV is the Linux-based kernel architecture inside Darkin. The first-party XNV API in `Sources/Darkin/XNV` wraps Linux pidfds, Unix sequenced-packet ports with descriptor passing, sealed memfd memory objects and epoll event queues. These provide Mach-inspired task/port/memory abstractions without introducing a second kernel.
-
-## Existing backend ownership map
-
-These directories are Darkin-owned backend candidates. Their current implementations are prototypes and must be migrated to stable interfaces rather than assumed production-ready.
-
-| Area | Existing source candidates | Responsibility |
-|---|---|---|
-| Boot and platform | `Sources/Boot`, `Sources/Architecture`, `Sources/Init`, `Sources/mBoot` | Boot handoff, platform startup and early system initialization |
-| Core libraries | `Sources/Foundation`, `Sources/LibSys` | Base data structures, paths, files, descriptors and system API support |
-| Process and services | `Sources/Launch7762`, `Sources/Launch511`, `Sources/LaunchClient`, `Sources/GVD`, `Sources/Darl` | Process lifecycle, service supervision, worker queues and service IPC |
-| Hardware and power | `Sources/IOPS`, `Sources/IOPlus`, `Sources/HPCompatibility`, `Sources/DM`, `Sources/FMS`, `Sources/Kexts` | Hardware inventory, power, device and module management |
-| Security and diagnostics | `Sources/Security`, `Sources/SystemLogging`, `Sources/CSF` | Permission checks, audit/logging and service-facing APIs |
-| System update | To be implemented under Darkin | Signed OS image verification, atomic activation and rollback |
-
-The `Sources/PackageManager` prototype must be split by responsibility: Choca owns the app-management experience, while Darkin owns privileged package verification, installation transactions and system integrity enforcement. The graphical installer belongs to Choca; privileged disk and boot changes must be exposed by narrowly scoped Darkin services through XCM.
-
-## Non-goals
-
-Darkin does not own the desktop, USI, window server, compositor, Finder-like shell, dock, graphical controls or app-manager UI. Those belong to Choca. Darkin does not communicate directly with Choca; XCM is the broker boundary.
+The existing Linux-backed XNV primitives and read-only system-information service are prototypes being migrated to XCU and Tarts contracts. Do not rename implementation paths until build and CI integration has been updated and tested.
