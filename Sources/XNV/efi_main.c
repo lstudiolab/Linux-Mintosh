@@ -91,7 +91,7 @@ void xnv_kernel_main(struct xnv_boot_info *info)
     xnv_serial_write("XNV: physical page allocator ready; free pages=");
     xnv_serial_hex(xnv_phys_free_pages());xnv_serial_write("\r\n");
     xnv_serial_write("XNV: enabling initial 32 GiB identity map\r\n");
-    if(!xnv_paging_init()){xnv_serial_write("XNV: unsupported five-level paging mode\r\n");xnv_halt();}
+    if(!xnv_paging_init((const struct xnv_memory_region*)(unsigned long)info->memory_map_address,info->memory_map_entries)){xnv_serial_write("XNV: RAM page-map construction failed or five-level paging is active\r\n");xnv_halt();}
     xnv_serial_write("XNV: paging enabled; boot services exited\r\n");
     xnv_serial_write("XNV: bootstrap reached idle state\r\n");
     xnv_halt();
