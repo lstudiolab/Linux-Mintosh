@@ -3,8 +3,8 @@
 
 #include <errno.h>
 #include <grp.h>
+#include <ctype.h>
 #include <poll.h>
-#include <pwd.h>
 #include <signal.h>
 #include <stdarg.h>
 #include <stdbool.h>
@@ -49,25 +49,32 @@ static void audit_event(int priority, const char *format, ...) {
     va_end(arguments);
 }
 
-static bool group_member(uid_t uid, gid_t required_group) {
-    struct passwd *account = getpwuid(uid);
-    if (account == NULL) return false;
-    int count = 16;
-    gid_t *groups = calloc((size_t)count, sizeof(*groups));
-    if (groups == NULL) return false;
-    int result = getgrouplist(account->pw_name, account->pw_gid, groups, &count);
-    if (result < 0) {
-        gid_t *expanded = realloc(groups, (size_t)count * sizeof(*groups));
-        if (expanded == NULL) { free(groups); return false; }
-        groups = expanded;
-        result = getgrouplist(account->pw_name, account->pw_gid, groups, &count);
-    }
+static bool peer_in_group(pid_t pid, gid_t primary_group, gid_t required_group) {
+    if (primary_group == required_group) return true;
+    char path[64];
+    int path_length = snprintf(path, sizeof(path), "/proc/%ld/status", (long)pid);
+    if (path_length < 0 || (size_t)path_length >= sizeof(path)) return false;
+    FILE *status = fopen(path, "re");
+    if (status == NULL) return false;
+
+    char line[4096];
     bool found = false;
-    if (result >= 0) {
-        for (int i = 0; i < count; ++i)
-            if (groups[i] == required_group) { found = true; break; }
+    while (fgets(line, sizeof(line), status) != NULL) {
+        if (strncmp(line, "Groups:", 7) != 0) continue;
+        char *cursor = line + 7;
+        while (*cursor != '\\0') {
+            while (isspace((unsigned char)*cursor)) ++cursor;
+            if (*cursor == '\\0') break;
+            errno = 0;
+            char *end = NULL;
+            unsigned long value = strtoul(cursor, &end, 10);
+            if (errno != 0 || end == cursor) break;
+            if ((gid_t)value == required_group) { found = true; break; }
+            cursor = end;
+        }
+        break;
     }
-    free(groups);
+    fclose(status);
     return found;
 }
 
@@ -117,7 +124,7 @@ static void handle_client(int client, gid_t service_gid) {
     }
 
     if (credentials.uid == 0 ||
-        !group_member(credentials.uid, service_gid)) {
+        !peer_in_group(credentials.pid, credentials.gid, service_gid)) {
         audit_event(LOG_WARNING, "denied peer uid=%lu pid=%ld: not an authorized Choca session",
                     (unsigned long)credentials.uid, (long)credentials.pid);
         send_response(client, 0, XCM_RESPONSE_DENIED, XCM_RESPONSE_PAYLOAD_NONE, NULL, 0);
