@@ -1,5 +1,5 @@
 #define _GNU_SOURCE
-#include "include/xcm/sean_client.h"
+#include "include/xcm/darkin_client.h"
 #include <sean/protocol.h>
 
 #include <errno.h>
