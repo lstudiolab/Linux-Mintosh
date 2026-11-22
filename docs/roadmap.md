@@ -44,11 +44,12 @@ This roadmap separates implemented source from verified release behavior. A dire
 - [x] GNU core utilities and Bash
 - [x] Native Mintosh programs compiled in the target root filesystem
 - [x] Native service manager and Darl started during boot
-- [x] systemd-networkd DHCP configuration
+- [x] NetworkManager base integration for automatic wired networking and Wi-Fi via wpa_supplicant
+- [x] systemd-resolved DNS integration
 - [x] sudo user creation and root-account lock
 - [~] Generic x86-64 hardware profile is the default; HP ProBook driver profile is opt-in
 - [ ] Hardware matrix beyond QEMU
-- [ ] Network smoke test in CI
+- [ ] NetworkManager wired/Wi-Fi connection smoke test in QEMU and physical hardware
 - [ ] End-to-end service control and package transaction tests in installed rootfs
 
 ### Boot and installer
