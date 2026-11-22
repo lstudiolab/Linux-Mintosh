@@ -85,9 +85,10 @@ test-mboot: mboot
 	@python3 scripts/test-mboot.py $(MBOOT_OUT)/boot.efi $(MBOOT_OUT)/BOOTX64.EFI
 
 test-mboot-qemu: mboot
-	@KERNEL_FILE=$(find "$(ROOTFS)/boot" -maxdepth 1 -type f -name 'vmlinuz-*' -print -quit); \
-	  test -n "$KERNEL_FILE" || { echo 'Build the kernel and rootfs first (make iso).' >&2; exit 1; }; \
-	  sh scripts/test-mboot-qemu.sh "$(MBOOT_OUT)/BOOTX64.EFI" "$KERNEL_FILE" "out/initramfs.cpio.gz"
+	@KERNEL_FILE=$$(find "$(ROOTFS)/boot" -maxdepth 1 -type f -name 'vmlinuz-*' -print -quit); \
+	  test -n "$$KERNEL_FILE" || { echo 'Build the kernel and rootfs first (make iso).' >&2; exit 1; }; \
+	  test -s "out/initramfs.cpio.gz" || { echo 'Build the initramfs first (make iso).' >&2; exit 1; }; \
+	  sh scripts/test-mboot-qemu.sh "$(MBOOT_OUT)/BOOTX64.EFI" "$$KERNEL_FILE" "out/initramfs.cpio.gz"
 
 mboot: $(MBOOT_OUT)/boot.efi $(MBOOT_OUT)/BOOTX64.EFI
 
