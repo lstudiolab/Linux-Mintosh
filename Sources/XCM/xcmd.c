@@ -24,9 +24,9 @@
 #include <unistd.h>
 #include <stddef.h>
 
-#define XCM_SOCKET_DEFAULT "/run/mintosh/xcm.sock"
+#define XPU_SOCKET_DEFAULT "/run/mintosh/xpu.sock"
 #define XCM_REPLAY_SLOTS 512U
-#define XCM_AUDIT_TAG "xcmd"
+#define XPU_AUDIT_TAG "xpu"
 
 struct replay_entry {
     uid_t uid;
@@ -126,7 +126,7 @@ static void handle_client(int client, gid_t service_gid) {
 
     if (credentials.uid == 0 ||
         !peer_in_group(credentials.pid, credentials.gid, service_gid)) {
-        audit_event(LOG_WARNING, "denied peer uid=%lu pid=%ld: not an authorized Choca session",
+        audit_event(LOG_WARNING, "denied peer uid=%lu pid=%ld: not an authorized Cacao session",
                     (unsigned long)credentials.uid, (long)credentials.pid);
         send_response(client, 0, XCM_RESPONSE_DENIED, XCM_RESPONSE_PAYLOAD_NONE, NULL, 0);
         return;
@@ -197,7 +197,7 @@ static void handle_client(int client, gid_t service_gid) {
         uint32_t information_size = 0;
         if (xcm_darkin_system_info(request.request_id, information,
                                    sizeof(information), &information_size) < 0) {
-            audit_event(LOG_ERR, "Darkin system-info endpoint unavailable: %s",
+            audit_event(LOG_ERR, "Tarts system-info endpoint unavailable: %s",
                         strerror(errno));
             send_response(client, request.request_id, XCM_RESPONSE_UNAVAILABLE,
                           XCM_RESPONSE_PAYLOAD_NONE, NULL, 0);
@@ -211,7 +211,7 @@ static void handle_client(int client, gid_t service_gid) {
         return;
     }
 
-    /* The renderer is a separate Choca endpoint and is not yet registered. */
+    /* The renderer is a separate Cacao endpoint and is not yet registered. */
     send_response(client, request.request_id, XCM_RESPONSE_UNAVAILABLE,
                   XCM_RESPONSE_PAYLOAD_NONE, NULL, 0);
 }
@@ -263,38 +263,38 @@ static int prepare_socket(const char *path) {
 
 int main(int argc, char **argv) {
     if (argc == 2 && strcmp(argv[1], "--version") == 0) {
-        puts("XCM Broker 0.1.0");
+        puts("XPU Broker 0.1.0");
         return 0;
     }
     if (argc != 1) {
-        fputs("Usage: xcmd [--version]\n", stderr);
+        fputs("Usage: xpu [--version]\n", stderr);
         return 64;
     }
     if (geteuid() != 0) {
-        fputs("xcmd must run as root; Choca clients remain unprivileged.\n", stderr);
+        fputs("xpu must run as root; Choca clients remain unprivileged.\n", stderr);
         return 77;
     }
 
     struct group *services = getgrnam("mintosh-services");
     if (services == NULL) {
-        fputs("xcmd: required mintosh-services group is missing\n", stderr);
+        fputs("xpu: required mintosh-services group is missing\n", stderr);
         return 1;
     }
-    const char *socket_path = getenv("MINTOSH_XCM_SOCKET");
+    const char *socket_path = getenv("MINTOSH_XPU_SOCKET");
     if (socket_path == NULL || socket_path[0] == '\0')
-        socket_path = XCM_SOCKET_DEFAULT;
+        socket_path = XPU_SOCKET_DEFAULT;
 
     int server = prepare_socket(socket_path);
     if (server < 0) {
-        perror("xcmd: prepare socket");
+        perror("xpu: prepare socket");
         return 1;
     }
 
-    openlog(XCM_AUDIT_TAG, LOG_PID | LOG_NDELAY, LOG_AUTHPRIV);
+    openlog(XPU_AUDIT_TAG, LOG_PID | LOG_NDELAY, LOG_AUTHPRIV);
     signal(SIGTERM, stop_server);
     signal(SIGINT, stop_server);
     signal(SIGPIPE, SIG_IGN);
-    audit_event(LOG_NOTICE, "XCM broker started");
+    audit_event(LOG_NOTICE, "XPU broker started");
 
     while (!stopping) {
         struct pollfd descriptor = { .fd = server, .events = POLLIN };
@@ -320,7 +320,7 @@ int main(int argc, char **argv) {
 
     close(server);
     unlink(socket_path);
-    audit_event(LOG_NOTICE, "XCM broker stopped");
+    audit_event(LOG_NOTICE, "XPU broker stopped");
     closelog();
     return 0;
 }
