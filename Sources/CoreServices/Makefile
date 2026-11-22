@@ -11,7 +11,7 @@ all:
 	$(MAKE) -C ../MintoshCore all
 
 test:
-	$(MAKE) -C ../MintoshCore test-foundation
+	$(MAKE) -C ../MintoshCore all test-foundation
 	$(CC) -std=c17 -Wall -Wextra -Wpedantic -Werror -Iinclude -fsyntax-only tests/api_compile_test.c
 
 install:
