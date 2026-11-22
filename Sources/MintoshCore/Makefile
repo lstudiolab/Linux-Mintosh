@@ -68,7 +68,7 @@ $(BUILD)/security-audit: ../Security/permission_audit.c ../Security/permission_c
 $(BUILD)/mintoshctl: ../MintoshCtl/control_command.c ../MintoshCtl/darl_client.c ../MintoshCtl/service_client.c $(LIBSYS_OBJECTS)
 	$(CC) $(CPPFLAGS) $(CFLAGS) $^ -o $@
 
-$(BUILD)/mstore: ../PackageManager/package_command.c ../PackageManager/package_validation.c ../PackageManager/package_exec.c | $(BUILD)
+$(BUILD)/mstore: ../PackageManager/package_command.c ../PackageManager/package_validation.c | $(BUILD)
 	$(CC) $(CPPFLAGS) $(CFLAGS) $^ -o $@
 
 $(BUILD)/libcsf.a: ../CSF/darl_request.c ../CSF/system_info.c ../CSF/service_api.c $(LIBSYS_OBJECTS) | $(BUILD)
