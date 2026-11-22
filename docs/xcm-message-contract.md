@@ -1,32 +1,38 @@
 # XCM message contract
 
-XCM is a message broker, not a shared-memory backdoor. Each component communicates through versioned envelopes and an authenticated local transport. Messages are routed to named service endpoints; there is no generic "run this command as root" endpoint.
+XCM is a standalone message broker between Choca and Darkin, not a shared-memory backdoor. The first transport uses Linux Unix-domain `SOCK_SEQPACKET` sockets so each request arrives as one bounded packet.
 
 ## Message directions and payloads
 
 | Direction | Message class | Meaning |
 |---|---|---|
 | Choca → XCM → Choca renderer | UI token stream | USI presentation output: layout, text, controls and visual state |
-| Choca → XCM → Darkin service | Typed request | A declared operation against a capability-scoped object |
+| Choca → XCM → Darkin service | Typed request | Declared operation against a capability-scoped object |
 | Darkin service → XCM → Choca | Darkin data | Structured system state or query result |
 | Darkin service → XCM → Choca | Darkin event | Hardware, storage, network, power or service state change |
 | Darkin service → XCM → Choca | Service status | Success, denial, unavailable or bounded error result |
 | Darkin service → XCM → Choca | App event | Application lifecycle and package-operation status |
 
-UI tokens are a presentation language only. They are not shell commands, executable code, filesystem paths or kernel requests. XCM routes them only to a Choca presentation endpoint.
+UI tokens are a presentation language only. They are not shell commands, executable code, filesystem paths or kernel requests.
 
 ## Request invariants
 
 - Protocol version must be supported.
-- Request ID must be nonzero. The broker must track IDs per authenticated session and reject replays; replay tracking is a transport/session responsibility and is not yet implemented in the policy-only prototype.
+- Request ID must be nonzero and echoed in the response.
 - Message and payload sizes are bounded before parsing.
-- Peer identity and capability grants come from authenticated broker state, never from request fields.
+- Peer PID/UID/GID are obtained through kernel socket credentials, not request fields.
+- The initial broker accepts only non-root users in the `mintosh-services` group.
 - Every operation has an allowlisted target and payload type.
-- User-data operations require object-scoped handles and capabilities.
-- Delete requires a one-time confirmation grant bound to the exact operation and object; XCM consumes that grant atomically before dispatch.
+- The first broker grants only presentation and read-only system-information capabilities.
+- User-data operations and foundation updates remain disabled until their backend, grant lifecycle and update-verification services exist.
 - Darkin kernel, boot assets, security policy and system binaries have no Choca mutation operation.
-- Foundation updates are accepted only from the isolated update service after bundle signature verification and rollback validation.
 - Darkin services independently authorize each request.
+
+## Current broker behavior
+
+The C17 broker and client library are built by `Sources/XCM/Makefile`. The broker listens at `/run/mintosh/xcm.sock`, validates requests, maintains a bounded recent-request replay cache, audits policy decisions through the system authentication log, and returns typed responses. System-information queries currently return a bounded kernel/platform summary. Presentation requests are policy-checked but return `UNAVAILABLE` until a Choca renderer endpoint is registered.
+
+The replay cache is bounded and is not a substitute for a durable session protocol. A production release still requires session-bound nonces, a stronger replay window, parser fuzzing, endpoint registration and per-application capabilities.
 
 ## Trust separation
 
