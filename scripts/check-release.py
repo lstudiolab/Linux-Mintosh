@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate the Mintosh release manifest without downloading build inputs."""
+"""Validate the Lenix release manifest without downloading build inputs."""
 import json
 import re
 import sys
@@ -20,8 +20,8 @@ try:
 except (OSError, json.JSONDecodeError) as exc:
     fail(str(exc))
 
-if data.get("distribution") != "Mintosh":
-    fail("distribution must be Mintosh")
+if data.get("distribution") != "Lenix":
+    fail("distribution must be Lenix")
 
 version = data.get("release", "")
 semver = r"(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)"
@@ -81,7 +81,7 @@ if image.get("bootloader") != "GRUB":
 if not {"BIOS", "UEFI"}.issubset(set(image.get("firmware", []))):
     fail("the x86_64 image must declare BIOS and UEFI support")
 
-print(f"Mintosh {version}: manifest valid")
+print(f"Lenix {version}: manifest valid")
 print(f"Linux {kernel_version}: SHA-256 pin present")
 print(f"Bootable architectures: {', '.join(architectures)}")
 print(f"Kernel build architectures: {', '.join(kernel_build_architectures)}")
