@@ -148,7 +148,7 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE image_handle,
     }
 
     Print(L"Validating compressed initramfs...\r\n");
-    status = validate_gzip_file(root, L"\\\\boot\\\\initramfs.cpio.gz");
+    status = validate_gzip_file(root, L"\\boot\\initramfs.cpio.gz");
     if (EFI_ERROR(status)) {
         Print(L"mBoot: initramfs is missing, oversized, or has an invalid gzip header.\r\n");
         FreePool(kernel_buffer);
