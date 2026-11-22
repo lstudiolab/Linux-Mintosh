@@ -69,7 +69,8 @@ check-makefiles:
 	@$(MAKE) --no-print-directory -n help >/dev/null
 	@$(MAKE) --no-print-directory -C Sources/MintoshCore -n all test-foundation >/dev/null
 	@$(MAKE) --no-print-directory -C Sources/XNV -n verify >/dev/null
-	@echo 'Root and native-core Makefiles parse and resolve all build prerequisites.'
+	@$(MAKE) --no-print-directory -C Sources/XCM -n test >/dev/null
+	@echo 'Root, XNV prototype and XCM policy Makefiles parse and resolve all build prerequisites.'
 
 check-scripts:
 	@python3 -c 'import pathlib, subprocess; bash={"mintosh-installer.sh", "installer-bootstrap.sh", "package-installer.sh", "installer-disk-safety.sh", "installer-storage.sh", "test-installer-disk-safety.sh", "test-installer-partitioning.sh"}; [subprocess.run(["bash" if p.name in bash else "sh", "-n", str(p)], check=True) for p in pathlib.Path("scripts").glob("*.sh")]'
@@ -118,7 +119,7 @@ $(MBOOT_OUT)/BOOTX64.EFI: $(MBOOT_OUT)/boot.efi
 	cp $< $@
 
 
-verify: check-release check-makefiles check-scripts test-kernel-config test-installer-safety test-hardware-audit test-native-core test-mboot xnv-verify
+verify: check-release check-makefiles check-scripts test-kernel-config test-installer-safety test-hardware-audit test-native-core test-mboot xnv-verify test-xcm
 	@echo 'Mintosh preview validation, XCM policy tests and retained XNV prototype tests passed.'
 
 release-info: check-release
