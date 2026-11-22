@@ -1,22 +1,9 @@
-CC ?= cc
-CFLAGS ?= -O2 -std=c17 -Wall -Wextra -Wpedantic -Werror
-BUILD := build
+# Legacy Linux preview kernel
 
-.PHONY: all verify clean
-all: $(BUILD)/boot-contract.o
+The current Developer Preview still uses the upstream Linux kernel as a temporary installer and bring-up environment while the first-party XNV kernel is developed.
 
-$(BUILD):
-	mkdir -p $@
+Run make kernel-fetch from the repository root. The exact version is pinned in configs/release.json and extracted to kernel/linux/. The downloaded source and build output are ignored by Git.
 
-$(BUILD)/boot-contract.o: boot_contract.c include/xnv/boot.h | $(BUILD)
-	$(CC) $(CFLAGS) -ffreestanding -fno-builtin -fno-stack-protector -mno-red-zone -I. -c $< -o $@
+Linux is not the target kernel for the final Mintosh architecture. Do not add permanent Mintosh subsystems that depend on Linux-specific kernel behavior unless they are explicitly transitional.
 
-$(BUILD)/boot-contract-tests: tests/boot_contract_tests.c boot_contract.c include/xnv/boot.h | $(BUILD)
-	$(CC) $(CFLAGS) -I. tests/boot_contract_tests.c boot_contract.c -o $@
-
-verify: all $(BUILD)/boot-contract-tests
-	$(BUILD)/boot-contract-tests
-	@echo 'XNV boot contract compiles freestanding and passes host regression tests.'
-
-clean:
-	rm -rf $(BUILD)
+Kernel source license: GPL-2.0-only. See the source tree's COPYING file and https://www.kernel.org/doc/html/latest/process/license-rules.html.

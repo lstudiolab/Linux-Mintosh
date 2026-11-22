@@ -28,7 +28,7 @@ EFI_CRT := $(firstword $(wildcard /usr/lib/crt0-efi-x86_64.o /usr/lib/gnuefi/crt
 EFI_LDS := $(firstword $(wildcard /usr/lib/elf_x86_64_efi.lds /usr/lib/gnuefi/elf_x86_64_efi.lds))
 EFI_LIBDIR := $(dir $(EFI_CRT))
 
-.PHONY: help check-makefiles test-native-core test-kernel-config test-installer-safety test-hardware-audit test-mboot test-mboot-qemu mboot package-installer check-host check-release check-scripts verify release-info host-deps kernel-fetch kernel-config kernel kernel-install rootfs initramfs iso image qemu test-qemu usb clean xnv-verify
+.PHONY: help check-makefiles test-native-core test-kernel-config test-installer-safety test-hardware-audit test-mboot test-mboot-qemu mboot package-installer check-host check-release check-scripts verify release-info host-deps kernel-fetch kernel-config kernel kernel-install rootfs initramfs iso image qemu test-qemu usb clean xnv-verify xnv-efi
 
 help:
 	@printf '%s\n' \

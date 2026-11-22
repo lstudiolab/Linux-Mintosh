@@ -1,61 +1,36 @@
-#include <assert.h>
-#include <stdio.h>
-#include <string.h>
-#include "include/xnv/boot.h"
+# Mintosh
 
-static struct xnv_boot_info valid_info(void)
-{
-    struct xnv_boot_info info;
-    memset(&info, 0, sizeof(info));
-    info.magic = XNV_BOOT_MAGIC;
-    info.version = XNV_BOOT_ABI_VERSION;
-    info.size = sizeof(info);
-    info.memory_map_address = 0x100000;
-    info.memory_map_entries = 4;
-    info.initrd_address = 0x400000;
-    info.initrd_size = 0x200000;
-    info.rsdp_address = 0x7df000;
-    info.framebuffer_address = 0xe0000000;
-    info.framebuffer_width = 1024;
-    info.framebuffer_height = 768;
-    info.framebuffer_pitch = 4096;
-    info.framebuffer_format = XNV_FRAMEBUFFER_BGRX8888;
-    return info;
-}
+Mintosh is an operating-system project targeting the first-party **XNV hybrid kernel**, with Mach-style core kernel architecture and BSD-style Unix functionality. The current Developer Preview still uses Linux and Debian as a temporary bring-up path; it is not the final architecture.
 
-int main(void)
-{
-    struct xnv_boot_info info = valid_info();
-    assert(xnv_boot_info_validate(&info) == XNV_BOOT_OK);
+XCM will be the first-party system communication and session layer above XNV. USI will be the graphical interface built on XCM using the user's future programming language. GUI work remains deferred until the language toolchain and system foundation are ready.
 
-    info.magic = 0;
-    assert(xnv_boot_info_validate(&info) == XNV_BOOT_BAD_MAGIC);
-    info = valid_info();
-    info.version++;
-    assert(xnv_boot_info_validate(&info) == XNV_BOOT_UNSUPPORTED_VERSION);
-    info = valid_info();
-    info.size = 1;
-    assert(xnv_boot_info_validate(&info) == XNV_BOOT_BAD_SIZE);
-    info = valid_info();
-    info.memory_map_address = 3;
-    assert(xnv_boot_info_validate(&info) == XNV_BOOT_BAD_MEMORY_MAP);
-    info = valid_info();
-    info.memory_map_entries = XNV_BOOT_MAX_MEMORY_REGIONS + 1ULL;
-    assert(xnv_boot_info_validate(&info) == XNV_BOOT_BAD_MEMORY_MAP);
-    info = valid_info();
-    info.initrd_size = 0;
-    assert(xnv_boot_info_validate(&info) == XNV_BOOT_BAD_INITRD);
-    info = valid_info();
-    info.rsdp_address++;
-    assert(xnv_boot_info_validate(&info) == XNV_BOOT_BAD_FIRMWARE_TABLE);
-    info = valid_info();
-    info.framebuffer_pitch = 8;
-    assert(xnv_boot_info_validate(&info) == XNV_BOOT_BAD_FRAMEBUFFER);
-    info = valid_info();
-    info.reserved[2] = 1;
-    assert(xnv_boot_info_validate(&info) == XNV_BOOT_BAD_SIZE);
-    assert(xnv_boot_info_validate(0) == XNV_BOOT_INVALID_ARGUMENT);
+## XNV development
 
-    puts("XNV boot ABI validation tests passed.");
-    return 0;
-}
+The initial XNV x86-64 bootstrap is under Sources/XNV. It currently includes UEFI entry/ExitBootServices, a versioned boot handoff, memory-map conversion, serial diagnostics, GDT/IDT setup, exception stubs, a physical page allocator and an initial identity page map.
+
+On a Debian/Ubuntu x86-64 development host:
+
+    make host-deps
+    make xnv-verify
+    make xnv-efi
+
+The freestanding EFI kernel image is produced at out/xnv/XNV.EFI. The verification target runs host-side regression tests; a successful compile is not proof of successful firmware or hardware boot.
+
+## Legacy Developer Preview
+
+The current Linux-based preview remains available while XNV is developed:
+
+    make verify
+    make kernel-fetch
+    make kernel-config
+    make kernel
+    make iso
+    make test-qemu
+
+The bootable preview ISO is out/mintosh-x86_64.iso. It remains a transitional image and is not an XNV release.
+
+## Current limitations
+
+XNV does not yet implement Mach tasks/threads, scheduling, IPC ports, BSD process and syscall interfaces, VFS, filesystems, networking, device drivers, userspace or XCM. Its first memory map and paging implementation is a low-memory bootstrap, not a production virtual-memory system. QEMU firmware boot and physical hardware validation are still required.
+
+The current preview still includes Linux, Debian userspace, GRUB, systemd, udev, NetworkManager, GNU utilities and Debian package tooling. Do not install this Developer Preview on a daily-use machine or overwrite an internal disk.

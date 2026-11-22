@@ -1,72 +1,33 @@
-#include "include/xnv/boot.h"
+# Mintosh architecture
 
-#define XNV_U64_MAX (~(xnv_u64)0)
+## Target kernel: XNV
 
-static int range_valid(xnv_u64 base, xnv_u64 length)
-{
-    return length != 0 && base <= XNV_U64_MAX - length;
-}
+Mintosh is moving from the Linux-based Developer Preview to a first-party **XNV hybrid kernel**. XNV is inspired by the broad Mach/BSD architecture of Apple's XNU; it is an independent implementation and does not reuse Apple's source.
 
-enum xnv_boot_status xnv_boot_info_validate(const struct xnv_boot_info *info)
-{
-    xnv_u64 map_bytes;
-    xnv_u64 framebuffer_bytes;
+- **Mach subsystem:** tasks, threads, scheduling, virtual memory, IPC, synchronization and port rights.
+- **BSD subsystem:** POSIX process interfaces, file descriptors, VFS, sockets, networking, credentials and permissions.
+- **XNV core:** boot, CPU/platform abstraction, interrupt dispatch, physical memory, paging, system calls and kernel diagnostics.
+- **XCM:** first-party userspace system communication and session platform. It connects system services and interfaces to kernel facilities; it is not a kernel subsystem.
+- **USI:** future graphical interface built above XCM using the user's programming language. It is deferred until that language, compiler, runtime and standard library are ready.
 
-    if (info == 0)
-        return XNV_BOOT_INVALID_ARGUMENT;
-    if (info->magic != XNV_BOOT_MAGIC)
-        return XNV_BOOT_BAD_MAGIC;
-    if (info->version != XNV_BOOT_ABI_VERSION)
-        return XNV_BOOT_UNSUPPORTED_VERSION;
-    if (info->size < sizeof(*info) || info->size > XNV_BOOT_MAX_INFO_SIZE)
-        return XNV_BOOT_BAD_SIZE;
+Mach and BSD are integrated in one privileged kernel address space. XNV must boot and operate without XCM or USI.
 
-    for (unsigned int i = 0; i < 4; ++i) {
-        if (info->reserved[i] != 0)
-            return XNV_BOOT_BAD_SIZE;
-    }
+## Current XNV milestone
 
-    if (info->memory_map_address == 0 ||
-        info->memory_map_entries == 0 ||
-        info->memory_map_entries > XNV_BOOT_MAX_MEMORY_REGIONS ||
-        info->memory_map_address % 8 != 0 ||
-        info->memory_map_entries > XNV_U64_MAX / sizeof(struct xnv_memory_region))
-        return XNV_BOOT_BAD_MEMORY_MAP;
+The XNV source tree is under Sources/XNV. The current x86-64 bring-up includes a versioned UEFI boot ABI, UEFI memory-map conversion, ExitBootServices, COM1 diagnostics, GDT/IDT installation, fail-stop exception stubs, a physical page allocator for the low 32 GiB and a 32 GiB identity map using 2 MiB pages. Host regression tests cover the boot ABI and allocator.
 
-    map_bytes = info->memory_map_entries * sizeof(struct xnv_memory_region);
-    if (!range_valid(info->memory_map_address, map_bytes))
-        return XNV_BOOT_BAD_MEMORY_MAP;
+This is an early kernel bootstrap, not a complete operating system. The current implementation still assumes UEFI's initial identity mapping while entering the kernel. It does not yet provide a scheduler, userspace, device drivers, storage, networking, a filesystem, a login service or XCM. QEMU boot verification and real hardware testing remain required.
 
-    if ((info->initrd_address == 0) != (info->initrd_size == 0))
-        return XNV_BOOT_BAD_INITRD;
-    if (info->initrd_size != 0 &&
-        !range_valid(info->initrd_address, info->initrd_size))
-        return XNV_BOOT_BAD_INITRD;
+## Transitional Developer Preview
 
-    if (info->rsdp_address != 0 && info->rsdp_address % 16 != 0)
-        return XNV_BOOT_BAD_FIRMWARE_TABLE;
+The current installer image still boots the pinned upstream Linux kernel and a Debian Trixie userspace. GRUB, systemd, udev, NetworkManager, GNU utilities, Debian package tooling and external firmware packages remain in that preview. They are temporary migration dependencies and do not satisfy the final first-party system policy.
 
-    if (info->framebuffer_address == 0) {
-        if (info->framebuffer_width != 0 ||
-            info->framebuffer_height != 0 ||
-            info->framebuffer_pitch != 0 ||
-            info->framebuffer_format != XNV_FRAMEBUFFER_NONE)
-            return XNV_BOOT_BAD_FRAMEBUFFER;
-    } else {
-        if (info->framebuffer_width == 0 ||
-            info->framebuffer_height == 0 ||
-            info->framebuffer_pitch < info->framebuffer_width * 4U ||
-            (info->framebuffer_format != XNV_FRAMEBUFFER_RGBX8888 &&
-             info->framebuffer_format != XNV_FRAMEBUFFER_BGRX8888))
-            return XNV_BOOT_BAD_FRAMEBUFFER;
-        if (info->framebuffer_height >
-            XNV_U64_MAX / info->framebuffer_pitch)
-            return XNV_BOOT_BAD_FRAMEBUFFER;
-        framebuffer_bytes =
-            (xnv_u64)info->framebuffer_pitch * info->framebuffer_height;
-        if (!range_valid(info->framebuffer_address, framebuffer_bytes))
-            return XNV_BOOT_BAD_FRAMEBUFFER;
-    }
+Do not remove the Linux preview path until XNV has a bootable image and passes automated boot, storage, device, networking, security, installation and recovery tests.
 
-    return XNV_BOOT_OK;
-}
+## Implementation languages
+
+The OS foundation uses C, C++ and architecture-specific assembly only. XNV's early kernel is freestanding C and assembly; it must not depend on a host C library, Linux kernel headers or a third-party kernel runtime. C++ is permitted only when exceptions, RTTI, constructors and runtime dependencies are explicitly controlled. Makefiles and CI configuration are build tooling, not OS implementation languages.
+
+## Deferred graphical system
+
+XCM is implemented after the kernel's IPC, process, device, display and input interfaces stabilize. USI begins only after the user's programming language and its toolchain are complete. AppKit, Tarts, GT, Window Server, Finder and Dock remain deferred.
