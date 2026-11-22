@@ -14,10 +14,11 @@ permissions:
 # for a given source revision so concurrent kernel builds do not waste runners.
 concurrency:
   group: mintosh-qemu-main
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   qemu-boot:
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     name: Build image and verify live boot
     runs-on: ubuntu-24.04
     timeout-minutes: 120
