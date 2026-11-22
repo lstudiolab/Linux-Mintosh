@@ -44,6 +44,17 @@ int main(void)
     request.object_id = 42;
     assert(xcm_policy_authorize(&request, &choca) == XCM_POLICY_ALLOW);
 
+    request = make_request(XCM_OP_WRITE_USER_DATA, XCM_TARGET_USER_DATA,
+                           XCM_PAYLOAD_NONE, 0);
+    request.object_id = 42;
+    assert(xcm_policy_authorize(&request, &choca) == XCM_POLICY_BAD_PAYLOAD);
+
+    request = make_request(XCM_OP_DELETE_USER_DATA, XCM_TARGET_USER_DATA,
+                           XCM_PAYLOAD_TYPED_DATA, 8);
+    request.object_id = 42;
+    request.flags = XCM_FLAG_USER_CONFIRMED;
+    assert(xcm_policy_authorize(&request, &choca) == XCM_POLICY_BAD_PAYLOAD);
+
     request = make_request(XCM_OP_DELETE_USER_DATA, XCM_TARGET_USER_DATA,
                            XCM_PAYLOAD_NONE, 0);
     request.object_id = 42;

@@ -52,9 +52,10 @@ enum xcm_policy_result xcm_policy_authorize(
             return XCM_POLICY_PROTECTED_TARGET;
 
         if (request->operation == XCM_OP_PRESENT_TOKENS) {
-            if (request->target != XCM_TARGET_PRESENTATION ||
-                !payload_is(request, XCM_PAYLOAD_UI_TOKENS))
+            if (request->target != XCM_TARGET_PRESENTATION)
                 return XCM_POLICY_TARGET_MISMATCH;
+            if (!payload_is(request, XCM_PAYLOAD_UI_TOKENS))
+                return XCM_POLICY_BAD_PAYLOAD;
             return require_capability(context, XCM_CAP_PRESENT);
         }
 
@@ -64,33 +65,38 @@ enum xcm_policy_result xcm_policy_authorize(
 
         switch (request->operation) {
         case XCM_OP_READ_SYSTEM_INFO:
-            if (request->target != XCM_TARGET_SYSTEM_INFO ||
-                !payload_is(request, XCM_PAYLOAD_NONE))
+            if (request->target != XCM_TARGET_SYSTEM_INFO)
                 return XCM_POLICY_TARGET_MISMATCH;
+            if (!payload_is(request, XCM_PAYLOAD_NONE))
+                return XCM_POLICY_BAD_PAYLOAD;
             return require_capability(context, XCM_CAP_READ_SYSTEM);
 
         case XCM_OP_LIST_USER_DATA:
-            if (request->target != XCM_TARGET_USER_DATA || request->object_id != 0 ||
-                !payload_is(request, XCM_PAYLOAD_NONE))
+            if (request->target != XCM_TARGET_USER_DATA || request->object_id != 0)
                 return XCM_POLICY_TARGET_MISMATCH;
+            if (!payload_is(request, XCM_PAYLOAD_NONE))
+                return XCM_POLICY_BAD_PAYLOAD;
             return require_capability(context, XCM_CAP_READ_USER_DATA);
 
         case XCM_OP_READ_USER_DATA:
-            if (request->target != XCM_TARGET_USER_DATA || request->object_id == 0 ||
-                !payload_is(request, XCM_PAYLOAD_NONE))
+            if (request->target != XCM_TARGET_USER_DATA || request->object_id == 0)
                 return XCM_POLICY_TARGET_MISMATCH;
+            if (!payload_is(request, XCM_PAYLOAD_NONE))
+                return XCM_POLICY_BAD_PAYLOAD;
             return require_capability(context, XCM_CAP_READ_USER_DATA);
 
         case XCM_OP_WRITE_USER_DATA:
-            if (request->target != XCM_TARGET_USER_DATA || request->object_id == 0 ||
-                !payload_is(request, XCM_PAYLOAD_TYPED_DATA))
+            if (request->target != XCM_TARGET_USER_DATA || request->object_id == 0)
                 return XCM_POLICY_TARGET_MISMATCH;
+            if (!payload_is(request, XCM_PAYLOAD_TYPED_DATA))
+                return XCM_POLICY_BAD_PAYLOAD;
             return require_capability(context, XCM_CAP_WRITE_USER_DATA);
 
         case XCM_OP_DELETE_USER_DATA:
-            if (request->target != XCM_TARGET_USER_DATA || request->object_id == 0 ||
-                !payload_is(request, XCM_PAYLOAD_NONE))
+            if (request->target != XCM_TARGET_USER_DATA || request->object_id == 0)
                 return XCM_POLICY_TARGET_MISMATCH;
+            if (!payload_is(request, XCM_PAYLOAD_NONE))
+                return XCM_POLICY_BAD_PAYLOAD;
             if ((request->flags & XCM_FLAG_USER_CONFIRMED) == 0 ||
                 !context->confirmation_grant_valid ||
                 context->confirmation_object_id != request->object_id ||
