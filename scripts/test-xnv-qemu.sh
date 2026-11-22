@@ -8,7 +8,7 @@ if [ -z "$OVMF_CODE" ]; then
   done
 fi
 if [ -z "$OVMF_CODE" ]; then
-  OVMF_CODE=$(find /usr/share -type f \\( -iname "OVMF_CODE*.fd" -o -iname "OVMF.fd" \\) -print -quit 2>/dev/null || true)
+  OVMF_CODE=$(find /usr/share -type f -name "OVMF_CODE*.fd" -print -quit 2>/dev/null || true)
 fi
 ESP_DIR="out/xnv-esp"
 LOG="out/xnv-qemu.log"
