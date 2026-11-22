@@ -28,7 +28,7 @@ EFI_CRT := $(firstword $(wildcard /usr/lib/crt0-efi-x86_64.o /usr/lib/gnuefi/crt
 EFI_LDS := $(firstword $(wildcard /usr/lib/elf_x86_64_efi.lds /usr/lib/gnuefi/elf_x86_64_efi.lds))
 EFI_LIBDIR := $(dir $(EFI_CRT))
 
-.PHONY: help check-makefiles test-native-core test-kernel-config test-installer-safety test-hardware-audit test-mboot mboot package-installer check-host check-release check-scripts verify release-info host-deps kernel-fetch kernel-config kernel kernel-install rootfs initramfs iso image qemu test-qemu usb clean
+.PHONY: help check-makefiles test-native-core test-kernel-config test-installer-safety test-hardware-audit test-mboot test-mboot-qemu mboot package-installer check-host check-release check-scripts verify release-info host-deps kernel-fetch kernel-config kernel kernel-install rootfs initramfs iso image qemu test-qemu usb clean
 
 help:
 	@printf '%s\n' \
@@ -83,6 +83,11 @@ test-hardware-audit:
 
 test-mboot: mboot
 	@python3 scripts/test-mboot.py $(MBOOT_OUT)/boot.efi $(MBOOT_OUT)/BOOTX64.EFI
+
+test-mboot-qemu: mboot
+	@KERNEL_FILE=$(find "$(ROOTFS)/boot" -maxdepth 1 -type f -name 'vmlinuz-*' -print -quit); \
+	  test -n "$KERNEL_FILE" || { echo 'Build the kernel and rootfs first (make iso).' >&2; exit 1; }; \
+	  sh scripts/test-mboot-qemu.sh "$(MBOOT_OUT)/BOOTX64.EFI" "$KERNEL_FILE" "out/initramfs.cpio.gz"
 
 mboot: $(MBOOT_OUT)/boot.efi $(MBOOT_OUT)/BOOTX64.EFI
 
