@@ -38,6 +38,8 @@ CONFIG_EVENTFD
 CONFIG_SIGNALFD
 CONFIG_TIMERFD
 CONFIG_POSIX_MQUEUE
+CONFIG_SYSVIPC
+CONFIG_SYSVIPC_SYSCTL
 CONFIG_UNIX
 CONFIG_UNIX_DIAG
 CONFIG_FHANDLE
@@ -69,7 +71,7 @@ case "$ARCH" in
         done
         ;;
     arm64) ;;
-    *) echo "Unsupported kernel architecture: $ARCH" >&2; exit 64 ;;
+    *) echo "Unsupported architecture: $ARCH" >&2; exit 64 ;;
 esac
 PROFILE=${2:-generic}
 case "$PROFILE" in
@@ -85,5 +87,5 @@ case "$PROFILE" in
         ;;
     *) echo "Unknown hardware profile: $PROFILE" >&2; exit 64 ;;
 esac
-grep -qx "CONFIG_LOCALVERSION=\"-mintosh-xcu\"" "$CONFIG" || { echo "XCU kernel local version is not set." >&2; exit 1; }
-echo "XCU Linux kernel configuration includes required boot, security, compatibility and $PROFILE hardware options."
+grep -qx 'CONFIG_LOCALVERSION="-lenix-xcu"' "$CONFIG" || { echo "XCU kernel local version is not set." >&2; exit 1; }
+echo "Lenix XCU Linux kernel configuration includes required boot, security, BSD/POSIX IPC, compatibility and $PROFILE hardware options."
