@@ -7,12 +7,12 @@
 #define SEAN_MAX_PACKET_SIZE 4096U
 #define SEAN_SYSTEM_SOCKET "/run/sean/system.sock"
 
-enum darkin_operation {
+enum sean_operation {
     SEAN_OP_NONE = 0,
     SEAN_OP_READ_SYSTEM_INFO = 1
 };
 
-enum darkin_status {
+enum sean_status {
     SEAN_STATUS_OK = 0,
     SEAN_STATUS_DENIED = 1,
     SEAN_STATUS_INVALID = 2,
@@ -20,14 +20,14 @@ enum darkin_status {
     SEAN_STATUS_INTERNAL_ERROR = 4
 };
 
-struct darkin_request {
+struct sean_request {
     uint32_t size;
     uint16_t version;
     uint16_t operation;
     uint64_t request_id;
 };
 
-struct darkin_response {
+struct sean_response {
     uint32_t size;
     uint16_t version;
     uint16_t status;
@@ -37,8 +37,8 @@ struct darkin_response {
 };
 
 #if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L
-_Static_assert(sizeof(struct darkin_request) == 16, "Darkin request ABI changed");
-_Static_assert(sizeof(struct darkin_response) == 24, "Darkin response ABI changed");
+_Static_assert(sizeof(struct sean_request) == 16, "Sean request ABI changed");
+_Static_assert(sizeof(struct sean_response) == 24, "Sean response ABI changed");
 #endif
 
 #endif
