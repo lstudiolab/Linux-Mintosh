@@ -1,6 +1,14 @@
 name: Mintosh QEMU boot verification
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/qemu-boot.yml'
+      - 'Makefile'
+      - 'configs/**'
+      - 'Sources/**'
+      - 'scripts/**'
   workflow_dispatch:
 
 permissions:
@@ -10,7 +18,7 @@ jobs:
   qemu-boot:
     name: Build image and verify live boot
     runs-on: ubuntu-24.04
-    timeout-minutes: 90
+    timeout-minutes: 120
     steps:
       - name: Check out source
         uses: actions/checkout@v4
@@ -28,3 +36,13 @@ jobs:
           make iso JOBS=2
       - name: Boot installer image in QEMU
         run: make test-qemu
+      - name: Upload boot image and serial log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mintosh-qemu-boot-${{ github.run_number }}
+          path: |
+            out/mintosh-x86_64.iso
+            out/qemu-boot.log
+          if-no-files-found: warn
+          retention-days: 7
