@@ -29,5 +29,11 @@ EOF
 grub-mkrescue -o "$ISO" -volid MINTOSH "$ISO_ROOT"
 ISO_LABEL=$(blkid -p -s LABEL -o value "$ISO" 2>/dev/null || true)
 [ "$ISO_LABEL" = "MINTOSH" ] || { echo "ISO volume label verification failed; the installer cannot safely identify its boot medium." >&2; exit 1; }
+ISO_BYTES=$(stat -c '%s' "$ISO")
+MAX_USB_IMAGE_BYTES=3758096384
+[ "$ISO_BYTES" -le "$MAX_USB_IMAGE_BYTES" ] || {
+  echo "Installer ISO is too large for the 4 GB USB target ($(du -h "$ISO" | awk '{print $1}'))." >&2
+  exit 1
+}
 chmod 0644 "$ISO"
-echo "Bootable Mintosh installer ISO created: out/mintosh-$ARCH.iso"
+echo "Bootable Mintosh installer ISO created: out/mintosh-$ARCH.iso ($(du -h "$ISO" | awk '{print $1}'))"
