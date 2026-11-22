@@ -147,7 +147,7 @@ verify: check-release check-makefiles check-scripts test-kernel-config test-inst
 	@echo 'Mintosh preview validation, Tarts backend, XPU broker and XCU Linux primitive tests passed.'
 
 release-info: check-release
-	@python3 -c 'import json; d=json.load(open("configs/release.json")); print("Mintosh", d["release"]); print("Linux", d["kernel"]["version"]); print("Debian", d["debian_suite"]); print("Bootable architectures:", ", ".join(d["architectures"])); print("Kernel build architectures:", ", ".join(d["kernel_build_architectures"])); print("Planned architectures:", ", ".join(d["planned_architectures"]) or "none"); print("Bootable ISO:", d["image"]["primary_architecture"])'
+	@python3 -c 'import json; d=json.load(open("configs/release.json")); print("Lenix", d["release"]); print("Linux", d["kernel"]["version"]); print("Debian", d["debian_suite"]); print("Bootable architectures:", ", ".join(d["architectures"])); print("Kernel build architectures:", ", ".join(d["kernel_build_architectures"])); print("Planned architectures:", ", ".join(d["planned_architectures"]) or "none"); print("Bootable ISO:", d["image"]["primary_architecture"])'
 
 check-host:
 	@command -v make >/dev/null || { echo 'Missing dependency: make' >&2; exit 1; }
@@ -178,8 +178,8 @@ kernel-config: check-host
 	  --enable CGROUPS --enable INOTIFY_USER --enable SIGNALFD --enable TIMERFD \
 	  --enable EPOLL --enable FHANDLE --enable AUTOFS4_FS --enable UNIX98_PTYS \
 	  --enable PACKET --enable UNIX --enable INET --enable IPV6 --enable NET_NS \
-	  --enable SECCOMP --enable SECCOMP_FILTER --set-str LOCALVERSION -mintosh-xcu
-	@"$(KERNEL_DIR)/scripts/config" --file "$(KERNEL_OUT)/.config" --enable NAMESPACES --enable UTS_NS --enable IPC_NS --enable USER_NS --enable PID_NS --enable NET_NS --enable EPOLL --enable EVENTFD --enable INOTIFY_USER --enable FANOTIFY --enable POSIX_MQUEUE --enable SECURITY --enable SECURITYFS --enable KEYS --enable BPF --enable BPF_SYSCALL --enable BPF_JIT --set-str LOCALVERSION -mintosh-xcu
+	  --enable SECCOMP --enable SECCOMP_FILTER --set-str LOCALVERSION -lenix-xcu
+	@"$(KERNEL_DIR)/scripts/config" --file "$(KERNEL_OUT)/.config" --enable NAMESPACES --enable UTS_NS --enable IPC_NS --enable USER_NS --enable PID_NS --enable NET_NS --enable EPOLL --enable EVENTFD --enable INOTIFY_USER --enable FANOTIFY --enable POSIX_MQUEUE --enable SECURITY --enable SECURITYFS --enable KEYS --enable BPF --enable BPF_SYSCALL --enable BPF_JIT --set-str LOCALVERSION -lenix-xcu
 	@"$(KERNEL_DIR)/scripts/kconfig/merge_config.sh" -m -O "$(KERNEL_OUT)" "$(KERNEL_OUT)/.config" kernel/xcu/config.fragment
 	$(MAKE) -C "$(KERNEL_DIR)" O="$(CURDIR)/$(KERNEL_OUT)" ARCH="$(KERNEL_ARCH)" CROSS_COMPILE="$(CROSS_COMPILE)" olddefconfig
 	@case "$(MINTOSH_HARDWARE_PROFILE)" in generic|hp-probook|hp-probook-450-g6) ;; *) echo 'Unsupported MINTOSH_HARDWARE_PROFILE: $(MINTOSH_HARDWARE_PROFILE)' >&2; exit 1 ;; esac
