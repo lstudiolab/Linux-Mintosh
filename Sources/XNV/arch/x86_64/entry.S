@@ -39,7 +39,7 @@ xnv_arch_enable_paging:
     orq $0x30,%rax
     movq %rax,%cr4
     movq %cr0,%rax
-    orq $0x80000000,%rax
+    btsq $31,%rax
     movq %rax,%cr0
     ret
 .size xnv_arch_enable_paging,.-xnv_arch_enable_paging
