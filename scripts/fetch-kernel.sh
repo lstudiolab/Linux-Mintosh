@@ -15,7 +15,7 @@ SHA256=$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["kernel
 ARCHIVE="$WORK/linux-$VERSION.tar.xz"
 TMP="$ROOT/kernel/.linux-$VERSION.tmp"
 mkdir -p "$WORK" "$ROOT/kernel"
-echo "Fetching Mintosh-pinned Linux $VERSION for $ARCH..."
+echo "Fetching Lenix-pinned Linux $VERSION for $ARCH..."
 curl --fail --location --show-error "$URL" -o "$ARCHIVE"
 printf '%s  %s\n' "$SHA256" "$ARCHIVE" | sha256sum --check --status || { echo "Kernel archive checksum mismatch." >&2; rm -f "$ARCHIVE"; exit 1; }
 rm -rf "$TMP"
