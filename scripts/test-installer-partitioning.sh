@@ -66,7 +66,8 @@ text = subprocess.check_output(["parted", "-m", "-s", sys.argv[1], "unit", "MiB"
 parts = [line for line in text.splitlines() if line.split(":", 1)[0].isdigit()]
 assert len(parts) == 2, parts
 assert "esp" in parts[0].lower(), parts[0]
-assert "ext4" in parts[1].lower(), parts[1]
+assert "esp" not in parts[1].lower(), parts[1]
+assert parts[1].split(":")[1].startswith("1025"), parts[1]
 PY
 
 BIOS_IMAGE="$TMP/bios.img"
@@ -78,6 +79,7 @@ text = subprocess.check_output(["parted", "-m", "-s", sys.argv[1], "unit", "MiB"
 parts = [line for line in text.splitlines() if line.split(":", 1)[0].isdigit()]
 assert len(parts) == 2, parts
 assert "bios_grub" in parts[0].lower(), parts[0]
-assert "ext4" in parts[1].lower(), parts[1]
+assert "bios_grub" not in parts[1].lower(), parts[1]
+assert parts[1].split(":")[1].startswith("3"), parts[1]
 PY
 echo "Installer alongside preservation and erase-layout confirmation tests passed."
