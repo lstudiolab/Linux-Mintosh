@@ -18,7 +18,7 @@ static EFI_STATUS read_file(EFI_FILE_HANDLE root, CHAR16 *path,
                                EFI_FILE_MODE_READ, 0);
     if (EFI_ERROR(status)) return status;
 
-    status = uefi_call_wrapper(file->GetInfo, 4, file, &FileInfo,
+    status = uefi_call_wrapper(file->GetInfo, 4, file, &gEfiFileInfoGuid,
                                &info_size, NULL);
     if (status == EFI_BUFFER_TOO_SMALL) {
         info = AllocatePool(info_size);
@@ -26,7 +26,7 @@ static EFI_STATUS read_file(EFI_FILE_HANDLE root, CHAR16 *path,
             uefi_call_wrapper(file->Close, 1, file);
             return EFI_OUT_OF_RESOURCES;
         }
-        status = uefi_call_wrapper(file->GetInfo, 4, file, &FileInfo,
+        status = uefi_call_wrapper(file->GetInfo, 4, file, &gEfiFileInfoGuid,
                                    &info_size, info);
     }
     if (EFI_ERROR(status) || info == NULL || info->FileSize == 0 ||
