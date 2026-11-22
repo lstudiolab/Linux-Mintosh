@@ -117,8 +117,7 @@ static int create_socket(void)
     address.sun_family = AF_UNIX;
     memcpy(address.sun_path, path, strlen(path) + 1U);
     if (bind(server, (struct sockaddr *)&address, sizeof(address)) < 0 ||
-        chown(path, 0, xcm_group) < 0 || chmod(path, 0600) < 0 ||
-        listen(server, 16) < 0) {
+        chmod(path, 0600) < 0 || listen(server, 16) < 0) {
         int saved = errno;
         close(server);
         unlink(path);
