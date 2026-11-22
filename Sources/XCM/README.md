@@ -1,36 +1,57 @@
 # XCM — system communication and security broker
 
-XCM is a standalone system component outside Darkin and Choca. It is the only supported communication bridge between Choca and Darkin services.
+XCM is a standalone system component outside Darkin and Choca. It is the only supported communication bridge between Choca and Darkin services. Its broker runs as a narrowly confined system service; Choca links only the unprivileged client library.
+
+## Implemented components
+
+- `xcmd.c`: Linux local IPC broker using Unix `SOCK_SEQPACKET` and kernel-provided `SO_PEERCRED` identity.
+- `policy.c`: deny-by-default C17 authorization policy.
+- `client.c`: Choca-side request/reply client library.
+- `include/xcm/protocol.h`: versioned request/response wire envelopes and typed payload identifiers.
+- `include/xcm/client.h`: unprivileged client API.
+- `Sources/Services/xcm.service`: confined systemd service.
+- Host tests for policy decisions and client transport framing.
 
 ## Request path
 
-1. Choca sends a versioned typed message to XCM over a local authenticated IPC transport.
-2. XCM derives peer identity from authenticated transport credentials and obtains capabilities from broker-held session state. Identity and capabilities are never accepted from the request payload.
-3. The policy engine validates message size, version, flags, payload type, target, operation, object scope and required capability.
-4. Choca requests targeting Darkin core or security policy are rejected, including update, raw execution and policy-change operations.
-5. UI-token payloads are accepted only for the presentation operation. They are never interpreted as privileged commands.
-6. User-data deletion requires an object-scoped handle, a delete capability, a client confirmation hint and a one-time confirmation grant verified by XCM for that exact operation and object; the broker must consume that grant atomically before dispatch.
-7. Foundation updates are reserved for the authenticated update service and require a verified update bundle plus the foundation-update capability.
-8. Darkin independently checks authorization and object ownership before performing an approved operation.
+1. Choca connects to `/run/mintosh/xcm.sock` using a local sequenced-packet socket.
+2. XCM obtains peer PID, UID and primary GID from the kernel, then verifies the account belongs to `mintosh-services`. Root is not accepted as a Choca client.
+3. XCM validates the complete packet size, protocol version, request ID, flags, payload type, target, operation, object scope and capabilities.
+4. A bounded recent-request cache rejects duplicate request IDs.
+5. Choca receives only presentation and read-only system-information capabilities in this first broker milestone. No user-data write/delete or foundation-update capabilities are issued.
+6. System-information requests return a bounded typed response. Presentation requests are policy-checked but return `UNAVAILABLE` until the Choca renderer endpoint is registered.
+7. Policy denials and accepted privileged queries are written to the system authentication log.
+8. Darkin service implementations must still authorize their own operations; XCM is not a replacement for service-side checks.
 
-## Message model
+## Security properties
 
-Every request carries a protocol version, unique nonzero request ID, operation, target, object handle and typed payload. XCM tracks request IDs per authenticated session to reject replay and correlate replies. Responses use a separate typed envelope: Darkin data, Darkin events, service status and app lifecycle events are distinct payload classes. Choca UI-token streams are accepted only for the presentation endpoint and are never sent to privileged Darkin handlers.
+- Choca cannot update, delete, replace or execute code in Darkin core or security policy.
+- Arbitrary executable payloads are always rejected.
+- USI token payloads are accepted only for presentation; they are never treated as commands.
+- Local peer identity is kernel-derived, never supplied by the request.
+- The broker socket is root-owned, group-restricted and mode `0660`.
+- The broker runs with a restricted systemd sandbox and a reduced capability set.
+- Unknown operations, malformed packets, unsupported versions and ungranted capabilities fail closed.
 
-## Implemented policy core
+## Build, install and test
 
-- C17 policy library in `policy.c`.
-- Versioned request header and typed payload identifiers in `include/xcm/protocol.h`.
-- Deny-by-default handling for unknown operations, invalid messages, unauthenticated peers, protected targets, missing capabilities and unverified updates.
-- Per-operation payload rules keep USI tokens confined to presentation and require typed data for user-data writes and foundation updates.
-- A Choca-provided confirmation flag is not sufficient; deletion also requires a broker-verified one-time grant.
-- Host tests covering Choca foundation-mutation attempts, UI-token separation, scoped user-data deletion, malformed messages and signed-update gating.
-
-Run:
-
+    make -C Sources/XCM
     make -C Sources/XCM test
     make test-xcm
 
-## Remaining before production
+The root filesystem build installs `xcmd`, `libxcm.a`, public headers and enables `xcm.service`.
 
-This is the policy core, not yet a complete broker/server. Authenticated local IPC transport, capability issuance and revocation, session lifecycle, service dispatch, audit persistence, signature verification, replay protection and kernel-enforced process isolation still need implementation. The broker must construct its policy context from trusted transport and update-verification results; it must never trust those fields from Choca.
+## Deliberate implementation limits
+
+This is an operational first broker milestone, not yet the complete production message bus. The following are still required before claiming full XCM completion:
+
+- A registered Choca renderer endpoint and token delivery.
+- Darkin service endpoint registration and typed request dispatch.
+- Per-application identities/capabilities instead of the initial user-session group policy.
+- Durable, bounded audit records with rotation and structured event IDs.
+- Cryptographic update-bundle verification and rollback integration.
+- A confirmation-grant issuer and atomic single-use grant store before enabling deletion.
+- Stronger replay/session semantics and fuzzing of the wire parser.
+- Kernel-enforced isolation and a Choca application sandbox.
+
+The current broker intentionally does not issue destructive capabilities or claim to perform operations that have no registered backend.
