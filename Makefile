@@ -115,7 +115,7 @@ kernel-config: check-host
 	elif [ "$(MINTOSH_HARDWARE_PROFILE)" != generic ]; then \
 	  echo 'The HP ProBook profile is only available for x86_64.' >&2; exit 1; \
 	fi
-	@sh scripts/verify-kernel-config.sh "$(KERNEL_OUT)/.config" "$(MINTOSH_HARDWARE_PROFILE)" "$(MINTOSH_HARDWARE_PROFILE)"
+	@sh scripts/verify-kernel-config.sh "$(KERNEL_OUT)/.config" "$(MINTOSH_HARDWARE_PROFILE)"
 
 kernel: check-host
 	@test -f "$(KERNEL_OUT)/.config" || { echo 'Run make kernel-config first.' >&2; exit 1; }
