@@ -40,7 +40,7 @@ The installer first identifies the ISO9660 volume labeled `MINTOSH` and excludes
 
 ### Erase disk and install Mintosh
 
-This replaces the selected disk's partition table and contents. The installer displays the exact target disk, requires a warning confirmation, and then requires typing ERASE. All files and operating systems on that disk are permanently lost. Disconnect backup drives and other disks that are not the intended target before using this option.
+This replaces the selected disk's partition table and contents. The target disk must be at least 24 GiB so the installer can create a 1 GiB EFI System Partition (UEFI) and a usable root filesystem. The installer checks capacity before making changes, displays the exact target disk, requires a warning confirmation, and then requires typing ERASE. All files and operating systems on that disk are permanently lost. Disconnect backup drives and other disks that are not the intended target before using this option.
 
 ### Account setup
 
