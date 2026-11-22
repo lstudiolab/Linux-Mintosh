@@ -1,7 +1,7 @@
 [Unit]
-Description=Mintosh XPU communication and security broker
-After=local-fs.target tarts-system.service
-Requires=tarts-system.service
+Description=Lenix XPU communication and security broker
+After=local-fs.target sean-system.service
+Requires=sean-system.service
 Before=graphical.target
 
 [Service]
@@ -29,7 +29,7 @@ RestrictAddressFamilies=AF_UNIX
 SystemCallArchitectures=native
 CapabilityBoundingSet=
 ReadWritePaths=/run/mintosh
-ReadOnlyPaths=/run/tarts
+ReadOnlyPaths=/run/sean
 
 [Install]
 WantedBy=multi-user.target
