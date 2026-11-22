@@ -53,7 +53,7 @@ static void handle_client(int client, gid_t xcm_group)
     socklen_t peer_size = sizeof(peer);
     if (getsockopt(client, SOL_SOCKET, SO_PEERCRED, &peer, &peer_size) < 0 ||
         peer_size != sizeof(peer) || peer.uid != 0 || peer.gid != xcm_group) {
-        syslog(LOG_WARNING, "denied non-XCM backend peer");
+        syslog(LOG_WARNING, "denied non-XPU backend peer");
         reply(client, 0, DARKIN_STATUS_DENIED, NULL, 0);
         return;
     }
@@ -92,7 +92,7 @@ static int create_socket(void)
 {
     const char *path = DARKIN_SYSTEM_SOCKET;
     struct stat directory;
-    if (lstat("/run/mintosh-darkin", &directory) < 0 ||
+    if (lstat("/run/tarts", &directory) < 0 ||
         !S_ISDIR(directory.st_mode) || directory.st_uid != 0 ||
         (directory.st_mode & 0077) != 0) {
         errno = EPERM;
@@ -130,34 +130,34 @@ static int create_socket(void)
 int main(int argc, char **argv)
 {
     if (argc == 2 && strcmp(argv[1], "--version") == 0) {
-        puts("Darkin System Service 0.1.0");
+        puts("Tarts System Service 0.1.0");
         return 0;
     }
     if (argc != 1) {
-        fputs("Usage: darkin-system [--version]\n", stderr);
+        fputs("Usage: tarts-system [--version]\n", stderr);
         return 64;
     }
     if (geteuid() != 0) {
-        fputs("darkin-system must run as root.\n", stderr);
+        fputs("tarts-system must run as root.\n", stderr);
         return 77;
     }
 
     struct group *group = getgrnam("mintosh-services");
     if (group == NULL) {
-        fputs("darkin-system: mintosh-services group is missing\n", stderr);
+        fputs("tarts-system: mintosh-services group is missing\n", stderr);
         return 1;
     }
     int server = create_socket();
     if (server < 0) {
-        perror("darkin-system: create socket");
+        perror("tarts-system: create socket");
         return 1;
     }
 
-    openlog("darkin-system", LOG_PID | LOG_NDELAY, LOG_AUTHPRIV);
+    openlog("tarts-system", LOG_PID | LOG_NDELAY, LOG_AUTHPRIV);
     signal(SIGTERM, stop_server);
     signal(SIGINT, stop_server);
     signal(SIGPIPE, SIG_IGN);
-    syslog(LOG_NOTICE, "Darkin system service started");
+    syslog(LOG_NOTICE, "Tarts system service started");
 
     while (!stopping) {
         struct pollfd descriptor = { .fd = server, .events = POLLIN };
@@ -183,7 +183,7 @@ int main(int argc, char **argv)
 
     close(server);
     unlink(DARKIN_SYSTEM_SOCKET);
-    syslog(LOG_NOTICE, "Darkin system service stopped");
+    syslog(LOG_NOTICE, "Tarts system service stopped");
     closelog();
     return 0;
 }
