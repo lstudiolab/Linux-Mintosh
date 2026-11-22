@@ -27,7 +27,7 @@ EFI_CRT := $(firstword $(wildcard /usr/lib/crt0-efi-x86_64.o /usr/lib/gnuefi/crt
 EFI_LDS := $(firstword $(wildcard /usr/lib/elf_x86_64_efi.lds /usr/lib/gnuefi/elf_x86_64_efi.lds))
 EFI_LIBDIR := $(dir $(EFI_CRT))
 
-.PHONY: help check-makefiles test-native-core test-kernel-config test-installer-safety test-mboot mboot check-host check-release check-scripts verify release-info host-deps kernel-fetch kernel-config kernel kernel-install rootfs initramfs iso image qemu test-qemu usb clean
+.PHONY: help check-makefiles test-native-core test-kernel-config test-installer-safety test-hardware-audit test-mboot mboot check-host check-release check-scripts verify release-info host-deps kernel-fetch kernel-config kernel kernel-install rootfs initramfs iso image qemu test-qemu usb clean
 
 help:
 	@printf '%s\n' \
@@ -35,6 +35,7 @@ help:
 	  '  make check-release  Validate release manifest and architecture pins' \
 	  '  make check-scripts  Validate shell scripts' \
 	  '  make verify         Run all offline validation' \
+	  '  make package-installer  Package ISO and checksum for Rufus' \
 	  '  make mboot          Build the native x86-64 UEFI bootloader' \
 	  '  make release-info   Print release and kernel versions' \
 	  '  make host-deps      Install Debian/Ubuntu build dependencies' \
@@ -61,7 +62,7 @@ check-makefiles:
 	@echo 'Root and native-core Makefiles parse and resolve all build prerequisites.'
 
 check-scripts:
-	@python3 -c 'import pathlib, subprocess; bash={"mintosh-installer.sh", "installer-disk-safety.sh", "installer-storage.sh", "test-installer-disk-safety.sh", "test-installer-partitioning.sh"}; [subprocess.run(["bash" if p.name in bash else "sh", "-n", str(p)], check=True) for p in pathlib.Path("scripts").glob("*.sh")]'
+	@python3 -c 'import pathlib, subprocess; bash={"mintosh-installer.sh", "installer-bootstrap.sh", "installer-disk-safety.sh", "installer-storage.sh", "test-installer-disk-safety.sh", "test-installer-partitioning.sh"}; [subprocess.run(["bash" if p.name in bash else "sh", "-n", str(p)], check=True) for p in pathlib.Path("scripts").glob("*.sh")]'
 	@python3 -c 'import ast,pathlib; ast.parse(pathlib.Path("scripts/check-release.py").read_text(encoding="utf-8"))'
 	@sh -n scripts/configure-hp-probook.sh
 	@echo 'Shell and Python scripts are syntactically valid.'
@@ -75,6 +76,9 @@ test-kernel-config:
 test-installer-safety:
 	@bash scripts/test-installer-disk-safety.sh
 	@bash scripts/test-installer-partitioning.sh
+
+test-hardware-audit:
+	@sh scripts/test-hardware-audit.sh
 
 test-mboot: mboot
 	@python3 scripts/test-mboot.py $(MBOOT_OUT)/boot.efi $(MBOOT_OUT)/BOOTX64.EFI
@@ -97,7 +101,7 @@ $(MBOOT_OUT)/boot.efi: $(MBOOT_OUT)/mboot.so
 $(MBOOT_OUT)/BOOTX64.EFI: $(MBOOT_OUT)/boot.efi
 	cp $< $@
 
-verify: check-release check-makefiles check-scripts test-kernel-config test-installer-safety test-native-core test-mboot
+verify: check-release check-makefiles check-scripts test-kernel-config test-installer-safety test-hardware-audit test-native-core test-mboot
 	@echo 'Mintosh validation and native core tests passed.'
 
 release-info: check-release
@@ -112,7 +116,7 @@ check-host:
 
 host-deps:
 	@sudo apt-get update
-	@sudo apt-get install -y bc bison build-essential cpio curl debootstrap flex gcc g++ \
+	@sudo apt-get install -y bc bison build-essential cpio curl debootstrap flex gcc g++ git \
 	  grub-common grub-pc-bin grub-efi-amd64-bin gnu-efi kmod libelf-dev libncurses-dev \
 	  libssl-dev libsqlite3-dev make mtools parted python3 qemu-system-x86 util-linux rsync zip gcc-aarch64-linux-gnu binutils-aarch64-linux-gnu xorriso xz-utils
 
