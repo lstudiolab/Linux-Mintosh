@@ -31,32 +31,31 @@ EFI_LIBDIR := $(dir $(EFI_CRT))
 .PHONY: help check-makefiles test-native-core test-kernel-config test-installer-safety test-hardware-audit test-mboot test-mboot-qemu mboot package-installer check-host check-release check-scripts verify release-info host-deps kernel-fetch kernel-config kernel kernel-install rootfs initramfs iso image qemu test-qemu usb clean test-xcm test-xnv test-darkin test-xpu test-xcu test-tarts
 
 help:
-	@printf '%s\n' \
-	  'Mintosh release and build targets:' \
-	  '  make check-release  Validate release manifest and architecture pins' \
-	  '  make check-scripts  Validate shell scripts' \
+	@printf '%s\\n' \\
+	  'Mintosh release and build targets:' \\
+	  '  make check-release  Validate release manifest and architecture pins' \\
+	  '  make check-scripts  Validate shell scripts' \\
 	  '  make verify         Run all offline validation' \\
-	  '  make test-tarts    Test the Tarts backend foundation' \\
-	  '  make test-xpu      Test the XPU communication broker' \\
-	  '  make test-xcu      Test XCU Linux kernel primitives' \\
-	  '  make package-installer  Package ISO and checksum for Rufus' \
-	  '  make mboot          Build the native x86-64 UEFI bootloader' \
-	  '  make release-info   Print release and kernel versions' \
-	  '  make host-deps      Install Debian/Ubuntu build dependencies' \
-	  '  make kernel-fetch   Fetch the legacy preview Linux kernel' \
-	  '  make kernel-config  Configure Linux for Mintosh/QEMU' \
-	  '  make kernel         Build the legacy preview kernel and modules' \
-	  '  make rootfs         Build the transitional Debian-based root filesystem' \
-	  '  make initramfs      Package the live root filesystem as initramfs' \
-	  '  make iso            Build the legacy BIOS/UEFI GRUB ISO' \
-	  '  make qemu           Boot the ISO interactively in QEMU' \
-	  '  make test-qemu      Run the serial-console boot smoke test' \
-	  '  make usb USB=/dev/sdX  Write ISO to USB (erases that drive)' \
-	  '  make clean          Remove generated output' \
-	  '' \
-	  'Options: ARCH=x86_64|arm64 MINTOSH_HARDWARE_PROFILE=generic|hp-probook-450-g6 JOBS=<parallel jobs>' \
+	  '  make test-tarts     Test the Tarts backend foundation' \\
+	  '  make test-xpu       Test the XPU communication broker' \\
+	  '  make test-xcu       Test XCU Linux kernel primitives' \\
+	  '  make package-installer  Package ISO and checksum for Rufus' \\
+	  '  make mboot          Build the native x86-64 UEFI bootloader' \\
+	  '  make release-info   Print release and kernel versions' \\
+	  '  make host-deps      Install Debian/Ubuntu build dependencies' \\
+	  '  make kernel-fetch   Fetch the legacy preview Linux kernel' \\
+	  '  make kernel-config  Configure Linux for Mintosh/QEMU' \\
+	  '  make kernel         Build the Linux preview kernel and modules' \\
+	  '  make rootfs         Build the transitional Debian-based root filesystem' \\
+	  '  make initramfs      Package the live root filesystem as initramfs' \\
+	  '  make iso            Build the legacy BIOS/UEFI GRUB ISO' \\
+	  '  make qemu           Boot the ISO interactively in QEMU' \\
+	  '  make test-qemu      Run the serial-console boot smoke test' \\
+	  '  make usb USB=/dev/sdX  Write ISO to USB (erases that drive)' \\
+	  '  make clean          Remove generated output' \\
+	  '' \\
+	  'Options: ARCH=x86_64|arm64 MINTOSH_HARDWARE_PROFILE=generic|hp-probook-450-g6 JOBS=<parallel jobs>' \\
 	  'The first live ISO and installer target x86_64.'
-
 # Canonical component targets forward to the first tested implementation paths.
 test-tarts:
 	@$(MAKE) --no-print-directory -C Sources/Tarts test
