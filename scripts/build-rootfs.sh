@@ -61,7 +61,7 @@ wifi.scan-rand-mac-address=yes
 EOF
 mkdir -p "$ROOTFS/usr/src/mintosh" "$ROOTFS/etc/mintosh/services"
 cp -a "$ROOT/Sources" "$ROOTFS/usr/src/mintosh/"
-chroot "$ROOTFS" make -C /usr/src/mintosh/Sources/MintoshCore install
+chroot "$ROOTFS" make -C /usr/src/mintosh/Sources/CoreServices install
 chroot "$ROOTFS" make -C /usr/src/mintosh/Sources/Tarts install
 chroot "$ROOTFS" make -C /usr/src/mintosh/Sources/XPU install
 chroot "$ROOTFS" make -C /usr/src/mintosh/Sources/XCU install
