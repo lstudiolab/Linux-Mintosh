@@ -71,7 +71,21 @@ set -e
 "$B/mintosh-log" --version | grep -q '0.1.0'
 "$B/security-audit" --version | grep -q '0.3.0'
 "$B/mintoshctl" --version | grep -q '0.1.0'
-"$B/mstore" --version | grep -q '0.1.0'
+"$B/mstore" --version | grep -q '0.2.0'
+touch "$RUNTIME/test.deb" "$RUNTIME/test.flatpak" "$RUNTIME/test.AppImage" "$RUNTIME/test.pkg" "$RUNTIME/test.rpm"
+"$B/mstore" format "$RUNTIME/test.deb" | grep -q 'Debian package'
+"$B/mstore" format "$RUNTIME/test.flatpak" | grep -q 'Flatpak bundle'
+"$B/mstore" format "$RUNTIME/test.AppImage" | grep -q 'AppImage'
+"$B/mstore" format "$RUNTIME/test.pkg" | grep -q 'Mintosh package'
+"$B/mstore" format "$RUNTIME/test.rpm" | grep -q 'RPM package'
+set +e
+"$B/mstore" install-file "$RUNTIME/test.pkg" >/dev/null 2>&1
+MSTORE_UNIMPLEMENTED_PKG_STATUS=$?
+"$B/mstore" install-file "$RUNTIME/test.rpm" >/dev/null 2>&1
+MSTORE_UNSUPPORTED_RPM_STATUS=$?
+set -e
+[ "$MSTORE_UNIMPLEMENTED_PKG_STATUS" -eq 69 ]
+[ "$MSTORE_UNSUPPORTED_RPM_STATUS" -eq 69 ]
 set +e
 "$B/mstore" install --invalid >/dev/null 2>&1
 MSTORE_INVALID_STATUS=$?
