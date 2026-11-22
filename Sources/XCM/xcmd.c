@@ -62,9 +62,9 @@ static bool peer_in_group(pid_t pid, gid_t primary_group, gid_t required_group) 
     while (fgets(line, sizeof(line), status) != NULL) {
         if (strncmp(line, "Groups:", 7) != 0) continue;
         char *cursor = line + 7;
-        while (*cursor != '\\0') {
+        while (*cursor != '\0') {
             while (isspace((unsigned char)*cursor)) ++cursor;
-            if (*cursor == '\\0') break;
+            if (*cursor == '\0') break;
             errno = 0;
             char *end = NULL;
             unsigned long value = strtoul(cursor, &end, 10);
