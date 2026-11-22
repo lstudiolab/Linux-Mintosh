@@ -13,7 +13,8 @@ for filename in sys.argv[1:]:
         raise SystemExit(f"{path}: not a PE/COFF EFI image")
     pe_offset = struct.unpack_from("<I", data, 0x3C)[0]
     if pe_offset + 24 > len(data) or data[pe_offset:pe_offset + 4] != b"PE\\0\\0":
-        raise SystemExit(f"{path}: invalid PE signature")
+        header = data[:128].hex()
+        raise SystemExit(f"{path}: invalid PE signature; e_lfanew=0x{pe_offset:x}; first128={header}")
     machine, _, _, _, _, optional_size, _ = struct.unpack_from(
         "<HHIIIHH", data, pe_offset + 4
     )
