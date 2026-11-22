@@ -5,16 +5,26 @@ XCM is a standalone system component outside Darkin and Choca. It is the only su
 ## Request path
 
 1. Choca sends a versioned typed message to XCM over a local authenticated IPC transport.
-2. XCM validates peer identity, protocol version, message length, operation, target class and capability.
-3. XCM rejects malformed, unknown, out-of-scope or protected-foundation mutations.
-4. XCM forwards an approved request to the specific Darkin service, not to a generic privileged shell.
-5. Darkin independently checks authorization and performs the operation.
-6. XCM returns a typed response/event to Choca.
+2. XCM derives peer identity from authenticated transport credentials and obtains capabilities from broker-held session state. Identity and capabilities are never accepted from the request payload.
+3. The policy engine validates message size, version, flags, payload type, target, operation, object scope and required capability.
+4. Choca requests targeting Darkin core or security policy are rejected, including update, raw execution and policy-change operations.
+5. UI-token payloads are accepted only for the presentation operation. They are never interpreted as privileged commands.
+6. User-data deletion requires an object-scoped handle, a delete capability and an explicit confirmation flag.
+7. Foundation updates are reserved for the authenticated update service and require a verified update bundle plus the foundation-update capability.
+8. Darkin independently checks authorization before performing an approved operation.
 
-## Trust boundary
+## Implemented policy core
 
-Choca UI tokens are presentation data only. They are never interpreted as privileged Darkin commands. Choca cannot delete or rewrite Darkin kernel images, boot assets, system binaries, service implementations or security policy. Darkin updates require a separate signed update and rollback flow.
+- C17 policy library in `policy.c`.
+- Versioned request header and typed payload identifiers in `include/xcm/protocol.h`.
+- Deny-by-default handling for unknown operations, invalid messages, unauthenticated peers, protected targets, missing capabilities and unverified updates.
+- Host tests covering Choca foundation-mutation attempts, UI-token separation, scoped user-data deletion, malformed messages and signed-update gating.
 
-User files are different from foundation code: user-data operations may be exposed through dedicated APIs with narrow capabilities, object-scoped targets and explicit confirmation for deletion.
+Run:
 
-The initial policy library is deliberately deny-by-default. Transport authentication, capability issuance/storage, audit persistence and service-side enforcement remain required before production use.
+    make -C Sources/XCM test
+    make test-xcm
+
+## Remaining before production
+
+This is the policy core, not yet a complete broker/server. Authenticated local IPC transport, capability issuance and revocation, session lifecycle, service dispatch, audit persistence, signature verification, replay protection and kernel-enforced process isolation still need implementation. The broker must construct its policy context from trusted transport and update-verification results; it must never trust those fields from Choca.
