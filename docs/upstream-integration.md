@@ -23,7 +23,7 @@ This document records the trusted upstream projects selected for Lenix and how t
 | U-Boot `common/main.c`, `bootm.c`, `drivers/core/device.c` | Boot research | Not used by the current GRUB/mBoot boot path |
 | systemd `src/core/main.c`, `manager.c` | Sean service lifecycle | Current Debian preview uses systemd; Lenix-native service manager remains first-party |
 | Wayland `wayland-server.c`, `wayland-client.c` | Future Window Server | Protocol and implementation reference; not yet linked |
-| Mesa upstream | Cacao graphics | Official freedesktop Mesa source for future OpenGL/Vulkan support |
+| Mesa upstream | Choca graphics | Official freedesktop Mesa source for future OpenGL/Vulkan support |
 
 ## XCU kernel configuration
 
@@ -40,6 +40,6 @@ The XCU fragment enables Linux's existing Unix-domain socket and event facilitie
 - FreeBSD source is not compiled into XCU.
 - U-Boot is not part of the current GRUB/mBoot boot path.
 - systemd is a transitional runtime dependency, not copied into Lenix's native service manager.
-- Wayland and Mesa are not yet part of a completed graphical build. Window Server and Cacao remain separate implementation work.
+- Wayland and Mesa are not yet part of a completed graphical build. Window Server and Choca remain separate implementation work.
 
 No Apple source or Apple-specific kernel code is used.
