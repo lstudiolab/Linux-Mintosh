@@ -75,7 +75,7 @@ verify: check-release check-makefiles check-scripts test-kernel-config test-inst
 	@echo 'Mintosh validation and native core tests passed.'
 
 release-info: check-release
-	@python3 -c 'import json; d=json.load(open("configs/release.json")); print("Mintosh", d["release"]); print("Linux", d["kernel"]["version"]); print("Debian", d["debian_suite"]); print("Architectures:", ", ".join(d["architectures"])); print("Bootable ISO:", d["image"]["primary_architecture"])'
+	@python3 -c 'import json; d=json.load(open("configs/release.json")); print("Mintosh", d["release"]); print("Linux", d["kernel"]["version"]); print("Debian", d["debian_suite"]); print("Bootable architectures:", ", ".join(d["architectures"])); print("Kernel build architectures:", ", ".join(d["kernel_build_architectures"])); print("Planned architectures:", ", ".join(d["planned_architectures"]) or "none"); print("Bootable ISO:", d["image"]["primary_architecture"])'
 
 check-host:
 	@command -v make >/dev/null || { echo 'Missing dependency: make' >&2; exit 1; }
