@@ -86,13 +86,13 @@ $(MBOOT_OUT):
 
 $(MBOOT_OUT)/mboot.o: Sources/mBoot/mboot.c | $(MBOOT_OUT)
 	@test -n "$(EFI_CRT)" -a -n "$(EFI_LDS)" || { echo 'GNU-EFI development files are missing; install gnu-efi.' >&2; exit 1; }
-	$(CC) -I/usr/include/efi -I/usr/include/efi/x86_64 -DEFI_FUNCTION_WRAPPER -O2 -Wall -Wextra -Werror -fpic -ffreestanding -fno-stack-protector -fno-stack-check -fshort-wchar -mno-red-zone -maccumulate-outgoing-args -c $< -o $@
+	$(CC) -I/usr/include/efi -I/usr/include/efi/x86_64 -DEFI_FUNCTION_WRAPPER -DGNU_EFI_USE_MS_ABI -O2 -Wall -Wextra -Werror -fpic -fno-strict-aliasing -fno-merge-constants -ffreestanding -fno-stack-protector -fno-stack-check -fshort-wchar -mno-red-zone -maccumulate-outgoing-args -c $< -o $@
 
 $(MBOOT_OUT)/mboot.so: $(MBOOT_OUT)/mboot.o
 	ld -nostdlib -znocombreloc -T $(EFI_LDS) -shared -Bsymbolic $(EFI_CRT) $< -L$(EFI_LIBDIR) -lefi -lgnuefi -o $@
 
 $(MBOOT_OUT)/boot.efi: $(MBOOT_OUT)/mboot.so
-	objcopy -j .text -j .sdata -j .data -j .dynamic -j .dynsym -j .rel -j .rela -j .reloc --target=efi-app-x86_64 $< $@
+	objcopy -j .peheader -j .text -j .sdata -j .data -j .rodata -j .dynamic -j .dynsym -j .rel -j .rela -j .rel.* -j .rela.* -j .reloc --target=efi-app-x86_64 --subsystem=10 $< $@
 
 $(MBOOT_OUT)/BOOTX64.EFI: $(MBOOT_OUT)/boot.efi
 	cp $< $@
