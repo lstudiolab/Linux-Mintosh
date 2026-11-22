@@ -31,7 +31,7 @@ $(BUILD)/tests: tests/xnv_tests.c $(SOURCES) include/xnv/xnv.h | $(BUILD)
 $(BUILD)/xcu-api-tests: tests/xcu_api_tests.c $(SOURCES) include/xnv/xnv.h include/xcu/xcu.h | $(BUILD)
 	$(CC) $(CFLAGS) -I. -Iinclude tests/xcu_api_tests.c $(SOURCES) -o $@
 
-test: $(BUILD)/tests $(BUILD)/xcu-api-tests
+test: all $(BUILD)/tests $(BUILD)/xcu-api-tests
 	./$(BUILD)/tests
 	./$(BUILD)/xcu-api-tests
 
