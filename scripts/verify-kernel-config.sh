@@ -22,8 +22,23 @@ CONFIG_PROC_FS
 CONFIG_SYSFS
 CONFIG_TMPFS
 CONFIG_CGROUPS
+CONFIG_NAMESPACES
+CONFIG_UTS_NS
+CONFIG_IPC_NS
+CONFIG_USER_NS
+CONFIG_PID_NS
+CONFIG_NET_NS
+CONFIG_EPOLL
+CONFIG_EVENTFD
+CONFIG_INOTIFY_USER
+CONFIG_UNIX
+CONFIG_INET
 CONFIG_SECCOMP
 CONFIG_SECCOMP_FILTER
+CONFIG_SECURITY
+CONFIG_KEYS
+CONFIG_BPF
+CONFIG_BPF_SYSCALL
 '
 for option in $required; do
     if ! grep -qx "${option}=y" "$CONFIG"; then
@@ -58,4 +73,5 @@ case "$PROFILE" in
         ;;
     *) echo "Unknown hardware profile: $PROFILE" >&2; exit 64 ;;
 esac
-echo "Kernel configuration includes required boot, generic hardware and $PROFILE profile options."
+grep -qx "CONFIG_LOCALVERSION=\"-mintosh-xnv\"" "$CONFIG" || { echo "XNV kernel local version is not set." >&2; exit 1; }
+echo "XNV Linux kernel configuration includes required boot, security, compatibility and $PROFILE hardware options."

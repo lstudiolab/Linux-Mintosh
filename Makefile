@@ -154,6 +154,7 @@ kernel-config: check-host
 	  --enable EPOLL --enable FHANDLE --enable AUTOFS4_FS --enable UNIX98_PTYS \
 	  --enable PACKET --enable UNIX --enable INET --enable IPV6 --enable NET_NS \
 	  --enable SECCOMP --enable SECCOMP_FILTER --set-str LOCALVERSION -mintosh
+	@"$(KERNEL_DIR)/scripts/config" --file "$(KERNEL_OUT)/.config" --enable NAMESPACES --enable UTS_NS --enable IPC_NS --enable USER_NS --enable PID_NS --enable NET_NS --enable EPOLL --enable EVENTFD --enable INOTIFY_USER --enable FANOTIFY --enable POSIX_MQUEUE --enable SECURITY --enable SECURITYFS --enable KEYS --enable BPF --enable BPF_SYSCALL --enable BPF_JIT --set-str LOCALVERSION -mintosh-xnv
 	$(MAKE) -C "$(KERNEL_DIR)" O="$(CURDIR)/$(KERNEL_OUT)" ARCH="$(KERNEL_ARCH)" CROSS_COMPILE="$(CROSS_COMPILE)" olddefconfig
 	@case "$(MINTOSH_HARDWARE_PROFILE)" in generic|hp-probook|hp-probook-450-g6) ;; *) echo 'Unsupported MINTOSH_HARDWARE_PROFILE: $(MINTOSH_HARDWARE_PROFILE)' >&2; exit 1 ;; esac
 	@if [ "$(ARCH)" = x86_64 ]; then \
