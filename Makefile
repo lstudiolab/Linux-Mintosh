@@ -1,5 +1,6 @@
 SHELL := /bin/sh
 ARCH ?= x86_64
+MINTOSH_HARDWARE_PROFILE ?= generic
 QEMU_MEMORY ?= 4096
 export ARCH MINTOSH_USER MINTOSH_PASSWORD
 JOBS ?= $(shell getconf _NPROCESSORS_ONLN 2>/dev/null || echo 2)
@@ -42,7 +43,7 @@ help:
 	  '  make usb USB=/dev/sdX  Write ISO to USB (erases that drive)' \
 	  '  make clean          Remove generated output' \
 	  '' \
-	  'Options: ARCH=x86_64|arm64 JOBS=<parallel jobs>' \
+	  'Options: ARCH=x86_64|arm64 MINTOSH_HARDWARE_PROFILE=generic|hp-probook JOBS=<parallel jobs>' \
 	  'The first live ISO and installer target x86_64.'
 
 check-release:
@@ -107,7 +108,13 @@ kernel-config: check-host
 	  --enable PACKET --enable UNIX --enable INET --enable IPV6 --enable NET_NS \
 	  --enable SECCOMP --enable SECCOMP_FILTER --set-str LOCALVERSION -mintosh
 	$(MAKE) -C "$(KERNEL_DIR)" O="$(CURDIR)/$(KERNEL_OUT)" ARCH="$(KERNEL_ARCH)" CROSS_COMPILE="$(CROSS_COMPILE)" olddefconfig
-	@if [ "$(ARCH)" = x86_64 ]; then sh scripts/configure-hp-probook.sh "$(KERNEL_DIR)" "$(KERNEL_OUT)"; fi
+	@case "$(MINTOSH_HARDWARE_PROFILE)" in generic|hp-probook) ;; *) echo 'Unsupported MINTOSH_HARDWARE_PROFILE: $(MINTOSH_HARDWARE_PROFILE)' >&2; exit 1 ;; esac
+	@if [ "$(ARCH)" = x86_64 ]; then \
+	  sh scripts/configure-x86_64-hardware.sh "$(KERNEL_DIR)" "$(KERNEL_OUT)"; \
+	  if [ "$(MINTOSH_HARDWARE_PROFILE)" = hp-probook ]; then sh scripts/configure-hp-probook.sh "$(KERNEL_DIR)" "$(KERNEL_OUT)"; fi; \
+	elif [ "$(MINTOSH_HARDWARE_PROFILE)" != generic ]; then \
+	  echo 'The HP ProBook profile is only available for x86_64.' >&2; exit 1; \
+	fi
 	@sh scripts/verify-kernel-config.sh "$(KERNEL_OUT)/.config"
 
 kernel: check-host
