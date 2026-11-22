@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
+trap 'status=$?; echo "Partitioning test failed at line ${LINENO} (exit ${status})." >&2; exit "$status"' ERR
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 source "$ROOT/scripts/installer-storage.sh"
 TMP=$(mktemp -d)
