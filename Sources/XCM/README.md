@@ -15,12 +15,12 @@ XCM is a standalone system component outside Darkin and Choca. It is the only su
 ## Request path
 
 1. Choca connects to `/run/mintosh/xcm.sock` using a local sequenced-packet socket.
-2. XCM obtains peer PID, UID and primary GID from the kernel, then verifies the account belongs to `mintosh-services`. Root is not accepted as a Choca client.
+2. XCM obtains peer PID, UID and primary GID from the kernel, then verifies the process's actual supplementary groups through `/proc/<pid>/status` include `mintosh-services`. Root is not accepted as a Choca client.
 3. XCM validates the complete packet size, protocol version, request ID, flags, payload type, target, operation, object scope and capabilities.
-4. A bounded recent-request cache rejects duplicate request IDs.
+4. A bounded recent-request cache keyed by kernel-authenticated UID, PID and request ID rejects duplicate requests.
 5. Choca receives only presentation and read-only system-information capabilities in this first broker milestone. No user-data write/delete or foundation-update capabilities are issued.
 6. System-information requests return a bounded typed response. Presentation requests are policy-checked but return `UNAVAILABLE` until the Choca renderer endpoint is registered.
-7. Policy denials and accepted privileged queries are written to the system authentication log.
+7. Policy denials and accepted system-information queries are written to the system authentication log.
 8. Darkin service implementations must still authorize their own operations; XCM is not a replacement for service-side checks.
 
 ## Security properties
