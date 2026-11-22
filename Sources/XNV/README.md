@@ -1,68 +1,52 @@
 # XNV kernel
 
-XNV is Mintosh's planned first-party hybrid kernel. It replaces the previous
-decision to ship the upstream Linux kernel as Mintosh's permanent kernel.
-The current Linux-based Developer Preview remains a temporary bring-up
-environment until XNV can boot and pass hardware, storage, networking and
-recovery tests. Do not remove the legacy path before that gate is met.
+XNV is Mintosh's first-party x86-64 hybrid-kernel project, architecturally inspired by Mach and BSD as integrated in Apple's XNU. It is an independent implementation and does not reuse Apple's source.
 
 ## Architecture
 
-XNV combines two tightly integrated kernel subsystems in one privileged kernel:
+- **Mach subsystem:** task/thread objects, scheduling, virtual memory, IPC, synchronization and port rights. The core objects and scheduler are not implemented yet.
+- **BSD subsystem:** process and POSIX interfaces, VFS, file descriptors, sockets, networking, credentials and permissions. These layers are not implemented yet.
+- **XNV core:** boot, CPU/platform abstraction, GDT/IDT, exception dispatch, physical memory, paging and diagnostics.
+- **XCM:** future first-party userspace system-communication and session platform. It will expose stable IPC, display, input, window, service and session APIs. It is not part of the kernel.
+- **USI:** future graphical interface built above XCM in the user's programming language. It remains deferred until that language, compiler, runtime and standard library are ready.
 
-- **Mach layer**: task and thread abstractions, scheduling, virtual memory,
-  inter-process communication (IPC), synchronization and port rights.
-- **BSD layer**: process and POSIX interfaces, VFS, file descriptors, sockets,
-  networking, credentials, permissions and compatibility interfaces.
-- **XNV core**: boot, CPU/platform abstraction, interrupt and exception
-  dispatch, memory ownership, system-call entry, kernel diagnostics and
-  subsystem coordination.
+Mach and BSD are intended to be integrated in one privileged hybrid kernel. XNV must boot and operate without XCM or USI.
 
-This is a Mach/BSD-inspired design, not a copy of Apple's XNU source. The
-implementation is first-party C and architecture-specific assembly. C++ may
-be used for later kernel components only where its runtime requirements are
-explicitly controlled. No host C library, Linux kernel headers, Linux kernel
-runtime, or third-party kernel implementation is part of the XNV kernel.
+## Implemented x86-64 bootstrap
 
-XNV is a **hybrid kernel**, not a userspace microkernel: Mach and BSD services
-are integrated in the kernel address space. Drivers may later use isolated
-interfaces where practical, but the initial kernel must prioritize a small,
-auditable privileged core.
+- UEFI x86-64 application entry and ExitBootServices handoff.
+- Versioned boot ABI v1 with memory-map, initrd, ACPI RSDP and framebuffer fields.
+- UEFI memory descriptor conversion, sorting and validation.
+- COM1 serial diagnostics.
+- GDT and 256-entry IDT installation.
+- Fail-stop CPU exception stubs for vectors 0-31.
+- Physical page allocator for the first 32 GiB of physical address space.
+- RAM-only identity mapping up to 32 GiB, using 2 MiB pages for complete RAM spans and 4 KiB tables for partial spans. Reserved and MMIO ranges are left unmapped.
+- Host regression tests for the boot ABI and physical page allocator.
+- Freestanding EFI application build target at out/xnv/XNV.EFI.
 
-## XCM and USI boundary
+The current bootstrap assumes UEFI's initial x86-64 identity mapping while it transitions to its own RAM-only page map. It supports four-level paging and deliberately stops if five-level paging is active. It does not yet establish a higher-half kernel, NX/W^X mappings, per-CPU stacks, APIC routing or SMP.
 
-XCM is a first-party userspace system-communication and session platform. It
-will expose stable IPC, display, input, window, service and session APIs to
-higher-level software. It is not a kernel subsystem and must not run with
-kernel privilege.
+## Transitional boot dependencies
 
-USI is the graphical user interface built above XCM in the user's future
-programming language. USI work is explicitly deferred until that language,
-compiler, runtime and standard library are ready. XNV must boot, provide a
-console and operate without USI or XCM.
+The current EFI build uses GNU-EFI headers, startup/linker support and libraries to produce the first bootable prototype. This is a temporary bring-up dependency, not the desired final system foundation. A first-party UEFI ABI, entry shim and PE/COFF image pipeline must replace it before a first-party-only XNV release.
 
-## Boot contract v1
+The existing Mintosh Developer Preview still boots the upstream Linux kernel and Debian userspace. mBoot still loads the Linux EFI stub in the legacy preview. Do not remove that path until XNV can boot a useful console system and passes installation, storage, device, networking, security and recovery tests.
 
-`include/xnv/boot.h` defines the versioned bootloader-to-kernel handoff.
-All addresses in the structure are physical addresses. The kernel must map
-and validate them before dereferencing them. The ABI carries a memory map,
-optional initrd, optional ACPI RSDP and optional 32-bit RGBX/BGRX framebuffer.
+## Not implemented yet
 
-The current code validates the handoff structure and its ranges. It does not
-yet enter long mode, establish page tables, initialize interrupts, schedule
-threads, mount a filesystem or boot a machine. The existing mBoot program
-still loads the Linux EFI stub; it must be replaced or extended before XNV
-can boot.
+- APIC/IOAPIC routing, timer interrupts, SMP startup and per-CPU state.
+- Mach task/thread objects, context switching, scheduler, IPC ports and VM object model.
+- BSD process/syscall ABI, VFS, filesystems, sockets and networking.
+- PCI enumeration, driver model, storage, USB and graphics/input drivers.
+- User-mode transition, ELF loader, init process, system services and XCM.
+- Secure Boot chain, signed kernel image and measured boot.
+- Successful OVMF boot verification and physical-hardware validation.
 
-## Current implementation status
+## Build and test
 
-- Implemented: versioned boot handoff ABI and bounds/alignment validation.
-- Implemented: host-side regression tests for malformed boot metadata.
-- Not implemented: XNV entry/early assembly, GDT/IDT, APIC, physical/virtual
-  memory managers, Mach tasks/threads/IPC, BSD process/VFS/socket layers,
-  drivers, syscall ABI, scheduler, SMP, userspace ABI or bootable image.
-- Not verified: QEMU boot, real hardware boot, suspend/resume, install or
-  recovery using XNV.
+    make xnv-verify
+    make xnv-efi
+    make test-xnv-qemu
 
-The ABI is an initial contract and may evolve before the first bootable XNV
-release. Changes must be versioned and tested with the bootloader.
+xnv-verify compiles the freestanding core and runs host regression tests. xnv-efi builds the EFI application. test-xnv-qemu boots it under OVMF and checks its serial milestones. A successful compile alone does not prove a working boot.
