@@ -7,6 +7,8 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+int mstore_valid_package_name(const char *name);
+
 enum mstore_format {
     MSTORE_FORMAT_UNKNOWN = 0,
     MSTORE_FORMAT_DEB,
@@ -99,6 +101,17 @@ static int run_appimage(const char *input) {
     return errno == ENOENT ? 127 : 126;
 }
 
+static int valid_package_arguments(int argc, char **argv, int first)
+{
+    for (int index = first; index < argc; ++index) {
+        if (!mstore_valid_package_name(argv[index])) {
+            fprintf(stderr, "mstore: invalid package name: %s\n", argv[index]);
+            return 0;
+        }
+    }
+    return 1;
+}
+
 static int show_usage(void) {
     fputs("usage: mstore search QUERY | info PACKAGE | list | install PACKAGE... | "
           "install-file FILE | format FILE | run FILE.AppImage | remove PACKAGE... | update | upgrade\n", stderr);
@@ -122,14 +135,22 @@ int main(int argc, char **argv) {
     if (strcmp(argv[1], "install-file") == 0 && argc == 3) return install_file(argv[2]);
     if (strcmp(argv[1], "install") == 0 && argc == 3 &&
         detect_format(argv[2]) != MSTORE_FORMAT_UNKNOWN) return install_file(argv[2]);
-    if (strcmp(argv[1], "search") == 0 && argc == 3)
+    if (strcmp(argv[1], "search") == 0 && argc == 3 && argv[2][0])
         return native_backend_unavailable("repository search");
-    if (strcmp(argv[1], "info") == 0 && argc == 3)
+    if (strcmp(argv[1], "info") == 0 && argc == 3) {
+        if (!valid_package_arguments(argc, argv, 2)) return 64;
         return native_backend_unavailable("package inspection");
+    }
     if (strcmp(argv[1], "list") == 0 && argc == 2)
         return native_backend_unavailable("installed-package database");
-    if ((strcmp(argv[1], "install") == 0 || strcmp(argv[1], "remove") == 0) && argc >= 3)
+    if (strcmp(argv[1], "install") == 0 && argc >= 3) {
+        if (!valid_package_arguments(argc, argv, 2)) return 64;
         return native_backend_unavailable("transaction engine");
+    }
+    if (strcmp(argv[1], "remove") == 0 && argc >= 3) {
+        if (!valid_package_arguments(argc, argv, 2)) return 64;
+        return native_backend_unavailable("transaction engine");
+    }
     if (strcmp(argv[1], "update") == 0 && argc == 2)
         return native_backend_unavailable("repository update");
     if (strcmp(argv[1], "upgrade") == 0 && argc == 2)

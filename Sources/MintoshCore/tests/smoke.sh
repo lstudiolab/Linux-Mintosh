@@ -107,8 +107,17 @@ set -e
 set +e
 "$B/mstore" install --invalid >/dev/null 2>&1
 MSTORE_INVALID_STATUS=$?
+"$B/mstore" install firefox >/dev/null 2>&1
+MSTORE_INSTALL_UNAVAILABLE_STATUS=$?
+"$B/mstore" info firefox >/dev/null 2>&1
+MSTORE_INFO_UNAVAILABLE_STATUS=$?
+"$B/mstore" remove firefox >/dev/null 2>&1
+MSTORE_REMOVE_UNAVAILABLE_STATUS=$?
 set -e
 [ "$MSTORE_INVALID_STATUS" -eq 64 ]
+[ "$MSTORE_INSTALL_UNAVAILABLE_STATUS" -eq 69 ]
+[ "$MSTORE_INFO_UNAVAILABLE_STATUS" -eq 69 ]
+[ "$MSTORE_REMOVE_UNAVAILABLE_STATUS" -eq 69 ]
 
 "$B/darl" &
 Darl_PID=$!
