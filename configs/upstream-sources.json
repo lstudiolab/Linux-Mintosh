@@ -9,11 +9,24 @@
       "license": "GPL-2.0-only",
       "mode": "build-pinned-upstream",
       "files": [
-        {"path": "ipc/msg.c", "blob": "62996b97f0ac2137dfc2fa109394d6db1fcb4a0f", "purpose": "System V message queues"},
-        {"path": "net/unix/af_unix.c", "blob": "91c1d6cad4974c3e30292cac2ab09ef7156161a1", "purpose": "Unix-domain sockets and descriptor passing"},
-        {"path": "drivers/base/core.c", "blob": "cbe05197d4a0bc1ce24fcc05667fc4dd7570833e", "purpose": "Linux device and driver core"}
+        {
+          "path": "ipc/msg.c",
+          "blob": "62996b97f0ac2137dfc2fa109394d6db1fcb4a0f",
+          "purpose": "System V message queues"
+        },
+        {
+          "path": "net/unix/af_unix.c",
+          "blob": "91c1d6cad4974c3e30292cac2ab09ef7156161a1",
+          "purpose": "Unix-domain sockets and descriptor passing"
+        },
+        {
+          "path": "drivers/base/core.c",
+          "blob": "cbe05197d4a0bc1ce24fcc05667fc4dd7570833e",
+          "purpose": "Linux device and driver core"
+        }
       ],
-      "integration": "These files are supplied by the pinned Linux kernel source fetched by scripts/fetch-kernel.sh. Do not vendor duplicate copies into Sources/XCU."
+      "integration": "These files are supplied by the pinned Linux kernel source fetched by scripts/fetch-kernel.sh. Do not vendor duplicate copies into Sources/XCU.",
+      "revision": "Linux 6.18.64 release archive; SHA-256 pinned in configs/release.json"
     },
     {
       "component": "BSD/POSIX behavior reference",
@@ -21,12 +34,29 @@
       "license": "BSD-2-Clause and BSD-3-Clause (per file)",
       "mode": "behavioral-reference",
       "files": [
-        {"path": "sys/kern/uipc_syscalls.c", "blob": "b40624200837806492f6e88424e92e85d1f82c05", "purpose": "BSD socket syscall semantics"},
-        {"path": "sys/kern/uipc_mqueue.c", "blob": "cd402fa3e80bc5b65b631a040e6594d8817150ce", "purpose": "POSIX message queue behavior"},
-        {"path": "sys/kern/sysv_msg.c", "blob": "f4ec7919b4760d2066ed921294e7e5e9e04c1549", "purpose": "System V message queue behavior"},
-        {"path": "sys/net/if.c", "blob": "6bbacbeb78b677a11ff2dfaf0d75c1c7bfeedeb0", "purpose": "Network interface behavior"}
+        {
+          "path": "sys/kern/uipc_syscalls.c",
+          "blob": "b40624200837806492f6e88424e92e85d1f82c05",
+          "purpose": "BSD socket syscall semantics"
+        },
+        {
+          "path": "sys/kern/uipc_mqueue.c",
+          "blob": "cd402fa3e80bc5b65b631a040e6594d8817150ce",
+          "purpose": "POSIX message queue behavior"
+        },
+        {
+          "path": "sys/kern/sysv_msg.c",
+          "blob": "f4ec7919b4760d2066ed921294e7e5e9e04c1549",
+          "purpose": "System V message queue behavior"
+        },
+        {
+          "path": "sys/net/if.c",
+          "blob": "6bbacbeb78b677a11ff2dfaf0d75c1c7bfeedeb0",
+          "purpose": "Network interface behavior"
+        }
       ],
-      "integration": "Use as a compatibility and behavior reference. These FreeBSD kernel files are not drop-in Linux modules."
+      "integration": "Reference-only. FreeBSD source is not copied into or linked with the Linux kernel. Implement required POSIX/BSD behavior in Lenix-owned compatibility code under Sources/XCU/Compatibility, with per-file attribution if code is adapted.",
+      "revision": "11a3bc02374b6517e9bfcaaf68c9b5b9902c043c"
     },
     {
       "component": "Bootloader research",
@@ -34,9 +64,21 @@
       "license": "GPL-2.0-or-later",
       "mode": "reference-only",
       "files": [
-        {"path": "common/main.c", "blob": "4b4504557f6e07a13b069ac4420c2e6d6d62d9d4", "purpose": "Boot command and handoff flow"},
-        {"path": "boot/bootm.c", "blob": "daf67be3e0c5c6d9612341f06db06aa2e6d9a9d4", "purpose": "Kernel image loading"},
-        {"path": "drivers/core/device.c", "blob": "6024534ff9395f5df5f99a27e4a50e736ec69ab5", "purpose": "Bootloader device model"}
+        {
+          "path": "common/main.c",
+          "blob": "4b4504557f6e07a13b069ac4420c2e6d6d62d9d4",
+          "purpose": "Boot command and handoff flow"
+        },
+        {
+          "path": "boot/bootm.c",
+          "blob": "daf67be3e0c5c6d9612341f06db06aa2e6d9a9d4",
+          "purpose": "Kernel image loading"
+        },
+        {
+          "path": "drivers/core/device.c",
+          "blob": "6024534ff9395f5df5f99a27e4a50e736ec69ab5",
+          "purpose": "Bootloader device model"
+        }
       ],
       "integration": "Not linked into the current boot path. Lenix currently uses its GRUB and mBoot path; U-Boot remains a reference unless the bootloader strategy changes."
     },
@@ -46,8 +88,16 @@
       "license": "LGPL-2.1-or-later (per project and file)",
       "mode": "reference-and-existing-host-runtime",
       "files": [
-        {"path": "src/core/main.c", "blob": "cbddeab4d207d775239dc2e7dbc48f2f9725e4f6", "purpose": "PID 1 startup flow"},
-        {"path": "src/core/manager.c", "blob": "d74ee48ec3ce81d29170c9efc8c55a4f2bad5367", "purpose": "Service manager lifecycle"}
+        {
+          "path": "src/core/main.c",
+          "blob": "cbddeab4d207d775239dc2e7dbc48f2f9725e4f6",
+          "purpose": "PID 1 startup flow"
+        },
+        {
+          "path": "src/core/manager.c",
+          "blob": "d74ee48ec3ce81d29170c9efc8c55a4f2bad5367",
+          "purpose": "Service manager lifecycle"
+        }
       ],
       "integration": "systemd is present in the transitional Debian userspace. Native Lenix service management remains first-party; do not copy systemd internals into it."
     },
@@ -57,8 +107,16 @@
       "license": "MIT",
       "mode": "future-protocol-dependency",
       "files": [
-        {"path": "src/wayland-server.c", "blob": "a0e118e8d4976b64020a11d302740fa7ba02351c", "purpose": "Display server protocol implementation"},
-        {"path": "src/wayland-client.c", "blob": "19298845ce94bbbcd6f1ffbc31138b4b48e3eb8e", "purpose": "Display client protocol implementation"}
+        {
+          "path": "src/wayland-server.c",
+          "blob": "a0e118e8d4976b64020a11d302740fa7ba02351c",
+          "purpose": "Display server protocol implementation"
+        },
+        {
+          "path": "src/wayland-client.c",
+          "blob": "19298845ce94bbbcd6f1ffbc31138b4b48e3eb8e",
+          "purpose": "Display client protocol implementation"
+        }
       ],
       "integration": "Reference for the future Window Server. No Wayland source is vendored or linked yet."
     },
@@ -69,6 +127,28 @@
       "mode": "future-upstream-dependency",
       "files": [],
       "integration": "Use the official Mesa upstream for OpenGL/Vulkan userspace drivers when the graphics stack is implemented. Do not use the unrelated GitHub project named mesa/mesa."
+    },
+    {
+      "component": "Mach kernel concepts and IPC reference",
+      "repository": "https://github.com/apple-oss-distributions/xnu",
+      "revision": "f6217f891ac0bb64f3d375211650a4c1ff8ca1ea",
+      "license": "Apple Public Source License 2.0 (per file; verify before adaptation)",
+      "mode": "behavioral-reference",
+      "files": [
+        {
+          "path": "osfmk/kern/task.c",
+          "purpose": "Mach task lifecycle concepts"
+        },
+        {
+          "path": "osfmk/ipc/ipc_port.c",
+          "purpose": "Mach port rights and endpoint semantics"
+        },
+        {
+          "path": "osfmk/vm/vm_map.c",
+          "purpose": "Mach virtual-memory object and map concepts"
+        }
+      ],
+      "integration": "Reference-only. Do not link XNU kernel code into Linux. Implement compatible task, port, message and memory-object abstractions in XCU using Linux pidfds, Unix SOCK_SEQPACKET sockets, SCM_RIGHTS, memfd seals and epoll. Check APSL obligations before adapting any code."
     }
   ]
 }
