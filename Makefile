@@ -22,7 +22,12 @@ else
 KERNEL_IMAGE := bzImage
 endif
 
-.PHONY: help check-makefiles test-native-core test-kernel-config test-installer-safety check-host check-release check-scripts verify release-info host-deps kernel-fetch kernel-config kernel kernel-install rootfs initramfs iso image qemu test-qemu usb clean
+MBOOT_OUT := out/mboot
+EFI_CRT := $(firstword $(wildcard /usr/lib/crt0-efi-x86_64.o /usr/lib/gnuefi/crt0-efi-x86_64.o))
+EFI_LDS := $(firstword $(wildcard /usr/lib/elf_x86_64_efi.lds /usr/lib/gnuefi/elf_x86_64_efi.lds))
+EFI_LIBDIR := $(dir $(EFI_CRT))
+
+.PHONY: help check-makefiles test-native-core test-kernel-config test-installer-safety test-mboot mboot check-host check-release check-scripts verify release-info host-deps kernel-fetch kernel-config kernel kernel-install rootfs initramfs iso image qemu test-qemu usb clean
 
 help:
 	@printf '%s\n' \
@@ -37,7 +42,7 @@ help:
 	  '  make kernel         Build the kernel and modules' \
 	  '  make rootfs         Build the Debian-based Mintosh root filesystem' \
 	  '  make initramfs      Package the live root filesystem as initramfs' \
-	  '  make iso            Build the bootable BIOS/UEFI GRUB ISO' \
+	  '  make iso            Build the bootable BIOS/UEFI GRUB ISO' \\
 	  '  make qemu           Boot the ISO interactively in QEMU' \
 	  '  make test-qemu      Run the serial-console boot smoke test' \
 	  '  make usb USB=/dev/sdX  Write ISO to USB (erases that drive)' \
@@ -71,7 +76,25 @@ test-installer-safety:
 	@bash scripts/test-installer-disk-safety.sh
 	@bash scripts/test-installer-partitioning.sh
 
-verify: check-release check-makefiles check-scripts test-kernel-config test-installer-safety test-native-core
+test-mboot: mboot
+	@python3 scripts/test-mboot.py $(MBOOT_OUT)/BOOTX64.EFI
+
+mboot: $(MBOOT_OUT)/BOOTX64.EFI
+
+$(MBOOT_OUT):
+	@mkdir -p $@
+
+$(MBOOT_OUT)/mboot.o: Sources/mBoot/mboot.c | $(MBOOT_OUT)
+	@test -n "$(EFI_CRT)" -a -n "$(EFI_LDS)" || { echo 'GNU-EFI development files are missing; install gnu-efi.' >&2; exit 1; }
+	$(CC) -I/usr/include/efi -I/usr/include/efi/x86_64 -DEFI_FUNCTION_WRAPPER -O2 -Wall -Wextra -Werror -fpic -ffreestanding -fno-stack-protector -fno-stack-check -fshort-wchar -mno-red-zone -maccumulate-outgoing-args -c $< -o $@
+
+$(MBOOT_OUT)/mboot.so: $(MBOOT_OUT)/mboot.o
+	ld -nostdlib -znocombreloc -T $(EFI_LDS) -shared -Bsymbolic $(EFI_CRT) $< -L$(EFI_LIBDIR) -lefi -lgnuefi -o $@
+
+$(MBOOT_OUT)/BOOTX64.EFI: $(MBOOT_OUT)/mboot.so
+	objcopy -j .text -j .sdata -j .data -j .dynamic -j .dynsym -j .rel -j .rela -j .reloc --target=efi-app-x86_64 $< $@
+
+verify: check-release check-makefiles check-scripts test-kernel-config test-installer-safety test-native-core test-mboot
 	@echo 'Mintosh validation and native core tests passed.'
 
 release-info: check-release
@@ -87,7 +110,7 @@ check-host:
 host-deps:
 	@sudo apt-get update
 	@sudo apt-get install -y bc bison build-essential cpio curl debootstrap flex gcc g++ \
-	  grub-common grub-pc-bin grub-efi-amd64-bin kmod libelf-dev libncurses-dev \
+	  grub-common grub-pc-bin grub-efi-amd64-bin gnu-efi kmod libelf-dev libncurses-dev \
 	  libssl-dev libsqlite3-dev make mtools parted python3 qemu-system-x86 util-linux rsync zip gcc-aarch64-linux-gnu binutils-aarch64-linux-gnu xorriso xz-utils
 
 kernel-fetch: check-host check-release
