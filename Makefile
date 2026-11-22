@@ -57,6 +57,11 @@ help:
 xnv-verify:
 	@$(MAKE) --no-print-directory -C Sources/XNV verify
 
+xnv-efi:
+	@$(MAKE) --no-print-directory -C Sources/XNV build/XNV.EFI EFI_CRT='$(EFI_CRT)' EFI_LDS='$(EFI_LDS)' EFI_LIBDIR='$(EFI_LIBDIR)'
+	@mkdir -p out/xnv
+	@cp Sources/XNV/build/XNV.EFI out/xnv/XNV.EFI
+
 check-release:
 	@python3 scripts/check-release.py
 	@python3 -m json.tool configs/release.json >/dev/null
