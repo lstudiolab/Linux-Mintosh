@@ -7,8 +7,8 @@ XCM is a standalone system component outside Darkin and Choca. It is the only su
 - `xcmd.c`: Linux local IPC broker using Unix `SOCK_SEQPACKET` and kernel-provided `SO_PEERCRED` identity.
 - `policy.c`: deny-by-default C17 authorization policy.
 - `client.c`: Choca-side request/reply client library.
+- `darkin_client.c`: private XCM-to-Darkin backend client.
 - `include/xcm/protocol.h`: versioned request/response wire envelopes and typed payload identifiers.
-- `include/xcm/client.h`: unprivileged client API.
 - `Sources/Services/xcm.service`: confined systemd service.
 - Host tests for policy decisions and client transport framing.
 
@@ -19,9 +19,9 @@ XCM is a standalone system component outside Darkin and Choca. It is the only su
 3. XCM validates the complete packet size, protocol version, request ID, flags, payload type, target, operation, object scope and capabilities.
 4. A bounded recent-request cache keyed by kernel-authenticated UID, PID and request ID rejects duplicate requests.
 5. Choca receives only presentation and read-only system-information capabilities in this first broker milestone. No user-data write/delete or foundation-update capabilities are issued.
-6. System-information requests return a bounded typed response. Presentation requests are policy-checked but return `UNAVAILABLE` until the Choca renderer endpoint is registered.
-7. Policy denials and accepted system-information queries are written to the system authentication log.
-8. Darkin service implementations must still authorize their own operations; XCM is not a replacement for service-side checks.
+6. An authorized system-information request is forwarded over a separate root-only socket to the Darkin system service. Darkin authenticates the XCM process and independently validates the internal request before returning typed system data.
+7. Presentation requests are policy-checked but return `UNAVAILABLE` until the Choca renderer endpoint is registered.
+8. Policy denials and accepted system-information queries are written to the system authentication log.
 
 ## Security properties
 
@@ -29,24 +29,26 @@ XCM is a standalone system component outside Darkin and Choca. It is the only su
 - Arbitrary executable payloads are always rejected.
 - USI token payloads are accepted only for presentation; they are never treated as commands.
 - Local peer identity is kernel-derived, never supplied by the request.
-- The broker socket is root-owned, group-restricted and mode `0660`.
+- The Choca-facing broker socket is root-owned, group-restricted and mode `0660`.
+- The Darkin backend socket is root-owned, mode `0600`, and placed in a root-only runtime directory. Choca cannot connect to it directly.
 - The broker runs with a restricted systemd sandbox and a reduced capability set.
 - Unknown operations, malformed packets, unsupported versions and ungranted capabilities fail closed.
 
 ## Build, install and test
 
-    make -C Sources/XCM
+    make -C Sources/Darkin test
     make -C Sources/XCM test
+    make test-darkin
     make test-xcm
 
-The root filesystem build installs `xcmd`, `libxcm.a`, public headers and enables `xcm.service`.
+The root filesystem build installs the Darkin service, `xcmd`, `libxcm.a`, public headers and enables both systemd units. XCM starts only after the Darkin backend endpoint is available.
 
 ## Deliberate implementation limits
 
 This is an operational first broker milestone, not yet the complete production message bus. The following are still required before claiming full XCM completion:
 
 - A registered Choca renderer endpoint and token delivery.
-- Darkin service endpoint registration and typed request dispatch.
+- More Darkin service endpoints and typed request dispatch beyond system information.
 - Per-application identities/capabilities instead of the initial user-session group policy.
 - Durable, bounded audit records with rotation and structured event IDs.
 - Cryptographic update-bundle verification and rollback integration.
