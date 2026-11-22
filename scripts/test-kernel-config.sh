@@ -11,10 +11,16 @@ for option in \
 do
   printf '%s=y\n' "$option" >> "$CONFIG"
 done
-sh scripts/verify-kernel-config.sh "$CONFIG" >/dev/null
+sh scripts/verify-kernel-config.sh "$CONFIG" hp-probook-450-g6 >/dev/null
 sed -i '/^CONFIG_MODULE_SIG_FORCE=y$/d' "$CONFIG"
 if sh scripts/verify-kernel-config.sh "$CONFIG" >/dev/null 2>&1; then
   echo "Kernel config verifier accepted a missing required option." >&2
+  exit 1
+fi
+printf "%s\\n" "CONFIG_MODULE_SIG_FORCE=y" >> "$CONFIG"
+sed -i "/^CONFIG_RTW88_8821CE=m$/d" "$CONFIG"
+if sh scripts/verify-kernel-config.sh "$CONFIG" hp-probook-450-g6 >/dev/null 2>&1; then
+  echo "Kernel config verifier accepted a missing ProBook Wi-Fi driver." >&2
   exit 1
 fi
 echo "Kernel configuration verification tests passed."

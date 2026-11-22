@@ -25,8 +25,8 @@ Native source code lives under `Sources/`. The current core is compiled inside t
 - **GVD**: process scheduling inspection/control plus a bounded pthread task-dispatch library for native userspace.
 - **IOPS**: power-supply and thermal inventory, CPU frequency governor inspection/control and ACPI platform-profile management.
 - **I/O+**: structured kernel, CPU, memory, DMI, block, network, USB, graphics and power inventory, plus a read-only kernel uevent monitor.
-- **Platform baseline**: x86-64 builds enable a generic Intel/AMD desktop and laptop driver profile covering ACPI, CPU power management, PCI-era storage, NVMe, SATA/AHCI, USB, common wired and wireless networking, Bluetooth, graphics, audio, input, webcams and Thunderbolt/USB-C. Device-specific drivers remain modules so missing hardware does not block boot.
-- **HP Compatibility**: C++ platform diagnostics backed by an x86-64 assembly CPUID routine, plus DMI-based HP/ProBook identification. The HP-specific kernel profile is opt-in with `MINTOSH_HARDWARE_PROFILE=hp-probook`; it is not the default hardware target.
+- **Platform baseline**: x86-64 builds enable a generic Intel/AMD desktop and laptop driver profile covering ACPI, CPU power management, PCI storage, NVMe, SATA/AHCI, USB, common wired and wireless networking, Bluetooth, graphics, audio, input, webcams and Thunderbolt/USB-C. Intel Wi-Fi, Realtek RTL8821CE/RTL8822BE, Realtek wired Ethernet, Intel graphics and common storage drivers are explicitly included as modules. Device-specific drivers remain modules so missing hardware does not block boot.
+- **HP Compatibility**: C++ platform diagnostics backed by an x86-64 assembly CPUID routine, plus DMI-based HP/ProBook identification. The HP-specific kernel profile is opt-in with `MINTOSH_HARDWARE_PROFILE=hp-probook-450-g6` (the older `hp-probook` profile name remains an alias). It enables HP WMI/hotkey and accelerometer support plus the Intel 9560 and Realtek 8821CE/8822BE WLAN alternatives documented for the ProBook 450 G6. The generic profile remains the default for other x86-64 computers.
 - **Kexts**: kernel module operations delegated to Linux modprobe/kmod.
 - **Security**: basic permissions audit for critical account files.
 - **System Logging**: syslog client utility.
@@ -59,7 +59,7 @@ The live root filesystem is bootstrapped from Debian Trixie and includes systemd
 
 ## Kernel and releases
 
-Kernel versions are pinned in configs/release.json. Kernel source is downloaded during builds and is not vendored into Git. ARCH=x86_64 maps to the Linux kernel's ARCH=x86; ARCH=arm64 maps to ARCH=arm64. The verified bootable installer target is x86_64. Generic Intel/AMD hardware support is the default kernel profile; an HP ProBook overlay is optional. ARM64 can be kernel-cross-compiled but has no root filesystem, installer or bootable image yet. RISC-V is planned, not implemented. The Debian Trixie root filesystem enables non-free-firmware and installs firmware for common Intel, AMD, Realtek, Atheros, Broadcom, MediaTek and NVIDIA devices.
+Kernel versions are pinned in configs/release.json. Kernel source is downloaded during builds and is not vendored into Git. ARCH=x86_64 maps to the Linux kernel's ARCH=x86; ARCH=arm64 maps to ARCH=arm64. The verified bootable installer target is x86_64. Generic Intel/AMD hardware support is the default kernel profile; an HP ProBook 450 G6 overlay is optional and can be selected with `make kernel-config MINTOSH_HARDWARE_PROFILE=hp-probook-450-g6`. ARM64 can be kernel-cross-compiled but has no root filesystem, installer or bootable image yet. RISC-V is planned, not implemented. The Debian Trixie root filesystem enables non-free-firmware and installs firmware for common Intel, AMD, Realtek, Atheros, Broadcom, MediaTek and NVIDIA devices.
 
 ## Image
 
