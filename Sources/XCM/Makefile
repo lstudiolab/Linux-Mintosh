@@ -20,8 +20,8 @@ $(BUILD)/policy.o: policy.c include/xcm/protocol.h | $(BUILD)
 $(BUILD)/client.o: client.c include/xcm/client.h include/xcm/protocol.h | $(BUILD)
 	$(CC) $(CFLAGS) -I. -c $< -o $@
 
-$(BUILD)/xcmd: xcmd.c policy.c include/xcm/protocol.h | $(BUILD)
-	$(CC) $(CFLAGS) -I. xcmd.c policy.c -o $@
+$(BUILD)/xcmd: xcmd.c policy.c darkin_client.c include/xcm/protocol.h include/xcm/darkin_client.h ../Darkin/include/darkin/protocol.h | $(BUILD)
+	$(CC) $(CFLAGS) -I. -I../Darkin/include xcmd.c policy.c darkin_client.c -o $@
 
 $(BUILD)/libxcm.a: $(BUILD)/client.o $(BUILD)/policy.o
 	$(AR) rcs $@ $^
