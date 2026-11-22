@@ -147,7 +147,7 @@ int main(int argc, char **argv)
         fputs("darkin-system: mintosh-services group is missing\n", stderr);
         return 1;
     }
-    int server = create_socket(group->gr_gid);
+    int server = create_socket();
     if (server < 0) {
         perror("darkin-system: create socket");
         return 1;
