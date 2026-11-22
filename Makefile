@@ -27,7 +27,7 @@ EFI_CRT := $(firstword $(wildcard /usr/lib/crt0-efi-x86_64.o /usr/lib/gnuefi/crt
 EFI_LDS := $(firstword $(wildcard /usr/lib/elf_x86_64_efi.lds /usr/lib/gnuefi/elf_x86_64_efi.lds))
 EFI_LIBDIR := $(dir $(EFI_CRT))
 
-.PHONY: help check-makefiles test-native-core test-kernel-config test-installer-safety test-hardware-audit test-mboot mboot check-host check-release check-scripts verify release-info host-deps kernel-fetch kernel-config kernel kernel-install rootfs initramfs iso image qemu test-qemu usb clean
+.PHONY: help check-makefiles test-native-core test-kernel-config test-installer-safety test-hardware-audit test-mboot mboot package-installer check-host check-release check-scripts verify release-info host-deps kernel-fetch kernel-config kernel kernel-install rootfs initramfs iso image qemu test-qemu usb clean
 
 help:
 	@printf '%s\n' \
@@ -62,7 +62,7 @@ check-makefiles:
 	@echo 'Root and native-core Makefiles parse and resolve all build prerequisites.'
 
 check-scripts:
-	@python3 -c 'import pathlib, subprocess; bash={"mintosh-installer.sh", "installer-bootstrap.sh", "installer-disk-safety.sh", "installer-storage.sh", "test-installer-disk-safety.sh", "test-installer-partitioning.sh"}; [subprocess.run(["bash" if p.name in bash else "sh", "-n", str(p)], check=True) for p in pathlib.Path("scripts").glob("*.sh")]'
+	@python3 -c 'import pathlib, subprocess; bash={"mintosh-installer.sh", "installer-bootstrap.sh", "package-installer.sh", "installer-disk-safety.sh", "installer-storage.sh", "test-installer-disk-safety.sh", "test-installer-partitioning.sh"}; [subprocess.run(["bash" if p.name in bash else "sh", "-n", str(p)], check=True) for p in pathlib.Path("scripts").glob("*.sh")]'
 	@python3 -c 'import ast,pathlib; ast.parse(pathlib.Path("scripts/check-release.py").read_text(encoding="utf-8"))'
 	@sh -n scripts/configure-hp-probook.sh
 	@echo 'Shell and Python scripts are syntactically valid.'
@@ -178,6 +178,9 @@ qemu: iso
 
 test-qemu: iso
 	@QEMU_MEMORY="$(QEMU_MEMORY)" sh ./scripts/test-qemu.sh "$(ISO)"
+
+package-installer: iso
+	@sh scripts/package-installer.sh
 
 usb: iso
 	@test -n "$(USB)" || { echo 'Specify USB=/dev/sdX' >&2; exit 1; }
