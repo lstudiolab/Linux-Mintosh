@@ -63,7 +63,7 @@ The installer asks for a username and password. The account is added to the sudo
 
 ## Firmware and security notes
 
-- The first installer image targets x86_64 UEFI PCs. Legacy BIOS boot remains available through GRUB for existing compatibility.
+- The source-first installer requires x86_64 UEFI. The ISO retains a GRUB legacy-BIOS boot path for diagnostics, but BIOS-mode installation is not supported by the compatibility gate.
 - Secure Boot signing and key enrollment are not implemented. Disable Secure Boot before booting this Developer Preview.
 - TPM 2.0 is optional. Measured boot is not implemented yet.
 - The 150-point audit is a preflight, not a guarantee of support for every laptop. Hardware-specific driver support still requires real-machine testing.
