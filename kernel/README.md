@@ -1,9 +1,22 @@
-# Linux kernel
+CC ?= cc
+CFLAGS ?= -O2 -std=c17 -Wall -Wextra -Wpedantic -Werror
+BUILD := build
 
-Mintosh uses the upstream Linux kernel. The selected release is pinned in configs/release.json and fetched during development rather than vendored into Git.
+.PHONY: all verify clean
+all: $(BUILD)/boot-contract.o
 
-Run make kernel-fetch from the repository root. The fetch script downloads the exact manifest version and extracts it to kernel/linux/. The selected version is recorded in kernel/LINUX_VERSION.
+$(BUILD):
+	mkdir -p $@
 
-The downloaded source and build output are ignored by Git. Do not change the release version by silently tracking the latest stable kernel; update the release manifest as an intentional Mintosh release change.
+$(BUILD)/boot-contract.o: boot_contract.c include/xnv/boot.h | $(BUILD)
+	$(CC) $(CFLAGS) -ffreestanding -fno-builtin -fno-stack-protector -mno-red-zone -I. -c $< -o $@
 
-Kernel source license: GPL-2.0-only. See the kernel source tree's COPYING file and https://www.kernel.org/doc/html/latest/process/license-rules.html.
+$(BUILD)/boot-contract-tests: tests/boot_contract_tests.c boot_contract.c include/xnv/boot.h | $(BUILD)
+	$(CC) $(CFLAGS) -I. tests/boot_contract_tests.c boot_contract.c -o $@
+
+verify: all $(BUILD)/boot-contract-tests
+	$(BUILD)/boot-contract-tests
+	@echo 'XNV boot contract compiles freestanding and passes host regression tests.'
+
+clean:
+	rm -rf $(BUILD)
