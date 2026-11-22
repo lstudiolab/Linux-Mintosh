@@ -240,9 +240,7 @@ static int prepare_socket(const char *path, gid_t group_id) {
     address.sun_family = AF_UNIX;
     memcpy(address.sun_path, path, length + 1U);
     if (bind(server, (struct sockaddr *)&address, sizeof(address)) < 0 ||
-        chown(path, 0, group_id) < 0 ||
-        chmod(path, 0660) < 0 ||
-        listen(server, 32) < 0) {
+        chmod(path, 0660) < 0 || listen(server, 32) < 0) {
         int saved = errno;
         close(server);
         unlink(path);
