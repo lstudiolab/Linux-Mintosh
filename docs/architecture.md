@@ -69,6 +69,14 @@ The build creates a GRUB BIOS/UEFI hybrid ISO intended to be written to USB medi
 
 `mstore` is the native command-line package interface. The initial implementation uses APT/dpkg and signed Debian Trixie repository metadata for search, package inspection, installation, removal and upgrades. This avoids requiring a Mintosh-operated download server. A Mintosh-specific signed repository and graphical catalog are not implemented yet.
 
+## Development phase policy
+
+The system foundation is the active development phase and must be completed before graphical-system work begins. Foundation completion means the machine can boot, initialize hardware, manage devices and storage, establish networking, supervise services, enforce security boundaries, install and update packages safely, log and recover from failures, and operate reliably without a graphical session. These capabilities require documented interfaces and passing automated integration and boot tests; compiling individual binaries is not sufficient.
+
+The user's programming language is the next prerequisite. Its compiler, runtime, standard library and development tools must be complete enough to implement production system software before AppKit or any graphical subsystem is started. AppKit, the graphics backend, window server, desktop shell and native graphical applications will then be implemented in that language.
+
+This policy intentionally defers all graphical interface and AppKit implementation. It does not change the current Linux-kernel-based architecture or the C/C++/assembly implementation rules for the present system foundation.
+
 ## Graphical stack
 
 AppKit, Tarts, GT, Window Server, Finder and Dock are not implemented yet. They must be real graphical components with defined rendering, input, accessibility and application-lifecycle interfaces; the current native core does not pretend to provide them.
