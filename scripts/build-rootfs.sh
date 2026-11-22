@@ -23,7 +23,7 @@ fi
 rm -rf "$ROOTFS"
 echo "Creating Mintosh $VERSION root filesystem from Debian $SUITE..."
 debootstrap --arch=amd64 --variant=minbase --components=main,contrib,non-free,non-free-firmware \
-  --include=systemd,systemd-sysv,systemd-resolved,udev,dbus,kmod,bash,coreutils,util-linux,procps,findutils,grep,sed,gawk,tar,gzip,xz-utils,iproute2,iputils-ping,netbase,ca-certificates,sudo,passwd,login,locales,tzdata,e2fsprogs,less,nano,libsqlite3-0,libsqlite3-dev,curl,wget,openssh-client,dialog,parted,dosfstools,rsync,os-prober,efibootmgr,ntfs-3g,initramfs-tools,grub-common,grub-pc-bin,grub-efi-amd64-bin,python3,grub2-common,gcc,make,libc6-dev,firmware-iwlwifi,firmware-realtek,firmware-atheros,firmware-brcm80211,firmware-mediatek,firmware-amd-graphics,firmware-intel-graphics,firmware-intel-sound,firmware-sof-signed,firmware-misc-nonfree,firmware-nvidia-graphics,bluez,rfkill,fwupd,pciutils,usbutils,acpi,iw,ethtool \
+  --include=systemd,systemd-sysv,systemd-resolved,udev,dbus,kmod,bash,coreutils,util-linux,procps,findutils,grep,sed,gawk,tar,gzip,xz-utils,iproute2,iputils-ping,netbase,ca-certificates,sudo,passwd,login,locales,tzdata,e2fsprogs,less,nano,libsqlite3-0,libsqlite3-dev,g++,curl,wget,openssh-client,dialog,parted,dosfstools,rsync,os-prober,efibootmgr,ntfs-3g,initramfs-tools,grub-common,grub-pc-bin,grub-efi-amd64-bin,python3,grub2-common,gcc,make,libc6-dev,firmware-iwlwifi,firmware-realtek,firmware-atheros,firmware-brcm80211,firmware-mediatek,firmware-amd-graphics,firmware-intel-graphics,firmware-intel-sound,firmware-sof-signed,firmware-misc-nonfree,firmware-nvidia-graphics,bluez,rfkill,fwupd,pciutils,usbutils,acpi,iw,ethtool \
   "$SUITE" "$ROOTFS" https://deb.debian.org/debian
 printf '%s\n' mintosh > "$ROOTFS/etc/hostname"
 cat > "$ROOTFS/etc/hosts" <<'EOF'
@@ -63,8 +63,8 @@ mkdir -p "$ROOTFS/usr/src/mintosh" "$ROOTFS/etc/mintosh/services"
 cp -a "$ROOT/Sources" "$ROOTFS/usr/src/mintosh/"
 chroot "$ROOTFS" make -C /usr/src/mintosh/Sources/MintoshCore install
 rm -rf "$ROOTFS/usr/src/mintosh"
-chroot "$ROOTFS" apt-mark manual libsqlite3-0
-chroot "$ROOTFS" apt-get purge --yes gcc make libc6-dev libsqlite3-dev
+chroot "$ROOTFS" apt-mark manual libsqlite3-0 libstdc++6
+chroot "$ROOTFS" apt-get purge --yes gcc g++ make libc6-dev libsqlite3-dev
 chroot "$ROOTFS" apt-get autoremove --yes
 chroot "$ROOTFS" apt-get clean
 install -m 0644 "$ROOT/Sources/Services/launch7762.service" "$ROOTFS/etc/systemd/system/launch7762.service"
