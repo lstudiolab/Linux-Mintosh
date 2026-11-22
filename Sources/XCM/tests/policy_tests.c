@@ -88,6 +88,9 @@ int main(void)
 
     request = make_request(XCM_OP_READ_SYSTEM_INFO, XCM_TARGET_SYSTEM_INFO,
                            XCM_PAYLOAD_NONE, 0);
+    request.request_id = 0;
+    assert(xcm_policy_authorize(&request, &choca) == XCM_POLICY_BAD_ARGUMENT);
+    request.request_id = 1;
     request.version++;
     assert(xcm_policy_authorize(&request, &choca) == XCM_POLICY_BAD_VERSION);
     request = make_request(XCM_OP_READ_SYSTEM_INFO, XCM_TARGET_SYSTEM_INFO,

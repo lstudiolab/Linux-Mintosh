@@ -18,7 +18,7 @@ UI tokens are a presentation language only. They are not shell commands, executa
 ## Request invariants
 
 - Protocol version must be supported.
-- Request ID must be nonzero, unique within the authenticated session and rejected if replayed.
+- Request ID must be nonzero. The broker must track IDs per authenticated session and reject replays; replay tracking is a transport/session responsibility and is not yet implemented in the policy-only prototype.
 - Message and payload sizes are bounded before parsing.
 - Peer identity and capability grants come from authenticated broker state, never from request fields.
 - Every operation has an allowlisted target and payload type.
