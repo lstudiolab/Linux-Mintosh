@@ -23,6 +23,7 @@ Mintosh is a Linux distribution, not a replacement kernel. The upstream Linux ke
 
 Native source code lives under `Sources/`. The current core is compiled inside the Debian target root filesystem, so its binaries link against the target userspace rather than the build host.
 
+- **Mintosh Init (prototype)**: first-party PID 1 process with kernel pseudo-filesystem setup, launch7762 supervision, orphan reaping, bounded restart backoff and orderly supervisor shutdown. It is built and regression-tested but is not yet selected by the installed boot path and does not yet provide a login/session manager.
 - **Darl**: local Unix-socket system foundation API for status and version queries.
 - **launch7762 / Launch Background**: system-wide native service supervisor. It reads protected `/etc/mintosh/services/*.service` definitions, starts enabled processes with direct `execve`, tracks child exits, applies capped exponential restart backoff and authorizes control operations with Unix peer credentials.
 - **Launch Client**: per-user background service supervisor with user-owned service definitions and a private user control socket.
@@ -39,7 +40,7 @@ Native source code lives under `Sources/`. The current core is compiled inside t
 - **Security**: basic permissions audit for critical account files.
 - **System Logging**: syslog client utility.
 
-systemd remains PID 1 in this release and supervises launch7762. launch7762 supervises Mintosh-managed services. This is an incremental architecture: replacing PID 1 is a separate boot-critical project and is not claimed by this release.
+systemd remains PID 1 in this release and supervises launch7762. The new Mintosh Init binary is an isolated, tested implementation milestone only; it is not yet safe to select as the default PID 1 because console sessions, networking startup, recovery behavior and complete boot integration are unfinished. launch7762 supervises Mintosh-managed services. This is an incremental architecture: replacing PID 1 is a separate boot-critical project and is not claimed by this release.
 
 ## Installed boot sequence
 

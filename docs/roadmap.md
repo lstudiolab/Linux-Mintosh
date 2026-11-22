@@ -50,7 +50,8 @@ The current Debian-based preview is a temporary noncompliant bootstrap, not the 
 ### First-party Mintosh Base (required migration)
 - [~] Existing Debian Trixie bootstrap retained temporarily for development; must be replaced
 - [ ] Mintosh-owned root filesystem builder and base directory layout
-- [ ] Mintosh-owned PID 1 init and shutdown sequence (replace systemd)
+- [~] First-party PID 1 prototype (mounts kernel interfaces, supervises launch7762, reaps orphaned children and restarts the supervisor with capped backoff; not yet integrated as the default init and lacks session/login, network orchestration and full shutdown/recovery integration)
+- [ ] Production Mintosh PID 1 and shutdown sequence (replace systemd after console/session, network, recovery and boot integration tests)
 - [ ] Mintosh-owned device discovery and event manager (replace udev)
 - [ ] Mintosh-owned networking, DHCP, DNS and Wi-Fi configuration services (replace NetworkManager and external supplicants)
 - [ ] First-party implementations of required command-line and account-management utilities
