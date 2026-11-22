@@ -1,25 +1,9 @@
-# Tarts
+# Deprecated Tarts source root
 
-Tarts is Mintosh's backend foundation above the Linux/XCU kernel. It is responsible for the non-graphical operating system runtime and must work without a graphical session.
+Tarts was an earlier name for Lenix's system foundation. Its current and only canonical name is **Sean**.
 
-## Ownership
+The canonical backend source root is `Sources/Sean/`. New backend code, service implementations and public protocols belong there. The old Tarts directory is retained temporarily for build compatibility only.
 
-- Native init and PID 1 startup.
-- System service manager, dependency graph, launch, supervision and recovery.
-- Hardware/device coordination and system daemons.
-- Storage, filesystems, networking and connectivity.
-- Security policy, credentials integration and privileged operations.
-- Power, thermal, logging, diagnostics and update/recovery coordination.
-- Core Services runtime and shared service contracts.
+Sean is the non-graphical foundation above XCU. It owns init, service lifecycle, hardware coordination, storage, networking, security, power, logging and recovery. Core Services exposes stable APIs to Choca and other clients. XUM provides authenticated cross-process messaging.
 
-Core Services is a distinct API/service layer within Tarts. Tarts owns the backend and service lifecycle; Core Services exposes stable, least-privilege interfaces to Cacao and other clients.
-
-Tarts must not own Window Server, Cacao, desktop UI or the application framework. Those components use Core Services and XPU.
-
-## Current implementation
-
-The system-information service is built as `tarts-system` and listens on `/run/tarts/system.sock`. The native service supervisor is exposed as `tarts-services` (legacy source: `Sources/Launch7762/`). Native PID 1 exists as `mintosh-init`, but it is not yet the default init in the transitional ISO/rootfs; that image still uses Debian/systemd.
-
-The current endpoint only provides read-only system information. The full Tarts service catalogue, native boot integration, console/login, recovery and installer lifecycle are not complete.
-
-Run `make -C Sources/Tarts test` for the current backend smoke test.
+The current preview still uses transitional Debian userspace and systemd. Native Sean init and service management are not yet the default boot path.
