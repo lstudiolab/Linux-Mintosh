@@ -13,7 +13,7 @@ BUILD = build
 
 LIBSYS_SOURCES = ../LibSys/filesystem.c ../LibSys/file_descriptor.c ../LibSys/unix_socket.c ../LibSys/line_reader.c ../LibSys/system_log.c ../LibSys/runtime_paths.c
 LIBSYS_OBJECTS = $(patsubst ../LibSys/%.c,$(BUILD)/libsys-%.o,$(LIBSYS_SOURCES))
-PROGRAMS = darl launch7762 launch-client launch511 ioplus iopsctl gvdctl fmsctl dmctl hp-compat kextctl mintosh-log security-audit mintoshctl mstore
+PROGRAMS = mintosh-ready darl launch7762 launch-client launch511 ioplus iopsctl gvdctl fmsctl dmctl hp-compat kextctl mintosh-log security-audit mintoshctl mstore
 
 all: $(addprefix $(BUILD)/,$(PROGRAMS)) $(BUILD)/libcsf.a $(BUILD)/libfoundation.a $(BUILD)/libgvd.a
 
@@ -22,6 +22,9 @@ $(BUILD):
 
 $(BUILD)/libsys-%.o: ../LibSys/%.c ../LibSys/include/libsys.h | $(BUILD)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
+
+$(BUILD)/mintosh-ready: ../MintoshReady/mintosh_ready.c | $(BUILD)
+	$(CC) $(CPPFLAGS) $(CFLAGS) $^ -o $@
 
 $(BUILD)/darl: ../Darl/darl_daemon.c ../Darl/darl_protocol.c $(LIBSYS_OBJECTS)
 	$(CC) $(CPPFLAGS) $(CFLAGS) $^ -o $@
