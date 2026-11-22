@@ -1,6 +1,6 @@
-# Tarts service supervisor — launch7762 (legacy executable name)
+# Tarts service supervisor — `tarts-services` (legacy source and compatibility executable: `launch7762`)
 
-launch7762 is Mintosh's native userspace service supervisor and the initial Tarts service-lifecycle implementation. It loads trusted service definitions, starts enabled services in deterministic order, reaps child processes, applies restart policies with capped exponential backoff, and exposes a local Unix-socket control API.
+`tarts-services` is Mintosh's native userspace service supervisor; its implementation remains in the legacy `Launch7762` source directory and retains the `launch7762` compatibility executable and the initial Tarts service-lifecycle implementation. It loads trusted service definitions, starts enabled services in deterministic order, reaps child processes, applies restart policies with capped exponential backoff, and exposes a local Unix-socket control API.
 
 ## Service definition
 
