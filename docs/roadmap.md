@@ -57,8 +57,18 @@ This roadmap separates implemented source from verified release behavior. A dire
 - [x] Custom initramfs assembly
 - [x] GRUB BIOS/UEFI ISO assembly
 - [x] Live environment and text installer
-- [~] Initial mBoot x86-64 UEFI application and PE/COFF build validation (firmware runtime and kernel handoff tests pending)\n- [ ] Integrate mBoot as the ISO's direct UEFI boot application; retain GRUB for legacy BIOS\n- [ ] OVMF normal boot, missing-kernel, missing-initramfs and invalid-image tests\n- [ ] UEFI Secure Boot signing and trusted-key enrollment\n- [ ] TPM 2.0 measured-boot event logging for mBoot, kernel and initramfs\n- [ ] QEMU boot test on the current release commit (must pass before physical installation is considered safe)
-- [~] Installer storage safety tests (live ISO parent disk exclusion, alongside partition preservation, minimum erase-disk capacity, exact ERASE confirmation and UEFI/BIOS partition layouts are tested; filesystem formatting and full install recovery tests remain pending)
+- [~] Native 150-point hardware/build compatibility audit (150 unique probes and registry test added; real-hardware coverage and policy tuning remain)
+- [~] Source-first laptop bootstrap (pinned Git commit, local kernel/rootfs build, local ISO assembly and QEMU gate implemented; end-to-end workspace and installation tests remain)
+- [~] Rufus ZIP packaging with ISO checksum and instructions; ISO build enforces a 3.5 GiB cap for nominal 4 GB USB media
+- [~] Temporary ext4 build workspace (40 GiB minimum, mounted without formatting; same-disk erase is blocked; external workspace and failure cleanup need hardware tests)
+- [~] Installer required-check failure path returns to UEFI firmware setup before target disk operations
+- [~] Installer storage safety tests (live USB exclusion, alongside partition preservation, minimum erase capacity, exact ERASE confirmation and partition layouts are tested; full local-build-to-install test remains)
+- [~] Initial mBoot x86-64 UEFI application and PE/COFF build validation (firmware runtime and kernel/initramfs handoff tests pending)
+- [ ] Integrate mBoot as the ISO's direct UEFI boot application; retain GRUB for legacy BIOS
+- [ ] OVMF normal boot, missing-kernel, missing-initramfs and invalid-image tests
+- [ ] UEFI Secure Boot signing and trusted-key enrollment
+- [ ] TPM 2.0 measured-boot event logging for mBoot, kernel and initramfs
+- [ ] QEMU boot test on the current release commit (must pass before physical installation is considered safe)
 - [ ] Physical-machine installation test on representative HP ProBook Intel and AMD models
 - [ ] ARM64 bootable image and installer
 
