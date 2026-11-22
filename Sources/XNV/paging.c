@@ -45,7 +45,7 @@ int xnv_paging_init(const struct xnv_memory_region *regions,xnv_u64 count)
             }else{
                 xnv_u64 table_phys;
                 if(xnv_phys_alloc(&table_phys)!=XNV_MEMORY_OK)return 0;
-                xnv_u64 *pt=(xnv_u64*)(UINTN)table_phys;
+                xnv_u64 *pt=(xnv_u64*)(unsigned long)table_phys;
                 int populated=0;
                 for(unsigned int p=0;p<512;++p){
                     xnv_u64 page=base+(xnv_u64)p*XNV_PAGE_SIZE;
