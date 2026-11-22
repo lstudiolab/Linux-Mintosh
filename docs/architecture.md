@@ -1,53 +1,61 @@
-# Mintosh system architecture
+# Mintosh architecture
 
-## Darkin — backend foundation
+The canonical target architecture is documented in [platform-architecture.md](platform-architecture.md). This file records the core design principles and migration constraints.
 
-Darkin is the complete backend foundation and owns all privileged and non-graphical system responsibilities: XNV kernel integration, boot, CPU/platform setup, memory, process/thread management, devices, storage, filesystems, networking, security, logging, power, hardware management and system services.
+## XCU Kernel
 
-Darkin must operate without Choca. It must not load UI code or accept direct filesystem/code mutation requests from the graphical platform.
+XCU is the Mintosh kernel architecture and integration layer. Linux is the actual primary kernel and supplies scheduling, virtual memory, VFS, networking, drivers, device model, interrupts, hardware support and kernel security.
 
-## XNV — Linux-based kernel architecture inside Darkin
+BSD-derived interfaces provide first-party Unix/POSIX and selected BSD compatibility on Linux facilities. They are not a second BSD kernel.
 
-XNV uses a Linux-main-kernel model:
+Mach-inspired functionality provides task/thread abstractions, IPC messages, port-like endpoints, message rights and memory-object concepts backed by Linux primitives. These do not replace Linux's scheduler or memory manager. XCU is not three independently booted kernels.
 
-1. **Linux is the actual kernel.** Its scheduler, virtual memory, VFS, networking, device model, drivers, interrupt handling, security framework and hardware support are the execution foundation.
-2. **BSD-derived functionality** supplies first-party compatibility interfaces: Unix/BSD-oriented process and socket semantics and selected BSD-style event/API behavior. This is implemented on Linux facilities; it is not a second BSD kernel.
-3. **Mach-inspired functionality** supplies structured task/thread abstractions, IPC messages, port-like endpoints, capability rights and memory-object concepts. These are first-party abstractions backed by Linux primitives; they do not replace the Linux scheduler or memory manager.
+The current implementation is under `Sources/Darkin/XNV/` and `kernel/xnv/` pending a tested migration to XCU naming. The standalone EFI experiment in `Sources/XNV/` is not the selected kernel.
 
-XNV is the Mintosh kernel architecture and integration layer, not an independently booted kernel.
+## XPU
 
-## XCM — external communication and security boundary
+XPU is the authenticated communication and security service. It evolves the current XCM broker under `Sources/XCM/`. XPU validates typed, versioned messages, authenticates local peers, applies capability policy, routes requests and responses, and audits denials.
 
-XCM is a separate broker between Choca and Darkin. It is not part of the kernel, Darkin or the graphical platform.
+Kernel peer credentials and kernel isolation remain authoritative. Every receiving service must independently authorize requests. XPU is not a replacement for kernel security and is not a universal mandatory hop for every internal function call.
 
-- Choca sends versioned, typed requests to XCM.
-- XCM authenticates the local peer, validates message bounds/schema, checks operation-specific capabilities and applies policy before forwarding.
-- Darkin services accept requests only through defined service interfaces; they never trust Choca pointers, arbitrary paths, executable code or raw UI tokens.
-- Responses are typed data/events routed back through XCM.
-- Unknown operations, malformed messages, privilege escalation, protected-foundation mutation and out-of-scope requests are rejected and audited.
+## Tarts — backend foundation
 
-Choca cannot directly modify or delete Darkin's kernel, boot files, system binaries, security policy or service implementation. Foundation updates require a separate authenticated, signed update/rollback workflow. User-data deletion is separate and requires an explicit capability, object-scoped target and confirmation.
+Tarts is the complete backend foundation. It owns boot/runtime infrastructure, kernel integration, hardware and device services, process and memory services, storage, filesystems, networking, security enforcement, logging, power management and system services.
 
-XCM is one policy enforcement point, not a substitute for authorization inside each Darkin service and kernel boundary.
+Tarts also owns service lifecycle responsibilities: dependency ordering, launch, supervision, restart, health and service registration. Existing Darkin backend prototypes are being migrated into Tarts or split into Core Services as appropriate.
 
-## Choca — graphical platform
+## Core Services
 
-Choca is separate from Darkin and contains USI, the window server/compositor, graphical frameworks, desktop shell, Finder-like UI, dock, launch UI, app manager and package/install UI.
+Core Services owns stable user-space system APIs and shared services such as storage, networking, user sessions, notifications, preferences, security clients, logging and application lifecycle support.
 
-Choca may emit typed UI-token streams for presentation. These tokens are data, not executable authority. XCM validates and routes them only to the intended rendering endpoint; they cannot become Darkin commands.
+Tarts supervises service processes; Core Services provides shared APIs and service functionality. These are distinct responsibilities.
 
-## Communication direction
+## Window Server
 
-`Choca / USI → XCM → Darkin service API → XNV → Linux`
+Window Server owns display topology, windows, surfaces, composition, focus and input routing. It is a system service, not an application framework. It treats client surfaces and input as untrusted.
 
-Replies travel back through XCM. Darkin has no dependency on Choca.
+## Cacao — graphical platform and application framework
 
-## Migration status
+Cacao is Mintosh's graphical platform and native application framework. It owns the desktop-facing experience, application manager and native application APIs. It provides application lifecycle, event loops, controls, views, layout, accessibility, drawing, dialogs and stable SDK APIs.
 
-The current preview boots upstream Linux and a transitional Debian userspace. The earlier standalone XNV EFI bootstrap under `Sources/XNV` is a retained experiment and is not the selected kernel path. Do not integrate or ship that EFI image.
+Cacao clients use Window Server's documented client protocol; applications do not receive privileged access to display devices.
 
-Existing native programs under `Sources/` are backend prototypes. They need explicit ownership and service contracts under Darkin. XCM and Choca remain separate top-level components.
+## Trust and privilege boundaries
 
-## Foundation implementation languages
+- Kernel enforcement governs process identity, memory isolation, device access and mandatory controls.
+- XPU authenticates and authorizes cross-component IPC.
+- Each service validates and authorizes its own operations.
+- Tarts supervises services but does not grant privileges.
+- Cacao applications run with per-application identities and least privilege.
+- Window Server treats client surfaces and input as untrusted.
+- Signed system updates require verification, atomic activation and rollback. General IPC cannot rewrite the kernel, boot chain or security policy.
 
-The OS foundation uses C, C++ and architecture-specific assembly only. Build configuration and CI files are tooling, not OS implementation languages.
+## Current prototype status
+
+The current preview boots upstream Linux with a transitional Debian userspace. It has Linux-backed XNV task/port/memory/event primitives, an initial XCM broker and a limited read-only system-information endpoint. These are prototype implementations for the XCU/XPU and Tarts/Core Services migration.
+
+Full XPU endpoint registration and per-app identities, Tarts orchestration, Core Services APIs, Window Server, Cacao, desktop shell and native application SDK remain implementation work. See [platform-architecture.md](platform-architecture.md) for the complete target and component migration table.
+
+## Implementation languages
+
+The OS foundation uses C, C++ and architecture-specific assembly only. Build-system configuration and CI files are tooling, not OS implementation languages.
