@@ -68,6 +68,8 @@ struct xcm_policy_context {
     bool transport_authenticated;
     bool verified_update_bundle;
     bool confirmation_grant_valid;
+    uint64_t confirmation_object_id;
+    uint16_t confirmation_operation;
 };
 
 /* Fixed-size wire header. Payload bytes immediately follow this header. */

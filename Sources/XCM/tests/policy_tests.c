@@ -27,7 +27,9 @@ int main(void)
         4096,
         true,
         true,
-        false
+        false,
+        0,
+        0
     };
     struct xcm_request request = make_request(
         XCM_OP_PRESENT_TOKENS, XCM_TARGET_PRESENTATION, XCM_PAYLOAD_UI_TOKENS, 8);
@@ -48,7 +50,12 @@ int main(void)
     request.flags = XCM_FLAG_USER_CONFIRMED;
     assert(xcm_policy_authorize(&request, &choca) == XCM_POLICY_CONFIRMATION_REQUIRED);
     choca.confirmation_grant_valid = true;
+    choca.confirmation_object_id = 42;
+    choca.confirmation_operation = XCM_OP_DELETE_USER_DATA;
     assert(xcm_policy_authorize(&request, &choca) == XCM_POLICY_ALLOW);
+    request.object_id = 43;
+    assert(xcm_policy_authorize(&request, &choca) == XCM_POLICY_CONFIRMATION_REQUIRED);
+    request.object_id = 42;
 
     /* Choca cannot mutate Darkin, even when its context has every capability. */
     request = make_request(XCM_OP_UPDATE_DARKIN, XCM_TARGET_DARKIN_CORE,
@@ -81,7 +88,7 @@ int main(void)
     assert(xcm_policy_authorize(&request, &choca) == XCM_POLICY_UNAUTHENTICATED_PEER);
 
     struct xcm_policy_context updater = {
-        XCM_PEER_UPDATE_SERVICE, XCM_CAP_FOUNDATION_UPDATE, 4096, true, false, false
+        XCM_PEER_UPDATE_SERVICE, XCM_CAP_FOUNDATION_UPDATE, 4096, true, false, false, 0, 0
     };
     request = make_request(XCM_OP_UPDATE_DARKIN, XCM_TARGET_DARKIN_CORE,
                            XCM_PAYLOAD_TYPED_DATA, 8);

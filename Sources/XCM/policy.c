@@ -92,7 +92,9 @@ enum xcm_policy_result xcm_policy_authorize(
                 !payload_is(request, XCM_PAYLOAD_NONE))
                 return XCM_POLICY_TARGET_MISMATCH;
             if ((request->flags & XCM_FLAG_USER_CONFIRMED) == 0 ||
-                !context->confirmation_grant_valid)
+                !context->confirmation_grant_valid ||
+                context->confirmation_object_id != request->object_id ||
+                context->confirmation_operation != request->operation)
                 return XCM_POLICY_CONFIRMATION_REQUIRED;
             return require_capability(context, XCM_CAP_DELETE_USER_DATA);
 
