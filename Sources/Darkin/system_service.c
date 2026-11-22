@@ -88,7 +88,7 @@ static void handle_client(int client, gid_t xcm_group)
           information, (uint32_t)length);
 }
 
-static int create_socket(gid_t xcm_group)
+static int create_socket(void)
 {
     const char *path = DARKIN_SYSTEM_SOCKET;
     struct stat directory;
