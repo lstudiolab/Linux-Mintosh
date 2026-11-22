@@ -179,6 +179,6 @@ Legacy source roots such as `Sources/Darkin/`, `Sources/XNV/`, `Sources/XCM/` an
 
 ## Implementation status
 
-The architecture above is the target architecture. The repository currently has Linux kernel configuration, an initial Linux-backed XNV/XCU primitive implementation, a restricted XPU broker, a read-only Tarts system-information endpoint, an initial Core Services API and a native service-supervisor prototype. The current ISO still uses a transitional Debian userspace and systemd. The Window Server, Cacao framework, application manager, native session stack and complete service catalogue are not implemented. The native Tarts init/service lifecycle is not yet the default boot path.
+The architecture above is the target architecture. The repository now has a canonical Linux-backed XCU primitive implementation under `Sources/XCU/` with its own `libxcu.a`, `<xcu/xcu.h>` API and tests. The earlier XNV implementation paths are frozen migration references. The repository also has a restricted XPU broker, a read-only Tarts system-information endpoint, an initial Core Services API and a native service-supervisor prototype. The current ISO still uses a transitional Debian userspace and systemd. The Window Server, Cacao framework, application manager, native session stack and complete service catalogue are not implemented. The native Tarts init/service lifecycle is not yet the default boot path.
 
 The OS foundation is implemented in C, C++ and architecture-specific assembly. Build configuration and CI scripts are tooling, not OS implementation languages.
