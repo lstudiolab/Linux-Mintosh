@@ -79,6 +79,11 @@ touch "$RUNTIME/test.deb" "$RUNTIME/test.flatpak" "$RUNTIME/test.AppImage" "$RUN
 "$B/mstore" format "$RUNTIME/test.pkg" | grep -q 'Mintosh package'
 "$B/mstore" format "$RUNTIME/test.rpm" | grep -q 'RPM package'
 set +e
+"$B/mstore" run "$RUNTIME/test.deb" >/dev/null 2>&1
+MSTORE_RUN_WRONG_FORMAT_STATUS=$?
+set -e
+[ "$MSTORE_RUN_WRONG_FORMAT_STATUS" -eq 65 ]
+set +e
 "$B/mstore" install-file "$RUNTIME/test.pkg" >/dev/null 2>&1
 MSTORE_UNIMPLEMENTED_PKG_STATUS=$?
 "$B/mstore" install-file "$RUNTIME/test.rpm" >/dev/null 2>&1
