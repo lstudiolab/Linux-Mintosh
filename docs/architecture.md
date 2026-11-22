@@ -67,7 +67,17 @@ The build creates a GRUB BIOS/UEFI hybrid ISO intended to be written to USB medi
 
 ## Package management
 
-`mstore` is the native command-line package interface. The initial implementation uses APT/dpkg and signed Debian Trixie repository metadata for search, package inspection, installation, removal and upgrades. This avoids requiring a Mintosh-operated download server. A Mintosh-specific signed repository and graphical catalog are not implemented yet.
+`mstore` is the native command-line package interface. The current implementation uses APT/dpkg and signed Debian Trixie repository metadata for search, package inspection, installation, removal and upgrades. This avoids requiring a Mintosh-operated download server.
+
+Mintosh's primary native application package extension will be **`.pkg`**, using a Mintosh-defined and openly documented package specification. It is inspired by the macOS installer-package convention but is not Apple's format and will not reuse proprietary Apple internals. The intended package model includes a manifest, payload, dependency declarations, permission policy, lifecycle metadata and cryptographic signatures.
+
+The future Application Manager is intended to accept native `.pkg` packages and supported Linux formats. Debian `.deb` compatibility will use the Debian package database and APT/dpkg where dependencies and integration are compatible. AppImage and Flatpak will retain their respective execution, runtime, repository and sandbox semantics rather than being naively unpacked into system package transactions. RPM support is conditional on a safe backend and a compatible dependency environment. Unsupported or unsafe package features must be rejected explicitly; format conversion must not silently discard security or dependency semantics.
+
+A Mintosh-signed `.pkg` repository, trust roots, curated catalog, transaction rollback and graphical Application Manager are future work. None is claimed as implemented by the current APT frontend.
+
+## Developer tools
+
+A Mintosh SDK and an Xcode-like integrated development environment are planned, but explicitly deferred. Work on them will begin only after the system foundation is stable and the user's programming language, compiler, runtime and standard library are ready. The eventual toolchain should support building, testing, signing and publishing native `.pkg` applications, while making supported Linux development workflows accessible to developers.
 
 ## Development phase policy
 
