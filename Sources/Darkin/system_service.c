@@ -58,7 +58,7 @@ static void handle_client(int client, gid_t xcm_group)
         return;
     }
 
-    struct darkin_request request;
+    struct darkin_request request = {0};
     ssize_t received = recv(client, &request, sizeof(request), MSG_TRUNC);
     if (received != (ssize_t)sizeof(request) ||
         request.size != sizeof(request) ||
