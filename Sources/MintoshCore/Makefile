@@ -1,5 +1,7 @@
 CC ?= cc
+CXX ?= c++
 AR ?= ar
+CXXFLAGS ?= -O2 -std=c++20 -Wall -Wextra -Wpedantic -Wformat=2 -Werror -fstack-protector-strong -D_FORTIFY_SOURCE=2
 CFLAGS ?= -O2 -std=c17 -Wall -Wextra -Wpedantic -Wformat=2 -Werror=implicit-function-declaration -Werror=multichar -Werror=type-limits -fstack-protector-strong -D_FORTIFY_SOURCE=2
 CPPFLAGS += -I../LibSys/include -I../CSF/include -I../Foundation/include -I../Launch7762
 PREFIX ?= /usr
@@ -33,8 +35,8 @@ $(BUILD)/launch-client: ../LaunchClient/launch_client.c $(LIBSYS_OBJECTS)
 $(BUILD)/launch511: ../Launch511/command_runner.c ../Launch511/command_arguments.c ../Launch511/command_exec.c | $(BUILD)
 	$(CC) $(CPPFLAGS) $(CFLAGS) $^ -o $@
 
-$(BUILD)/hp-compat: ../HPCompatibility/hp_compatibility.c | $(BUILD)
-	$(CC) $(CPPFLAGS) $(CFLAGS) $^ -o $@
+$(BUILD)/hp-compat: ../HPCompatibility/hp_compatibility.cpp ../Architecture/x86_64/cpu_identification.S | $(BUILD)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $^ -o $@
 
 $(BUILD)/gvdctl: ../GVD/task_manager.c ../GVD/task_policy.c | $(BUILD)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -I../GVD $^ -o $@
