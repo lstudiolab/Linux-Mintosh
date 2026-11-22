@@ -130,20 +130,20 @@ static int run_appimage(const char *input) {
     char path[PATH_MAX];
     if (!resolve_regular_file(input, path)) return 64;
     if (detect_format(path) != MSTORE_FORMAT_APPIMAGE) {
-        fputs("mstore: run currently accepts only .AppImage files.\\n", stderr);
+        fputs("mstore: run currently accepts only .AppImage files.\n", stderr);
         return 65;
     }
     if (geteuid() == 0) {
-        fputs("mstore: refusing to launch an AppImage as root; run it as your user.\\n", stderr);
+        fputs("mstore: refusing to launch an AppImage as root; run it as your user.\n", stderr);
         return 2;
     }
     if (access(path, X_OK) != 0) {
-        fprintf(stderr, "mstore: AppImage is not executable: %s\\n", path);
+        fprintf(stderr, "mstore: AppImage is not executable: %s\n", path);
         return 126;
     }
     char *arguments[] = {path, NULL};
     execv(path, arguments);
-    fprintf(stderr, "mstore: cannot launch AppImage: %s\\n", strerror(errno));
+    fprintf(stderr, "mstore: cannot launch AppImage: %s\n", strerror(errno));
     return errno == ENOENT ? 127 : 126;
 }
 
@@ -159,7 +159,8 @@ int main(int argc, char **argv) {
         return 0;
     }
     if (argc < 2) return show_usage();
-    if (strcmp(argv[1], "run") == 0 && argc == 3) return run_appimage(argv[2]);\n    if (strcmp(argv[1], "format") == 0 && argc == 3) {
+    if (strcmp(argv[1], "run") == 0 && argc == 3) return run_appimage(argv[2]);
+    if (strcmp(argv[1], "format") == 0 && argc == 3) {
         char path[PATH_MAX];
         if (!resolve_regular_file(argv[2], path)) return 64;
         enum mstore_format format = detect_format(path);
@@ -182,7 +183,7 @@ int main(int argc, char **argv) {
         return mstore_execute(arguments);
     }
     if (strcmp(argv[1], "list") == 0 && argc == 2) {
-        char *arguments[] = {"dpkg-query", "-W", "-f=${binary:Package}\\t${Version}\\n", NULL};
+        char *arguments[] = {"dpkg-query", "-W", "-f=${binary:Package}\\t${Version}\n", NULL};
         return mstore_execute(arguments);
     }
     if (strcmp(argv[1], "install") == 0 || strcmp(argv[1], "remove") == 0)
