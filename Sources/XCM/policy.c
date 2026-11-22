@@ -75,11 +75,16 @@ enum xcm_policy_result xcm_policy_authorize(
         case XCM_OP_WRITE_USER_DATA:
             if (request->target != XCM_TARGET_USER_DATA || request->object_id == 0)
                 return XCM_POLICY_TARGET_MISMATCH;
+            if (request->payload_type != XCM_PAYLOAD_TYPED_DATA ||
+                request->payload_size == 0)
+                return XCM_POLICY_BAD_PAYLOAD;
             return require_capability(context, XCM_CAP_WRITE_USER_DATA);
 
         case XCM_OP_DELETE_USER_DATA:
             if (request->target != XCM_TARGET_USER_DATA || request->object_id == 0)
                 return XCM_POLICY_TARGET_MISMATCH;
+            if (request->payload_type != XCM_PAYLOAD_NONE || request->payload_size != 0)
+                return XCM_POLICY_BAD_PAYLOAD;
             if ((request->flags & XCM_FLAG_USER_CONFIRMED) == 0)
                 return XCM_POLICY_CONFIRMATION_REQUIRED;
             return require_capability(context, XCM_CAP_DELETE_USER_DATA);
