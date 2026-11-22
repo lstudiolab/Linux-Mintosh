@@ -20,8 +20,8 @@ $(BUILD)/policy.o: policy.c include/xcm/protocol.h | $(BUILD)
 $(BUILD)/client.o: client.c include/xcm/client.h include/xcm/protocol.h | $(BUILD)
 	$(CC) $(CFLAGS) -I. -c $< -o $@
 
-$(BUILD)/xcmd: xcmd.c policy.c darkin_client.c include/xcm/protocol.h include/xcm/darkin_client.h ../Darkin/include/darkin/protocol.h | $(BUILD)
-	$(CC) $(CFLAGS) -I. -I../Darkin/include xcmd.c policy.c darkin_client.c -o $@
+$(BUILD)/xcmd: xcmd.c policy.c darkin_client.c usi_token_validation.c include/xcm/protocol.h include/xcm/darkin_client.h include/xcm/usi_tokens.h ../Darkin/include/darkin/protocol.h | $(BUILD)
+	$(CC) $(CFLAGS) -I. -I../Darkin/include xcmd.c policy.c darkin_client.c usi_token_validation.c -o $@
 
 $(BUILD)/libxcm.a: $(BUILD)/client.o $(BUILD)/policy.o
 	$(AR) rcs $@ $^
@@ -32,16 +32,20 @@ $(BUILD)/policy-tests: tests/policy_tests.c policy.c include/xcm/protocol.h | $(
 $(BUILD)/client-tests: tests/client_tests.c client.c include/xcm/client.h include/xcm/protocol.h | $(BUILD)
 	$(CC) $(CFLAGS) -I. tests/client_tests.c client.c -o $@
 
-test: $(BUILD)/policy-tests $(BUILD)/client-tests $(BUILD)/xcmd
+$(BUILD)/usi-token-tests: tests/usi_token_tests.c usi_token_validation.c include/xcm/usi_tokens.h include/xcm/protocol.h | $(BUILD)
+	$(CC) $(CFLAGS) -I. tests/usi_token_tests.c usi_token_validation.c -o $@
+
+test: $(BUILD)/policy-tests $(BUILD)/client-tests $(BUILD)/usi-token-tests $(BUILD)/xcmd
 	./$(BUILD)/policy-tests
 	./$(BUILD)/client-tests
+	./$(BUILD)/usi-token-tests
 	./$(BUILD)/xcmd --version
 
 install: all
 	install -d $(BINDIR) $(LIBDIR) $(INCLUDEDIR)
 	install -m 0755 $(BUILD)/xcmd $(BINDIR)/xcmd
 	install -m 0644 $(BUILD)/libxcm.a $(LIBDIR)/libxcm.a
-	install -m 0644 include/xcm/protocol.h include/xcm/client.h $(INCLUDEDIR)/
+	install -m 0644 include/xcm/protocol.h include/xcm/client.h include/xcm/usi_tokens.h $(INCLUDEDIR)/
 
 clean:
 	rm -rf $(BUILD)
