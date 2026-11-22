@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/mount.h>
+#include <sys/reboot.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/vfs.h>
@@ -18,10 +19,11 @@
 #define SHUTDOWN_GRACE_SECONDS 5
 
 static volatile sig_atomic_t shutdown_requested;
+static volatile sig_atomic_t shutdown_signal;
 
 static void handle_shutdown(int signal_number)
 {
-    (void)signal_number;
+    shutdown_signal = signal_number;
     shutdown_requested = 1;
 }
 
@@ -51,7 +53,10 @@ static int mount_once(const char *source, const char *target,
     if (mount_error == EBUSY) {
         struct statfs mounted;
         if (statfs(target, &mounted) == 0 &&
-            (long)mounted.f_type == expected_magic)
+            ((long)mounted.f_type == expected_magic ||
+             (expected_magic == 0 &&
+              ((long)mounted.f_type == RAMFS_MAGIC ||
+               (long)mounted.f_type == TMPFS_MAGIC))))
             return 0;
         fprintf(stderr, "mintosh-init: %s is already mounted with an unexpected filesystem\n",
                 target);
@@ -72,7 +77,7 @@ static int prepare_kernel_interfaces(void)
         ensure_directory("/tmp", 01777) < 0)
         return -1;
 
-    if (mount_once("devtmpfs", "/dev", "devtmpfs", DEVFS_SUPER_MAGIC, MS_NOSUID, "mode=0755") < 0 ||
+    if (mount_once("devtmpfs", "/dev", "devtmpfs", 0, MS_NOSUID, "mode=0755") < 0 ||
         ensure_directory("/dev/pts", 0755) < 0 ||
         mount_once("devpts", "/dev/pts", "devpts", DEVPTS_SUPER_MAGIC,
                    MS_NOSUID | MS_NOEXEC, "mode=0620,ptmxmode=0666") < 0 ||
@@ -168,7 +173,8 @@ static int install_signal_handlers(void)
     sigemptyset(&action.sa_mask);
     action.sa_handler = handle_shutdown;
     if (sigaction(SIGTERM, &action, NULL) < 0 ||
-        sigaction(SIGINT, &action, NULL) < 0)
+        sigaction(SIGINT, &action, NULL) < 0 ||
+        sigaction(SIGQUIT, &action, NULL) < 0)
         return -1;
 
     signal(SIGPIPE, SIG_IGN);
@@ -224,8 +230,20 @@ static int run_init(void)
 
     stop_supervisor(supervisor);
     while (waitpid(-1, NULL, WNOHANG) > 0) {}
-    fputs("Mintosh Init: shutdown requested\n", stderr);
-    return 0;
+
+    fputs("Mintosh Init: all managed services stopped; syncing storage\n", stderr);
+    sync();
+
+    int reboot_command = shutdown_signal == SIGINT ? RB_AUTOBOOT :
+                         shutdown_signal == SIGQUIT ? RB_HALT_SYSTEM :
+                         RB_POWER_OFF;
+    reboot(reboot_command);
+
+    fprintf(stderr, "mintosh-init: kernel rejected shutdown request: %s\n",
+            strerror(errno));
+    /* PID 1 must never exit: keep the kernel alive if reboot is unavailable. */
+    for (;;)
+        pause();
 }
 
 int main(int argc, char **argv)
