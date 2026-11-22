@@ -9,6 +9,7 @@ int mstore_execute(char *const arguments[]) {
     if (strcmp(program, "apt-get") == 0) path = "/usr/bin/apt-get";
     else if (strcmp(program, "apt-cache") == 0) path = "/usr/bin/apt-cache";
     else if (strcmp(program, "dpkg-query") == 0) path = "/usr/bin/dpkg-query";
+    else if (strcmp(program, "flatpak") == 0) path = "/usr/bin/flatpak";
     if (!path) {
         fprintf(stderr, "mstore: refusing unknown system utility: %s\n", program);
         return 126;
