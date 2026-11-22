@@ -63,7 +63,7 @@
       "integration": "Reference for the future Window Server. No Wayland source is vendored or linked yet."
     },
     {
-      "component": "Cacao graphics stack",
+      "component": "Choca graphics stack",
       "repository": "https://gitlab.freedesktop.org/mesa/mesa",
       "license": "Multiple licenses; inspect each file's SPDX identifier",
       "mode": "future-upstream-dependency",
