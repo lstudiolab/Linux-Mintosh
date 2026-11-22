@@ -9,7 +9,7 @@ static int core_is_ready(void) {
     pid_t child = fork();
     if (child < 0) return 0;
     if (child == 0) {
-        char *const arguments[] = { "mitsiaqctl", "status", NULL };
+        char *const arguments[] = { "mintoshctl", "status", NULL };
         execv("/usr/bin/mintoshctl", arguments);
         _exit(127);
     }
@@ -34,6 +34,6 @@ int main(void) {
             while (nanosleep(&remaining, &remaining) < 0 && errno == EINTR) {}
         }
     }
-    fputs("mitsiaq-ready: native core did not become ready within 10 seconds\n", stderr);
+    fputs("mintosh-ready: native core did not become ready within 10 seconds\n", stderr);
     return 1;
 }
