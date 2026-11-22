@@ -26,7 +26,8 @@ This roadmap separates implemented source from verified release behavior. A dire
 - [~] I/O+ inventory and kernel uevent monitor (structured device data and live hotplug events; driver capability probing and stable device identity remain)
 - [~] FMS metadata search (atomic SQLite file index and bounded search; incremental indexing, content search and query service remain)
 - [~] DM disk manager (sysfs disk inventory and restricted mount/unmount operations; filesystem health, encryption and partition planning remain)
-- [~] HP ProBook compatibility baseline (multi-generation x86-64 driver profile, vendor firmware packages and DMI diagnostics; model-by-model hardware certification remains)
+- [~] Generic x86-64 Intel/AMD hardware baseline (ACPI, common storage, USB, wired/wireless networking, Bluetooth, graphics, audio and input drivers; hardware-matrix validation remains)
+- [~] Optional HP ProBook profile (vendor-specific drivers and DMI diagnostics; model-by-model hardware certification remains)
 - [~] Kexts Linux module frontend (safe module names, fixed-path modprobe and kernel-enforced signatures; trusted third-party signing and lifecycle integration remain)
 - [~] System Logging syslog frontend (write path exists; structured querying, rotation policy and retention remain)
 - [~] Security baseline audit (account files, service definitions, runtime sockets, FMS database permissions and enforced module signatures; policy engine, capabilities and sandboxing remain)
@@ -45,7 +46,7 @@ This roadmap separates implemented source from verified release behavior. A dire
 - [x] Native service manager and Darl started during boot
 - [x] systemd-networkd DHCP configuration
 - [x] sudo user creation and root-account lock
-- [~] HP ProBook multi-generation driver and firmware baseline
+- [~] Generic x86-64 hardware profile is the default; HP ProBook driver profile is opt-in
 - [ ] Hardware matrix beyond QEMU
 - [ ] Network smoke test in CI
 - [ ] End-to-end service control and package transaction tests in installed rootfs
@@ -95,6 +96,8 @@ The graphical desktop does not start until the following are complete:
 - [ ] Secure Boot signing
 - [ ] Published release checksums and signed artifacts
 
-## Architecture rule
+## Architecture and language rules
 
-Linux remains the kernel and provides drivers, scheduling, memory management, filesystems and networking. Mintosh owns the native userspace services, frameworks, desktop experience, installer and release tooling.
+Linux remains the kernel and provides drivers, scheduling, memory management, filesystems and networking. Mintosh-owned native system components use C, C++ where structured userspace components benefit from it, and architecture-specific assembly for CPU/boot primitives. Build orchestration may use Make and CI configuration; shell-based runtime installer code is technical debt to migrate, not a completed native implementation. Mintosh owns the native userspace services, frameworks, desktop experience, installer and release tooling.
+
+Architecture status is explicit: x86_64 is the only bootable installer target; ARM64 is kernel-buildable only; RISC-V is planned. An architecture is not advertised as supported until its root filesystem, boot image, installer and CI boot tests are complete.
