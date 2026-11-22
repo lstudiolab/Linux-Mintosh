@@ -29,10 +29,15 @@ MFData mf_file_read(const char *path, size_t maximum_size, MFError *error) {
         return result;
     }
     struct stat metadata;
-    if (fstat(descriptor, &metadata) < 0 || !S_ISREG(metadata.st_mode)) {
-        int saved = errno ? errno : EINVAL;
+    if (fstat(descriptor, &metadata) < 0) {
+        int saved = errno;
         close(descriptor);
-        set_io_error(error, MF_ERROR_IO, saved, "input is not a regular file");
+        set_io_error(error, MF_ERROR_IO, saved, "unable to inspect input file");
+        return result;
+    }
+    if (!S_ISREG(metadata.st_mode)) {
+        close(descriptor);
+        set_io_error(error, MF_ERROR_IO, EINVAL, "input is not a regular file");
         return result;
     }
     if (metadata.st_size < 0 || (uintmax_t)metadata.st_size > maximum_size) {
