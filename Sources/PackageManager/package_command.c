@@ -70,7 +70,7 @@ static int install_file(const char *input) {
         int privilege = require_root();
         if (privilege) return privilege;
         char *arguments[] = {
-            "apt-get", "--yes", "--no-install-recommends", "install", path, NULL
+            "apt-get", "--no-install-recommends", "install", path, NULL
         };
         return mstore_execute(arguments);
     }
@@ -78,7 +78,7 @@ static int install_file(const char *input) {
         int privilege = require_root();
         if (privilege) return privilege;
         char *arguments[] = {
-            "flatpak", "install", "--system", "--noninteractive", "--bundle", path, NULL
+            "flatpak", "install", "--system", "--bundle", path, NULL
         };
         return mstore_execute(arguments);
     }
