@@ -1,7 +1,8 @@
 # mBoot
 
-mBoot is Mintosh's native x86-64 UEFI boot application. The firmware loads
-`EFI/BOOT/BOOTX64.EFI`; mBoot locates the boot volume, validates that the
+mBoot is Mintosh's native x86-64 UEFI boot application. The firmware loads the fallback image
+`EFI/BOOT/BOOTX64.EFI` (built from `boot.efi`); installed systems can also
+register `EFI/Mintosh/boot.efi`. mBoot locates the boot volume, validates that the
 kernel and initramfs are present and readable, and asks UEFI to load and start
 the Linux kernel's EFI stub.
 
