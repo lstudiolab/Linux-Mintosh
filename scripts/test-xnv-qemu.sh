@@ -1,7 +1,15 @@
 #!/bin/sh
 set -eu
 IMAGE="${1:-out/xnv/XNV.EFI}"
-OVMF_CODE="${OVMF_CODE:-/usr/share/OVMF/OVMF_CODE.fd}"
+OVMF_CODE="${OVMF_CODE:-}"
+if [ -z "$OVMF_CODE" ]; then
+  for candidate in /usr/share/OVMF/OVMF_CODE.fd /usr/share/OVMF/OVMF_CODE_4M.fd /usr/share/edk2/ovmf/OVMF_CODE.fd /usr/share/qemu/OVMF.fd; do
+    if [ -s "$candidate" ]; then OVMF_CODE="$candidate"; break; fi
+  done
+fi
+if [ -z "$OVMF_CODE" ]; then
+  OVMF_CODE=$(find /usr/share -type f \\( -iname "OVMF_CODE*.fd" -o -iname "OVMF.fd" \\) -print -quit 2>/dev/null || true)
+fi
 ESP_DIR="out/xnv-esp"
 LOG="out/xnv-qemu.log"
 command -v qemu-system-x86_64 >/dev/null 2>&1 || { echo "qemu-system-x86_64 is required" >&2; exit 1; }
