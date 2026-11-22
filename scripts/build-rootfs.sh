@@ -63,6 +63,7 @@ mkdir -p "$ROOTFS/usr/src/mintosh" "$ROOTFS/etc/mintosh/services"
 cp -a "$ROOT/Sources" "$ROOTFS/usr/src/mintosh/"
 chroot "$ROOTFS" make -C /usr/src/mintosh/Sources/MintoshCore install
 chroot "$ROOTFS" make -C /usr/src/mintosh/Sources/XCM install
+chroot "$ROOTFS" make -C /usr/src/mintosh/Sources/Darkin/XNV install
 rm -rf "$ROOTFS/usr/src/mintosh"
 chroot "$ROOTFS" apt-mark manual libsqlite3-0 libstdc++6
 chroot "$ROOTFS" apt-get purge --yes gcc g++ make libc6-dev libsqlite3-dev
