@@ -16,7 +16,7 @@ Cacao — native application and graphical framework
 Core Services — stable user-space system APIs and shared services
     │
     ▼
-Tarts — service lifecycle, launch, supervision and coordination
+Tarts — complete backend foundation, system services and service lifecycle
     │
     ▼
 XPU — authenticated IPC, message routing and security policy
@@ -58,21 +58,23 @@ XPU must not trust caller-supplied identity, raw pointers, arbitrary paths, exec
 
 The current XCM broker is the first implementation prototype for XPU. Its code remains under `Sources/XCM/` until a tested migration is completed.
 
-## Tarts
+## Tarts — backend foundation
 
-Tarts is the system service lifecycle and coordination layer.
+Tarts is the complete non-graphical backend foundation of Mintosh. It owns and contains the XCU Kernel integration, boot/runtime infrastructure, hardware and device services, process and memory services, storage, filesystems, networking, security enforcement, logging, power management and system services.
 
-Target responsibilities:
+Tarts must operate without Cacao or the Window Server. It does not contain graphical UI, the desktop, application manager or native application framework.
+
+Tarts also owns system service lifecycle and coordination:
 - Start, stop, restart and supervise system services.
 - Resolve service dependencies and startup ordering.
 - Manage service health, crash recovery and resource limits.
-- Coordinate user-session and system-level service instances.
+- Coordinate system-level and user-session service instances.
 - Provide controlled service registration and discovery through XPU.
 - Record service lifecycle events.
 
-Tarts is not the kernel, graphical shell, package UI or application framework. It uses kernel process primitives and XPU's authenticated service interfaces.
+Tarts contains the backend implementation; **Core Services** defines stable shared user-space APIs and service contracts used by applications and platform components. These responsibilities are related but should remain separate modules within the backend foundation.
 
-Existing launch and service-supervision prototypes are candidates for Tarts, but must be audited and migrated to its stable service contract.
+The existing Darkin backend and launch/service-supervision prototypes are the initial Tarts implementation candidates. They must be audited and migrated to stable contracts rather than renamed blindly.
 
 ## Core Services
 
@@ -121,7 +123,7 @@ Cacao is a framework, not the Window Server and not the kernel. Applications use
 1. Kernel enforcement is authoritative for memory isolation, process identity, device access and mandatory kernel controls.
 2. XPU authenticates IPC peers, validates messages and enforces capability policy for cross-component requests.
 3. Every receiving service performs its own authorization and input validation.
-4. Tarts supervises services but does not grant them privileges they do not already possess.
+4. Tarts owns and supervises backend services but does not grant them privileges they do not already possess.
 5. Cacao applications run with per-application identities and least-privilege access.
 6. The Window Server treats application surfaces and input as untrusted.
 7. System updates require signed artifacts, verification, atomic activation and rollback. No general-purpose IPC endpoint may rewrite the kernel, boot chain or security policy.
@@ -134,7 +136,7 @@ The repository currently contains a working first milestone under earlier names.
 |---|---|---|
 | `Sources/Darkin/XNV/` and `kernel/xnv/` | XCU Kernel | Retain Linux-backed pidfd, port, memory and event primitives; update public naming/contracts after compatibility tests |
 | `Sources/XCM/` | XPU | Evolve the broker into a typed, authenticated IPC/security service; preserve deny-by-default policy |
-| Darkin backend service prototypes | Tarts and Core Services | Split lifecycle supervision from shared system APIs; migrate service-by-service |
+| Darkin backend service prototypes | Tarts and Core Services | Migrate the complete backend foundation to Tarts; organize stable shared APIs as Core Services |
 | Choca graphical platform plan | Window Server and Cacao | Separate the window/compositor service from the public application framework |
 | USI token prototype | Cacao rendering/API contract | Keep presentation data non-executable; do not treat UI tokens as privileged commands |
 
@@ -144,4 +146,4 @@ The earlier names remain in implementation paths for now and must not be mistake
 
 The OS foundation is implemented in C, C++ and architecture-specific assembly. Build configuration and CI scripts are tooling, not OS implementation languages.
 
-This architecture is a target specification, not a claim that every layer is already implemented. The current preview has Linux-backed XNV primitives, an initial XCM broker and a limited backend system-information service. Full XPU endpoint registration and per-app identities, Tarts service orchestration, Core Services APIs, the Window Server, Cacao, the desktop and native application SDK remain implementation work.
+This architecture is a target specification, not a claim that every layer is already implemented. The current preview has Linux-backed XNV primitives, an initial XCM broker and a limited backend system-information service. Full XPU endpoint registration and per-app identities, Tarts backend services and orchestration, Core Services APIs, the Window Server, Cacao, the desktop and native application SDK remain implementation work.
