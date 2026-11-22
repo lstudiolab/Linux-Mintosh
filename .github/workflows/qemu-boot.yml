@@ -13,7 +13,7 @@ permissions:
 # Several verification runs can finish for the same commit. Only build one ISO
 # for a given source revision so concurrent kernel builds do not waste runners.
 concurrency:
-  group: mintosh-qemu-${{ github.event.workflow_run.head_sha || github.sha }}
+  group: mintosh-qemu-main
   cancel-in-progress: true
 
 jobs:
