@@ -9,6 +9,7 @@ static struct xcm_request make_request(uint16_t operation, uint32_t target,
     struct xcm_request request;
     memset(&request, 0, sizeof(request));
     request.size = (uint32_t)sizeof(request) + payload_size;
+    request.request_id = 1;
     request.version = XCM_PROTOCOL_VERSION;
     request.operation = operation;
     request.target = target;

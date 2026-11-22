@@ -13,6 +13,10 @@ XCM is a standalone system component outside Darkin and Choca. It is the only su
 7. Foundation updates are reserved for the authenticated update service and require a verified update bundle plus the foundation-update capability.
 8. Darkin independently checks authorization and object ownership before performing an approved operation.
 
+## Message model
+
+Every request carries a protocol version, unique nonzero request ID, operation, target, object handle and typed payload. XCM tracks request IDs per authenticated session to reject replay and correlate replies. Responses use a separate typed envelope: Darkin data, Darkin events, service status and app lifecycle events are distinct payload classes. Choca UI-token streams are accepted only for the presentation endpoint and are never sent to privileged Darkin handlers.
+
 ## Implemented policy core
 
 - C17 policy library in `policy.c`.

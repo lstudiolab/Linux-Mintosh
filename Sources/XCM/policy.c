@@ -25,6 +25,8 @@ enum xcm_policy_result xcm_policy_authorize(
     if (!context->transport_authenticated ||
         context->authenticated_peer == XCM_PEER_UNKNOWN)
         return XCM_POLICY_UNAUTHENTICATED_PEER;
+    if (request->request_id == 0)
+        return XCM_POLICY_BAD_ARGUMENT;
     if (request->version != XCM_PROTOCOL_VERSION)
         return XCM_POLICY_BAD_VERSION;
     if (request->size < sizeof(*request) ||

@@ -36,6 +36,23 @@ enum xcm_operation {
     XCM_OP_CHANGE_SECURITY_POLICY = 9
 };
 
+enum xcm_response_payload_type {
+    XCM_RESPONSE_PAYLOAD_NONE = 0,
+    XCM_RESPONSE_DARKIN_DATA = 1,
+    XCM_RESPONSE_DARKIN_EVENT = 2,
+    XCM_RESPONSE_SERVICE_STATUS = 3,
+    XCM_RESPONSE_APP_EVENT = 4
+};
+
+enum xcm_response_status {
+    XCM_RESPONSE_OK = 0,
+    XCM_RESPONSE_DENIED = 1,
+    XCM_RESPONSE_INVALID = 2,
+    XCM_RESPONSE_NOT_FOUND = 3,
+    XCM_RESPONSE_UNAVAILABLE = 4,
+    XCM_RESPONSE_INTERNAL_ERROR = 5
+};
+
 enum xcm_payload_type {
     XCM_PAYLOAD_NONE = 0,
     XCM_PAYLOAD_TYPED_DATA = 1,
@@ -82,7 +99,23 @@ struct xcm_request {
     uint64_t object_id;
     uint32_t payload_type;
     uint32_t payload_size;
+    uint64_t request_id;
 };
+
+/* Typed reply/event envelope. Payload bytes immediately follow the header. */
+struct xcm_response {
+    uint32_t size;
+    uint16_t version;
+    uint16_t status;
+    uint64_t request_id;
+    uint32_t payload_type;
+    uint32_t payload_size;
+};
+
+#if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L
+_Static_assert(sizeof(struct xcm_request) == 40, "XCM request ABI changed");
+_Static_assert(sizeof(struct xcm_response) == 24, "XCM response ABI changed");
+#endif
 
 enum xcm_policy_result {
     XCM_POLICY_ALLOW = 0,
