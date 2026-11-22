@@ -46,7 +46,7 @@ struct xcm_usi_button_prefix {
 #if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L
 _Static_assert(sizeof(struct xcm_usi_stream_header) == 16, "USI stream ABI changed");
 _Static_assert(sizeof(struct xcm_usi_token_header) == 8, "USI token ABI changed");
-_Static_assert(sizeof(struct xcm_usi_button_prefix) == 12, "USI button ABI changed");
+_Static_assert(sizeof(struct xcm_usi_button_prefix) == 16, "USI button ABI changed");
 #endif
 
 /* Returns zero only for a complete, bounded, structurally valid presentation stream. */
