@@ -23,14 +23,14 @@ Linux is the real kernel and provides scheduling, virtual memory, drivers, VFS, 
 
 The repository contains an earlier implementation milestone under legacy source names:
 - `Sources/Darkin/` contains the initial backend foundation implementation and is being migrated to **Tarts**.
-- `Sources/Darkin/XNV/` and `kernel/xnv/` contain the Linux-backed kernel abstractions that are migrating to **XCU Kernel**.
+- `Sources/Darkin/XNV/` and `kernel/xcu/` contain the Linux-backed kernel abstractions that are migrating to **XCU Kernel**.
 - `Sources/XCM/` contains the initial authenticated broker that is migrating to **XPU**.
 - `Sources/Choca/` contains the earlier graphical-platform design and is being migrated to **Cacao**; its window-management responsibilities belong to the separate **Window Server**.
 - Existing backend prototypes are being divided between **Tarts** and **Core Services**.
 
 These implementation paths are retained until their replacements are tested. The current preview boots upstream Linux with a transitional Debian userspace. XCU/XPU have only their initial prototype capabilities; Tarts, Core Services, Window Server, Cacao, the desktop and native application SDK are not yet complete. Do not describe the current preview as a finished desktop or production-secure OS.
 
-The earlier standalone EFI bootstrap under `Sources/XNV` is a retained experiment, not the selected kernel path. The actual kernel path is upstream Linux plus the integration configuration under `kernel/xnv/`.
+The earlier standalone EFI bootstrap under `Sources/XNV` is a retained experiment, not the selected kernel path. The actual kernel path is upstream Linux plus the canonical XCU integration configuration under `kernel/xcu/`. The public XCU primitives are installed as `libxcu.a` with `<xcu/xcu.h>`; XNV remains a compatibility ABI.
 
 ## Build and verification
 
