@@ -10,23 +10,12 @@ KERNEL_IMAGE=$(find "$ROOTFS/boot" -maxdepth 1 -type f -name 'vmlinuz-*' -print 
 install -m 0755 "$ROOT/scripts/mintosh-installer.sh" "$ROOTFS/usr/local/sbin/mintosh-installer"
 install -m 0644 "$ROOT/scripts/installer-disk-safety.sh" "$ROOTFS/usr/local/sbin/installer-disk-safety.sh"
 install -m 0644 "$ROOT/scripts/installer-storage.sh" "$ROOTFS/usr/local/sbin/installer-storage.sh"
-cat > "$ROOTFS/init" <<'EOF'
-#!/bin/sh
-mount -t devtmpfs devtmpfs /dev 2>/dev/null || true
-mkdir -p /dev/pts /proc /sys /run
-mount -t devpts devpts /dev/pts 2>/dev/null || true
-mount -t proc proc /proc
-mount -t sysfs sysfs /sys
-mount -t tmpfs -o mode=0755,nosuid,nodev tmpfs /run
-mkdir -p /run/lock
-if [ -x /usr/bin/systemd-machine-id-setup ]; then
-  /usr/bin/systemd-machine-id-setup --commit 2>/dev/null || true
-fi
-exec /sbin/init
-EOF
-chmod 0755 "$ROOTFS/init"
 mkdir -p "$ROOT/out"
+"${CC:-cc}" -static -Os -std=c17 -Wall -Wextra -Werror \
+  "$ROOT/Sources/Boot/early_init.c" -o "$ROOT/out/mintosh-init"
+install -m 0755 "$ROOT/out/mintosh-init" "$ROOTFS/init"
 echo "Packing complete Mintosh live environment into initramfs..."
 (cd "$ROOTFS" && find . -xdev ! -path "./boot/vmlinuz-*" -print0 | cpio --null --create --format=newc --quiet | gzip -1) > "$OUT"
 chmod 0644 "$OUT"
+gzip -t "$OUT"
 echo "Initramfs created: out/initramfs.cpio.gz ($(du -h "$OUT" | awk '{print $1}'))"

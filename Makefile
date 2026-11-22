@@ -1,5 +1,6 @@
 SHELL := /bin/sh
 ARCH ?= x86_64
+QEMU_MEMORY ?= 4096
 export ARCH MINTOSH_USER MINTOSH_PASSWORD
 JOBS ?= $(shell getconf _NPROCESSORS_ONLN 2>/dev/null || echo 2)
 KERNEL_DIR := kernel/linux
@@ -136,10 +137,10 @@ iso: initramfs
 image: iso
 
 qemu: iso
-	qemu-system-x86_64 -m 2048 -smp 2 -netdev user,id=net0 -device virtio-net-pci,netdev=net0 -cdrom "$(ISO)" -boot d
+	qemu-system-x86_64 -m $(QEMU_MEMORY) -smp 2 -netdev user,id=net0 -device virtio-net-pci,netdev=net0 -cdrom "$(ISO)" -boot d
 
 test-qemu: iso
-	@sh ./scripts/test-qemu.sh "$(ISO)"
+	@QEMU_MEMORY="$(QEMU_MEMORY)" sh ./scripts/test-qemu.sh "$(ISO)"
 
 usb: iso
 	@test -n "$(USB)" || { echo 'Specify USB=/dev/sdX' >&2; exit 1; }
