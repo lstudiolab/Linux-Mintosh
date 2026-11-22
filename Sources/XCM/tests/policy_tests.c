@@ -77,6 +77,19 @@ int main(void)
                            XCM_PAYLOAD_NONE, 0);
     request.object_id = 1;
     assert(xcm_policy_authorize(&request, &choca) == XCM_POLICY_PROTECTED_TARGET);
+
+    request = make_request(XCM_OP_DELETE_USER_DATA, XCM_TARGET_CHOCA_CORE,
+                           XCM_PAYLOAD_NONE, 0);
+    request.object_id = 1;
+    assert(xcm_policy_authorize(&request, &choca) == XCM_POLICY_PROTECTED_TARGET);
+    request = make_request(XCM_OP_DELETE_USER_DATA, XCM_TARGET_XCM_CORE,
+                           XCM_PAYLOAD_NONE, 0);
+    request.object_id = 1;
+    assert(xcm_policy_authorize(&request, &choca) == XCM_POLICY_PROTECTED_TARGET);
+    request = make_request(XCM_OP_DELETE_USER_DATA, XCM_TARGET_DARKIN_BOOT,
+                           XCM_PAYLOAD_NONE, 0);
+    request.object_id = 1;
+    assert(xcm_policy_authorize(&request, &choca) == XCM_POLICY_PROTECTED_TARGET);
     request = make_request(XCM_OP_EXECUTE_RAW, XCM_TARGET_USER_DATA,
                            XCM_PAYLOAD_NONE, 0);
     assert(xcm_policy_authorize(&request, &choca) == XCM_POLICY_PROTECTED_TARGET);
