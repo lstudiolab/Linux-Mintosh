@@ -40,6 +40,7 @@ struct xcm_usi_button_prefix {
     uint64_t action_id;
     uint16_t label_size;
     uint16_t reserved;
+    uint32_t reserved2;
 };
 
 #if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L
