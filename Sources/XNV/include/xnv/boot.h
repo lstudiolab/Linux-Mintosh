@@ -6,6 +6,7 @@
 #define XNV_BOOT_MAX_INFO_SIZE 4096U
 #define XNV_BOOT_MAX_MEMORY_REGIONS 4096U
 
+typedef unsigned short xnv_u16;
 typedef unsigned int xnv_u32;
 typedef unsigned long long xnv_u64;
 
