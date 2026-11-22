@@ -21,18 +21,20 @@ UI tokens are a presentation language only. They are not shell commands, executa
 - Request ID must be nonzero and echoed in the response.
 - Message and payload sizes are bounded before parsing.
 - Peer PID/UID/GID are obtained through kernel socket credentials, not request fields.
-- The initial broker accepts only non-root users in the `mintosh-services` group.
+- The initial broker accepts only non-root users whose actual process groups include `mintosh-services`.
 - Every operation has an allowlisted target and payload type.
 - The first broker grants only presentation and read-only system-information capabilities.
 - User-data operations and foundation updates remain disabled until their backend, grant lifecycle and update-verification services exist.
-- Darkin kernel, boot assets, security policy and system binaries have no Choca mutation operation.
+- Darkin kernel, boot assets, security policy, Choca core and XCM core have no Choca mutation operation.
 - Darkin services independently authorize each request.
 
 ## Current broker behavior
 
-The C17 broker and client library are built by `Sources/XCM/Makefile`. The broker listens at `/run/mintosh/xcm.sock`, validates requests, maintains a bounded recent-request replay cache keyed by authenticated UID, PID and request ID, audits policy decisions through the system authentication log, and returns typed responses. System-information queries currently return a bounded kernel/platform summary. Presentation requests are policy-checked but return `UNAVAILABLE` until a Choca renderer endpoint is registered.
+The C17 broker and client library are built by `Sources/XCM/Makefile`. The broker listens at `/run/mintosh/xcm.sock`, validates requests, maintains a bounded recent-request replay cache keyed by authenticated UID/PID and request ID, and audits policy decisions through the system authentication log.
 
-The replay cache is bounded and keyed by the kernel-authenticated UID/PID plus request ID; it is not a substitute for a durable session protocol. A production release still requires session-bound nonces, a stronger replay window, parser fuzzing, endpoint registration and per-application capabilities.
+For a system-information query, XCM forwards a separate typed request to the Darkin system service over `/run/mintosh-darkin/system.sock`. That backend socket is root-only and authenticates the XCM service credentials. Darkin independently validates the operation and returns a bounded typed response. Presentation requests are policy-checked but return `UNAVAILABLE` until a Choca renderer endpoint is registered.
+
+The replay cache is bounded and is not a substitute for a durable session protocol. A production release still requires session-bound nonces, a stronger replay window, parser fuzzing, endpoint registration and per-application capabilities.
 
 ## Trust separation
 
