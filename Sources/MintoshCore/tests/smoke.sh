@@ -88,9 +88,15 @@ set +e
 MSTORE_UNIMPLEMENTED_PKG_STATUS=$?
 "$B/mstore" install-file "$RUNTIME/test.rpm" >/dev/null 2>&1
 MSTORE_UNSUPPORTED_RPM_STATUS=$?
+"$B/mstore" install-file "$RUNTIME/test.deb" >/dev/null 2>&1
+MSTORE_EXTERNAL_DEB_STATUS=$?
+"$B/mstore" install-file "$RUNTIME/test.flatpak" >/dev/null 2>&1
+MSTORE_EXTERNAL_FLATPAK_STATUS=$?
 set -e
 [ "$MSTORE_UNIMPLEMENTED_PKG_STATUS" -eq 69 ]
 [ "$MSTORE_UNSUPPORTED_RPM_STATUS" -eq 69 ]
+[ "$MSTORE_EXTERNAL_DEB_STATUS" -eq 69 ]
+[ "$MSTORE_EXTERNAL_FLATPAK_STATUS" -eq 69 ]
 set +e
 "$B/mstore" install --invalid >/dev/null 2>&1
 MSTORE_INVALID_STATUS=$?
