@@ -55,6 +55,52 @@ static EFI_STATUS read_file(EFI_FILE_HANDLE root, CHAR16 *path,
     return EFI_SUCCESS;
 }
 
+static EFI_STATUS validate_gzip_file(EFI_FILE_HANDLE root,
+                                       CHAR16 *path) {
+    EFI_STATUS status;
+    EFI_FILE_HANDLE file = NULL;
+    EFI_FILE_INFO *info = NULL;
+    UINTN info_size = 0;
+    UINTN header_size = 10;
+    UINT8 header[10];
+
+    status = uefi_call_wrapper(root->Open, 5, root, &file, path,
+                               EFI_FILE_MODE_READ, 0);
+    if (EFI_ERROR(status)) return status;
+
+    status = uefi_call_wrapper(file->GetInfo, 4, file, &gEfiFileInfoGuid,
+                               &info_size, NULL);
+    if (status == EFI_BUFFER_TOO_SMALL) {
+        info = AllocatePool(info_size);
+        if (info == NULL) {
+            uefi_call_wrapper(file->Close, 1, file);
+            return EFI_OUT_OF_RESOURCES;
+        }
+        status = uefi_call_wrapper(file->GetInfo, 4, file, &gEfiFileInfoGuid,
+                                   &info_size, info);
+    }
+
+    if (EFI_ERROR(status) || info == NULL || info->FileSize < 18 ||
+        info->FileSize > 1024ULL * 1024ULL * 1024ULL) {
+        if (info != NULL) FreePool(info);
+        uefi_call_wrapper(file->Close, 1, file);
+        return EFI_LOAD_ERROR;
+    }
+    FreePool(info);
+
+    status = uefi_call_wrapper(file->Read, 3, file, &header_size, header);
+    uefi_call_wrapper(file->Close, 1, file);
+    if (EFI_ERROR(status) || header_size != sizeof(header))
+        return EFI_LOAD_ERROR;
+
+    /* RFC 1952: gzip magic, DEFLATE method, and no reserved flag bits. */
+    if (header[0] != 0x1f || header[1] != 0x8b || header[2] != 8 ||
+        (header[3] & 0xe0) != 0)
+        return EFI_LOAD_ERROR;
+
+    return EFI_SUCCESS;
+}
+
 EFI_STATUS EFIAPI efi_main(EFI_HANDLE image_handle,
                            EFI_SYSTEM_TABLE *system_table) {
     EFI_STATUS status;
@@ -101,16 +147,15 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE image_handle,
         return status;
     }
 
-    Print(L"Checking initramfs...\r\n");
-    {
-        VOID *initrd_buffer = NULL;
-        UINTN initrd_size = 0;
-        status = read_file(root, L"\\boot\\initramfs.cpio.gz",
-                           &initrd_buffer, &initrd_size);
-        if (EFI_ERROR(status)) {
-            Print(L"mBoot: initramfs missing or invalid.\r\n");
-            FreePool(kernel_buffer);
-            uefi_call_wrapper(root->Close, 1, root);
+    Print(L"Validating compressed initramfs...\\r\\n");
+    status = validate_gzip_file(root, L"\\\\boot\\\\initramfs.cpio.gz");
+    if (EFI_ERROR(status)) {
+        Print(L"mBoot: initramfs is missing, oversized, or has an invalid gzip header.\\r\\n");
+        FreePool(kernel_buffer);
+        uefi_call_wrapper(root->Close, 1, root);
+        return status;
+    }
+    uefi_call_wrapper(root->Close, 1, root);
             return status;
         }
         FreePool(initrd_buffer);
