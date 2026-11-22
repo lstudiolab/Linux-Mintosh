@@ -49,6 +49,9 @@ enum xcm_policy_result xcm_policy_authorize(
     if (context->authenticated_peer == XCM_PEER_CHOCA) {
         if (request->target == XCM_TARGET_DARKIN_CORE ||
             request->target == XCM_TARGET_SECURITY_POLICY ||
+            request->target == XCM_TARGET_CHOCA_CORE ||
+            request->target == XCM_TARGET_XCM_CORE ||
+            request->target == XCM_TARGET_DARKIN_BOOT ||
             request->operation == XCM_OP_UPDATE_DARKIN ||
             request->operation == XCM_OP_EXECUTE_RAW ||
             request->operation == XCM_OP_CHANGE_SECURITY_POLICY)
