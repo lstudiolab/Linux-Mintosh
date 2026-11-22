@@ -23,7 +23,7 @@ fi
 rm -rf "$ROOTFS"
 echo "Creating Mintosh $VERSION root filesystem from Debian $SUITE..."
 debootstrap --arch=amd64 --variant=minbase --components=main,contrib,non-free,non-free-firmware \
-  --include=systemd,systemd-sysv,systemd-resolved,udev,dbus,kmod,bash,coreutils,util-linux,procps,findutils,grep,sed,gawk,tar,gzip,xz-utils,iproute2,iputils-ping,netbase,ca-certificates,sudo,passwd,login,locales,tzdata,e2fsprogs,less,nano,libsqlite3-0,libsqlite3-dev,g++,curl,wget,openssh-client,dialog,parted,dosfstools,rsync,os-prober,efibootmgr,ntfs-3g,initramfs-tools,grub-common,grub-pc-bin,grub-efi-amd64-bin,python3,grub2-common,gcc,make,libc6-dev,firmware-iwlwifi,firmware-realtek,firmware-atheros,firmware-brcm80211,firmware-mediatek,firmware-amd-graphics,firmware-intel-graphics,firmware-intel-sound,firmware-sof-signed,firmware-misc-nonfree,firmware-nvidia-graphics,bluez,rfkill,fwupd,pciutils,usbutils,acpi,iw,ethtool \
+  --include=systemd,systemd-sysv,systemd-resolved,udev,dbus,network-manager,wpasupplicant,wireless-regdb,kmod,bash,coreutils,util-linux,procps,findutils,grep,sed,gawk,tar,gzip,xz-utils,iproute2,iputils-ping,netbase,ca-certificates,sudo,passwd,login,locales,tzdata,e2fsprogs,less,nano,libsqlite3-0,libsqlite3-dev,g++,curl,wget,openssh-client,dialog,parted,dosfstools,rsync,os-prober,efibootmgr,ntfs-3g,initramfs-tools,grub-common,grub-pc-bin,grub-efi-amd64-bin,python3,grub2-common,gcc,make,libc6-dev,firmware-iwlwifi,firmware-realtek,firmware-atheros,firmware-brcm80211,firmware-mediatek,firmware-amd-graphics,firmware-intel-graphics,firmware-intel-sound,firmware-sof-signed,firmware-misc-nonfree,firmware-nvidia-graphics,bluez,rfkill,fwupd,pciutils,usbutils,acpi,iw,ethtool \
   "$SUITE" "$ROOTFS" https://deb.debian.org/debian
 printf '%s\n' mintosh > "$ROOTFS/etc/hostname"
 cat > "$ROOTFS/etc/hosts" <<'EOF'
@@ -51,13 +51,13 @@ sysfs /sys sysfs defaults 0 0
 devtmpfs /dev devtmpfs mode=0755,nosuid 0 0
 tmpfs /run tmpfs mode=0755,nosuid,nodev 0 0
 EOF
-mkdir -p "$ROOTFS/etc/systemd/network" "$ROOTFS/etc/systemd/system" "$ROOTFS/usr/lib/systemd/user" "$ROOTFS/etc/systemd/user/default.target.wants"
-cat > "$ROOTFS/etc/systemd/network/20-wired.network" <<'EOF'
-[Match]
-Name=en* eth*
-[Network]
-DHCP=yes
-IPv6AcceptRA=yes
+mkdir -p "$ROOTFS/etc/NetworkManager/conf.d" "$ROOTFS/etc/systemd/system" "$ROOTFS/usr/lib/systemd/user" "$ROOTFS/etc/systemd/user/default.target.wants"
+cat > "$ROOTFS/etc/NetworkManager/conf.d/10-mintosh.conf" <<'EOF'
+[main]
+dns=systemd-resolved
+
+[device]
+wifi.scan-rand-mac-address=yes
 EOF
 mkdir -p "$ROOTFS/usr/src/mintosh" "$ROOTFS/etc/mintosh/services"
 cp -a "$ROOT/Sources" "$ROOTFS/usr/src/mintosh/"
@@ -115,7 +115,7 @@ ln -snf /usr/share/zoneinfo/UTC "$ROOTFS/etc/localtime"
 : > "$ROOTFS/etc/machine-id"
 mkdir -p "$ROOTFS/var/lib/dbus"
 ln -snf /etc/machine-id "$ROOTFS/var/lib/dbus/machine-id"
-systemctl --root="$ROOTFS" enable systemd-networkd.service systemd-resolved.service serial-getty@ttyS0.service launch7762.service mintosh-ready.service mintosh-installer.service ioplus-events.service
+systemctl --root="$ROOTFS" enable NetworkManager.service systemd-resolved.service serial-getty@ttyS0.service launch7762.service mintosh-ready.service mintosh-installer.service ioplus-events.service
 ln -snf /run/systemd/resolve/stub-resolv.conf "$ROOTFS/etc/resolv.conf"
 rm -rf "$ROOTFS/var/lib/apt/lists/"*
 echo "Mintosh root filesystem created at out/rootfs."
