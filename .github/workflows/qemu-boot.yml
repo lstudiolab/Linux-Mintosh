@@ -1,9 +1,7 @@
 name: Mintosh QEMU boot verification
 
 on:
-  workflow_run:
-    workflows: ["Mintosh verification"]
-    types: [completed]
+  push:
     branches: [main]
   workflow_dispatch:
 
@@ -18,7 +16,7 @@ concurrency:
 
 jobs:
   qemu-boot:
-    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event_name == 'push' }}
     name: Build image and verify live boot
     runs-on: ubuntu-24.04
     timeout-minutes: 120
@@ -26,7 +24,7 @@ jobs:
       - name: Check out source
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+          ref: ${{ github.sha }}
       - name: Install build dependencies
         run: make host-deps
       - name: Verify native foundation
