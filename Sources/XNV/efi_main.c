@@ -60,6 +60,13 @@ static EFI_STATUS prepare_handoff(EFI_HANDLE image,struct xnv_boot_info **out)
             regions[count].reserved=0;
             ++count;
         }
+        /* Normalize descriptors so the kernel can safely binary-search the map. */
+        for(UINTN i=1;i<count;++i){
+            struct xnv_memory_region item=regions[i];
+            UINTN j=i;
+            while(j>0&&regions[j-1].base>item.base){regions[j]=regions[j-1];--j;}
+            regions[j]=item;
+        }
         for(UINTN i=0;i<sizeof(*info);++i)((UINT8*)info)[i]=0;
         info->magic=XNV_BOOT_MAGIC;info->version=XNV_BOOT_ABI_VERSION;info->size=sizeof(*info);
         info->memory_map_address=(xnv_u64)(UINTN)regions;info->memory_map_entries=count;
