@@ -37,8 +37,23 @@ static int time_reached(struct timespec now, struct timespec deadline) {
 }
 
 /* ExecStart is a plain whitespace-separated argument vector, never a shell program. */
+static int is_script_interpreter(const char *path) {
+    const char *name = strrchr(path, '/');
+    name = name ? name + 1 : path;
+    static const char *const interpreters[] = {
+        "sh", "bash", "dash", "zsh", "ksh", "fish", "csh", "tcsh",
+        "python", "python2", "python3", "perl", "ruby", "node", "php",
+        "lua", "luajit", "tclsh", "wish", "Rscript", "busybox", "env",
+        NULL
+    };
+    for (size_t index = 0; interpreters[index]; ++index)
+        if (strcmp(name, interpreters[index]) == 0) return 1;
+    return 0;
+}
+
 static int trusted_executable(const char *path) {
-    if (!path || path[0] != '/' || path[1] == '\0' || strstr(path, "//"))
+    if (!path || path[0] != '/' || path[1] == '\0' ||
+        strstr(path, "//") || is_script_interpreter(path))
         return 0;
 
     char copy[MINTOSH_SERVICE_COMMAND_MAX];

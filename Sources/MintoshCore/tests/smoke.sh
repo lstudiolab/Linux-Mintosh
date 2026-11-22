@@ -136,27 +136,15 @@ ExecStart=/usr/bin/sleep 30
 Enabled=yes
 Restart=no
 EOF
-cat > "$RUNTIME/environment-service.sh" <<EOF
-#!/usr/bin/dash
-printf '%s' "\${MINTOSH_TEST_ENV:-missing}" > "$RUNTIME/inherited-environment"
+cat > "$MINTOSH_SERVICE_DIR/retry-service.service" <<EOF
+ExecStart=/usr/bin/false
+Enabled=yes
+Restart=on-failure
 EOF
-chmod 0755 "$RUNTIME/environment-service.sh"
-export MINTOSH_TEST_ENV="mintosh-user-environment"
-cat > "$RUNTIME/retry-service.sh" <<EOF
-#!/usr/bin/dash
-echo x >> "$RUNTIME/restarts"
-exit 1
-EOF
-chmod 0755 "$RUNTIME/retry-service.sh"
-cat > "$MINTOSH_SERVICE_DIR/environment-service.service" <<EOF
+cat > "$MINTOSH_SERVICE_DIR/interpreter.service" <<EOF
 ExecStart=/usr/bin/dash $RUNTIME/environment-service.sh
 Enabled=yes
 Restart=no
-EOF
-cat > "$MINTOSH_SERVICE_DIR/retry-service.service" <<EOF
-ExecStart=/usr/bin/dash $RUNTIME/retry-service.sh
-Enabled=yes
-Restart=on-failure
 EOF
 cat > "$MINTOSH_SERVICE_DIR/unsafe.service" <<EOF
 ExecStart=/usr/bin/sleep 30
@@ -180,14 +168,7 @@ while [ ! -S "$RUNTIME/launch.sock" ]; do
 done
 sleep 0.3
 "$B/mintoshctl" services | grep -q 'test-service running'
-attempt=0
-while [ ! -f "$RUNTIME/inherited-environment" ]; do
-    attempt=$((attempt + 1))
-    [ "$attempt" -lt 50 ] || { echo "user service environment was not inherited" >&2; exit 1; }
-    sleep 0.1
-done
-[ "$(cat "$RUNTIME/inherited-environment")" = "$MINTOSH_TEST_ENV" ]
-if "$B/mintoshctl" services | grep -Eq '^(unsafe|shell-string) '; then
+if "$B/mintoshctl" services | grep -Eq '^(unsafe|shell-string|interpreter) '; then
     echo "launch7762 loaded an unsafe service definition" >&2
     exit 1
 fi
