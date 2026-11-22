@@ -26,6 +26,11 @@ for line in output.splitlines():
         end = float(fields[2].removesuffix("MiB"))
     except (ValueError, IndexError):
         continue
+    # parted may report the device's exact final boundary as free space;
+    # mkpart rejects that rounded boundary, so stay 1 MiB inside it.
+    end -= 1.0
+    if end <= start:
+        continue
     size = end - start
     if best is None or size > best[0]:
         best = (size, start, end)
