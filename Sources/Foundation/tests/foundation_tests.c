@@ -1,6 +1,7 @@
 #define _POSIX_C_SOURCE 200809L
 #include "Foundation.h"
 #include <assert.h>
+#include <errno.h>
 #include <fcntl.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -91,7 +92,9 @@ int main(void) {
     assert(mf_file_write_atomic(path, "state", 5, 0600, &error) == 0);
     struct stat metadata;
     assert(stat(path, &metadata) == 0 && (metadata.st_mode & 0777) == 0600);
-    MFData loaded = mf_file_read(path, 16, &error);
+    MFData loaded = mf_file_read(directory, 16, &error);
+    assert(!loaded.bytes && error.code == MF_ERROR_IO && error.system_code == EINVAL);
+    loaded = mf_file_read(path, 16, &error);
     assert(loaded.length == 5 && memcmp(loaded.bytes, "state", 5) == 0);
     mf_data_destroy(&loaded);
     loaded = mf_file_read(path, 4, &error);
