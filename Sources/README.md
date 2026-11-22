@@ -19,6 +19,7 @@ Mintosh-owned native userspace is implemented in ISO C17. Every source file is n
 - `Security/`: baseline permission and service-definition audit.
 - `SystemLogging/`: journald/syslog integration.
 - `MintoshCtl/`: system and service control client.
+- `MintoshReady/`: native boot-readiness checker; the systemd readiness unit no longer invokes a shell.
 - `PackageManager/`: native mstore interface to signed Debian APT repositories.
 
 ## Build and test
@@ -27,6 +28,6 @@ Mintosh-owned native userspace is implemented in ISO C17. Every source file is n
 
     sh Sources/MintoshCore/tests/smoke.sh
 
-The smoke suite compiles native components, exercises the Darl and service-manager IPC paths, validates GVD concurrency and IOPS policy parsing, starts and stops child processes, and tests Foundation, filesystem, package-validation and security boundaries. Tests use disposable temporary directories.
+The smoke suite compiles native components, runs Foundation regression tests with AddressSanitizer and UndefinedBehaviorSanitizer, exercises the Darl and service-manager IPC paths, validates GVD concurrency and IOPS policy parsing, starts and stops child processes, and tests Foundation, filesystem, package-validation and security boundaries. Tests use disposable temporary directories.
 
 See [the C17 implementation standard](../docs/c-language-standard.md).
