@@ -58,6 +58,9 @@ DISK=$(dialog --stdout --title "$TITLE" --menu "Select the destination disk. The
 [[ -b "$DISK" ]] || fail "The selected disk is no longer available."
 mintosh_disk_is_protected "$DISK" && fail "The selected disk contains the live Mintosh boot medium. It is protected from installation."
 [[ "$(lsblk -dnro TYPE "$DISK")" == "disk" ]] || fail "Only whole physical disks can be selected."
+if [[ "$MODE" == erase ]] && ! mintosh_disk_meets_erase_minimum "$DISK"; then
+  fail "Erase installation requires a disk of at least 24 GiB so Mintosh has room for its EFI and root partitions."
+fi
 
 if [[ "$MODE" == erase ]]; then
   dialog --title "Erase disk warning" --yesno "ALL DATA AND ALL OPERATING SYSTEMS ON:\n\n$DISK\n\nWILL BE PERMANENTLY DELETED.\n\nThis cannot be undone. Continue?" 13 76 || exit 0
