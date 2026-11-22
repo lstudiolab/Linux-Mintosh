@@ -28,7 +28,7 @@ cp /etc/resolv.conf "$STAGING/etc/resolv.conf"
 chroot "$STAGING" apt-get update
 chroot "$STAGING" apt-get install --yes --no-install-recommends \
   git debootstrap build-essential bc bison flex libelf-dev libncurses-dev \
-  libssl-dev libsqlite3-dev gnu-efi qemu-system-x86 xorriso mtools cpio \
+  libssl-dev libsqlite3-dev gnu-efi qemu-system-x86 ovmf xorriso mtools cpio \
   parted python3 curl ca-certificates zip xz-utils rsync sudo dialog \
   efibootmgr grub-common grub-pc-bin grub-efi-amd64-bin dosfstools \
   util-linux kmod pciutils usbutils acpi iw ethtool network-manager \
