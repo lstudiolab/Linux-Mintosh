@@ -1,5 +1,5 @@
 #define _GNU_SOURCE
-#include "include/darkin/protocol.h"
+#include "include/sean/protocol.h"
 
 #include <errno.h>
 #include <grp.h>
@@ -26,19 +26,19 @@ static void stop_server(int signal_number)
     stopping = 1;
 }
 
-static void reply(int client, uint64_t request_id, enum darkin_status status,
+static void reply(int client, uint64_t request_id, enum sean_status status,
                   const char *payload, uint32_t payload_size)
 {
-    unsigned char packet[sizeof(struct darkin_response) + DARKIN_MAX_PACKET_SIZE];
-    struct darkin_response response = {
+    unsigned char packet[sizeof(struct sean_response) + SEAN_MAX_PACKET_SIZE];
+    struct sean_response response = {
         (uint32_t)(sizeof(response) + payload_size),
-        DARKIN_PROTOCOL_VERSION,
+        SEAN_PROTOCOL_VERSION,
         (uint16_t)status,
         request_id,
         payload_size,
         0
     };
-    if (payload_size > DARKIN_MAX_PACKET_SIZE ||
+    if (payload_size > SEAN_MAX_PACKET_SIZE ||
         sizeof(response) + payload_size > sizeof(packet))
         return;
     memcpy(packet, &response, sizeof(response));
@@ -47,53 +47,53 @@ static void reply(int client, uint64_t request_id, enum darkin_status status,
     (void)send(client, packet, sizeof(response) + payload_size, MSG_NOSIGNAL);
 }
 
-static void handle_client(int client, gid_t xcm_group)
+static void handle_client(int client, gid_t xum_group)
 {
     struct ucred peer;
     socklen_t peer_size = sizeof(peer);
     if (getsockopt(client, SOL_SOCKET, SO_PEERCRED, &peer, &peer_size) < 0 ||
-        peer_size != sizeof(peer) || peer.uid != 0 || peer.gid != xcm_group) {
-        syslog(LOG_WARNING, "denied non-XPU backend peer");
-        reply(client, 0, DARKIN_STATUS_DENIED, NULL, 0);
+        peer_size != sizeof(peer) || peer.uid != 0 || peer.gid != xum_group) {
+        syslog(LOG_WARNING, "denied non-XUM backend peer");
+        reply(client, 0, SEAN_STATUS_DENIED, NULL, 0);
         return;
     }
 
-    struct darkin_request request = {0};
+    struct sean_request request = {0};
     ssize_t received = recv(client, &request, sizeof(request), MSG_TRUNC);
     if (received != (ssize_t)sizeof(request) ||
         request.size != sizeof(request) ||
-        request.version != DARKIN_PROTOCOL_VERSION ||
+        request.version != SEAN_PROTOCOL_VERSION ||
         request.request_id == 0 ||
-        request.operation != DARKIN_OP_READ_SYSTEM_INFO) {
-        reply(client, request.request_id, DARKIN_STATUS_INVALID, NULL, 0);
+        request.operation != SEAN_OP_READ_SYSTEM_INFO) {
+        reply(client, request.request_id, SEAN_STATUS_INVALID, NULL, 0);
         return;
     }
 
     struct utsname system;
     char information[512];
     if (uname(&system) < 0) {
-        reply(client, request.request_id, DARKIN_STATUS_INTERNAL_ERROR, NULL, 0);
+        reply(client, request.request_id, SEAN_STATUS_INTERNAL_ERROR, NULL, 0);
         return;
     }
     int length = snprintf(information, sizeof(information),
-                          "Mintosh; kernel=%s; release=%s; machine=%s",
+                          "Lenix; kernel=%s; release=%s; machine=%s",
                           system.sysname, system.release, system.machine);
     if (length < 0 || (size_t)length >= sizeof(information)) {
-        reply(client, request.request_id, DARKIN_STATUS_INTERNAL_ERROR, NULL, 0);
+        reply(client, request.request_id, SEAN_STATUS_INTERNAL_ERROR, NULL, 0);
         return;
     }
     syslog(LOG_INFO, "served system-info request id=%llu",
            (unsigned long long)request.request_id);
-    reply(client, request.request_id, DARKIN_STATUS_OK,
+    reply(client, request.request_id, SEAN_STATUS_OK,
           information, (uint32_t)length);
 }
 
 static int create_socket(void)
 {
-    const char *path = DARKIN_SYSTEM_SOCKET;
-    if (mkdir("/run/tarts", 0700) < 0 && errno != EEXIST) return -1;
+    const char *path = SEAN_SYSTEM_SOCKET;
+    if (mkdir("/run/sean", 0700) < 0 && errno != EEXIST) return -1;
     struct stat directory;
-    if (lstat("/run/tarts", &directory) < 0 ||
+    if (lstat("/run/sean", &directory) < 0 ||
         !S_ISDIR(directory.st_mode) || directory.st_uid != 0 ||
         (directory.st_mode & 0077) != 0) {
         errno = EPERM;
@@ -131,34 +131,34 @@ static int create_socket(void)
 int main(int argc, char **argv)
 {
     if (argc == 2 && strcmp(argv[1], "--version") == 0) {
-        puts("Tarts System Service 0.1.0");
+        puts("Sean System Service 0.1.0");
         return 0;
     }
     if (argc != 1) {
-        fputs("Usage: tarts-system [--version]\n", stderr);
+        fputs("Usage: sean-system [--version]\n", stderr);
         return 64;
     }
     if (geteuid() != 0) {
-        fputs("tarts-system must run as root.\n", stderr);
+        fputs("sean-system must run as root.\n", stderr);
         return 77;
     }
 
-    struct group *group = getgrnam("mintosh-services");
+    struct group *group = getgrnam("lenix-services");
     if (group == NULL) {
-        fputs("tarts-system: mintosh-services group is missing\n", stderr);
+        fputs("sean-system: lenix-services group is missing\n", stderr);
         return 1;
     }
     int server = create_socket();
     if (server < 0) {
-        perror("tarts-system: create socket");
+        perror("sean-system: create socket");
         return 1;
     }
 
-    openlog("tarts-system", LOG_PID | LOG_NDELAY, LOG_AUTHPRIV);
+    openlog("sean-system", LOG_PID | LOG_NDELAY, LOG_AUTHPRIV);
     signal(SIGTERM, stop_server);
     signal(SIGINT, stop_server);
     signal(SIGPIPE, SIG_IGN);
-    syslog(LOG_NOTICE, "Tarts system service started");
+    syslog(LOG_NOTICE, "Sean system service started");
 
     while (!stopping) {
         struct pollfd descriptor = { .fd = server, .events = POLLIN };
@@ -183,8 +183,8 @@ int main(int argc, char **argv)
     }
 
     close(server);
-    unlink(DARKIN_SYSTEM_SOCKET);
-    syslog(LOG_NOTICE, "Tarts system service stopped");
+    unlink(SEAN_SYSTEM_SOCKET);
+    syslog(LOG_NOTICE, "Sean system service stopped");
     closelog();
     return 0;
 }
