@@ -6,20 +6,20 @@ BINDIR = $(DESTDIR)$(PREFIX)/bin
 BUILD = build
 
 .PHONY: all test install clean
-all: $(BUILD)/darkin-system
+all: $(BUILD)/tarts-system
 
 $(BUILD):
 	mkdir -p $@
 
-$(BUILD)/darkin-system: system_service.c include/darkin/protocol.h | $(BUILD)
+$(BUILD)/tarts-system: system_service.c include/darkin/protocol.h | $(BUILD)
 	$(CC) $(CFLAGS) -I. system_service.c -o $@
 
-test: $(BUILD)/darkin-system
-	./$(BUILD)/darkin-system --version
+test: $(BUILD)/tarts-system
+	./$(BUILD)/tarts-system --version
 
 install: all
 	install -d $(BINDIR)
-	install -m 0755 $(BUILD)/darkin-system $(BINDIR)/darkin-system
+	install -m 0755 $(BUILD)/tarts-system $(BINDIR)/tarts-system
 
 clean:
 	rm -rf $(BUILD)
