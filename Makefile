@@ -28,14 +28,17 @@ EFI_CRT := $(firstword $(wildcard /usr/lib/crt0-efi-x86_64.o /usr/lib/gnuefi/crt
 EFI_LDS := $(firstword $(wildcard /usr/lib/elf_x86_64_efi.lds /usr/lib/gnuefi/elf_x86_64_efi.lds))
 EFI_LIBDIR := $(dir $(EFI_CRT))
 
-.PHONY: help check-makefiles test-native-core test-kernel-config test-installer-safety test-hardware-audit test-mboot test-mboot-qemu mboot package-installer check-host check-release check-scripts verify release-info host-deps kernel-fetch kernel-config kernel kernel-install rootfs initramfs iso image qemu test-qemu usb clean test-xcm test-xnv test-darkin
+.PHONY: help check-makefiles test-native-core test-kernel-config test-installer-safety test-hardware-audit test-mboot test-mboot-qemu mboot package-installer check-host check-release check-scripts verify release-info host-deps kernel-fetch kernel-config kernel kernel-install rootfs initramfs iso image qemu test-qemu usb clean test-xcm test-xnv test-darkin test-xpu test-xcu test-tarts
 
 help:
 	@printf '%s\n' \
 	  'Mintosh release and build targets:' \
 	  '  make check-release  Validate release manifest and architecture pins' \
 	  '  make check-scripts  Validate shell scripts' \
-	  '  make verify         Run all offline validation' \
+	  '  make verify         Run all offline validation' \\
+	  '  make test-tarts    Test the Tarts backend foundation' \\
+	  '  make test-xpu      Test the XPU communication broker' \\
+	  '  make test-xcu      Test XCU Linux kernel primitives' \\
 	  '  make package-installer  Package ISO and checksum for Rufus' \
 	  '  make mboot          Build the native x86-64 UEFI bootloader' \
 	  '  make release-info   Print release and kernel versions' \
@@ -54,7 +57,17 @@ help:
 	  'Options: ARCH=x86_64|arm64 MINTOSH_HARDWARE_PROFILE=generic|hp-probook-450-g6 JOBS=<parallel jobs>' \
 	  'The first live ISO and installer target x86_64.'
 
-# XNV, Darkin and XCM host tests exercise the Linux-backed service boundary.
+# Canonical component targets forward to the first tested implementation paths.
+test-tarts:
+	@$(MAKE) --no-print-directory -C Sources/Tarts test
+
+test-xpu:
+	@$(MAKE) --no-print-directory -C Sources/XPU test
+
+test-xcu:
+	@$(MAKE) --no-print-directory -C Sources/XCU test
+
+# Legacy implementation-path aliases remain available during migration.
 test-darkin:
 	@$(MAKE) --no-print-directory -C Sources/Darkin test
 
@@ -74,7 +87,10 @@ check-makefiles:
 	@$(MAKE) --no-print-directory -C Sources/XCM -n test >/dev/null
 	@$(MAKE) --no-print-directory -C Sources/Darkin -n test >/dev/null
 	@$(MAKE) --no-print-directory -C Sources/Darkin/XNV -n test >/dev/null
-	@echo 'Root, native-core, Darkin, XCM and XNV Makefiles parse and resolve all build prerequisites.'
+	@$(MAKE) --no-print-directory -C Sources/Tarts -n test >/dev/null
+	@$(MAKE) --no-print-directory -C Sources/XPU -n test >/dev/null
+	@$(MAKE) --no-print-directory -C Sources/XCU -n test >/dev/null
+	@echo 'Root, native-core and canonical Tarts/XPU/XCU Makefiles parse and resolve all build prerequisites.'
 
 check-scripts:
 	@python3 -c 'import pathlib, subprocess; bash={"mintosh-installer.sh", "installer-bootstrap.sh", "package-installer.sh", "installer-disk-safety.sh", "installer-storage.sh", "test-installer-disk-safety.sh", "test-installer-partitioning.sh"}; [subprocess.run(["bash" if p.name in bash else "sh", "-n", str(p)], check=True) for p in pathlib.Path("scripts").glob("*.sh")]'
@@ -123,8 +139,8 @@ $(MBOOT_OUT)/BOOTX64.EFI: $(MBOOT_OUT)/boot.efi
 	cp $< $@
 
 
-verify: check-release check-makefiles check-scripts test-kernel-config test-installer-safety test-hardware-audit test-native-core test-mboot test-darkin test-xcm test-xnv
-	@echo 'Mintosh preview validation, Darkin service, XCM broker and XNV Linux primitive tests passed.'
+verify: check-release check-makefiles check-scripts test-kernel-config test-installer-safety test-hardware-audit test-native-core test-mboot test-tarts test-xpu test-xcu
+	@echo 'Mintosh preview validation, Tarts backend, XPU broker and XCU Linux primitive tests passed.'
 
 release-info: check-release
 	@python3 -c 'import json; d=json.load(open("configs/release.json")); print("Mintosh", d["release"]); print("Linux", d["kernel"]["version"]); print("Debian", d["debian_suite"]); print("Bootable architectures:", ", ".join(d["architectures"])); print("Kernel build architectures:", ", ".join(d["kernel_build_architectures"])); print("Planned architectures:", ", ".join(d["planned_architectures"]) or "none"); print("Bootable ISO:", d["image"]["primary_architecture"])'
