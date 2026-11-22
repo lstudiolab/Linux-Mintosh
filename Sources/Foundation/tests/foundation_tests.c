@@ -75,6 +75,8 @@ int main(void) {
     assert(mf_url_parse("https://example.com:99999/", &url, &error) < 0);
     assert(error.code == MF_ERROR_INVALID_ARGUMENT);
     assert(mf_url_parse("https://example.com/%Q0", &url, &error) < 0);
+    assert(mf_url_parse("https://example.com/%", &url, &error) < 0);
+    assert(mf_url_parse("https://example.com/%A", &url, &error) < 0);
     assert(mf_url_parse("relative/path", &url, &error) < 0);
 
     mf_error_set(&error, MF_ERROR_IO, 5, "test");
