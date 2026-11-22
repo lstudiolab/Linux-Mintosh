@@ -30,9 +30,9 @@ UI tokens are a presentation language only. They are not shell commands, executa
 
 ## Current broker behavior
 
-The C17 broker and client library are built by `Sources/XCM/Makefile`. The broker listens at `/run/mintosh/xcm.sock`, validates requests, maintains a bounded recent-request replay cache, audits policy decisions through the system authentication log, and returns typed responses. System-information queries currently return a bounded kernel/platform summary. Presentation requests are policy-checked but return `UNAVAILABLE` until a Choca renderer endpoint is registered.
+The C17 broker and client library are built by `Sources/XCM/Makefile`. The broker listens at `/run/mintosh/xcm.sock`, validates requests, maintains a bounded recent-request replay cache keyed by authenticated UID, PID and request ID, audits policy decisions through the system authentication log, and returns typed responses. System-information queries currently return a bounded kernel/platform summary. Presentation requests are policy-checked but return `UNAVAILABLE` until a Choca renderer endpoint is registered.
 
-The replay cache is bounded and is not a substitute for a durable session protocol. A production release still requires session-bound nonces, a stronger replay window, parser fuzzing, endpoint registration and per-application capabilities.
+The replay cache is bounded and keyed by the kernel-authenticated UID/PID plus request ID; it is not a substitute for a durable session protocol. A production release still requires session-bound nonces, a stronger replay window, parser fuzzing, endpoint registration and per-application capabilities.
 
 ## Trust separation
 
