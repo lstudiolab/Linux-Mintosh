@@ -20,6 +20,13 @@ cleanup() {
 }
 trap cleanup EXIT INT TERM
 
+"$B/mintosh-init" --version | grep -q "Mintosh Init 0.1.0"
+"$B/mintosh-init" --self-test | grep -q "self-test passed"
+set +e
+"$B/mintosh-init" >/dev/null 2>&1
+MINTOSH_INIT_NON_PID1_STATUS=$?
+set -e
+[ "$MINTOSH_INIT_NON_PID1_STATUS" -eq 2 ]
 "$B/darl" --version | grep -q 'Darl 0.2.0'
 "$B/launch7762" --version | grep -q '0.2.0'
 "$B/launch-client" --version | grep -q '0.1.0'
