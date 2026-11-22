@@ -1,19 +1,16 @@
-# Choca — graphical platform
+# Cacao — graphical platform (legacy source location)
 
-Choca is separate from Darkin. It contains all graphical and application-facing components:
+The platform's final name is **Cacao**. This directory remains named `Sources/Choca/` temporarily so existing references and build integration are not broken during migration.
 
-- USI graphical interface and language/runtime.
-- Window server and compositor.
-- Graphical frameworks and controls.
-- Desktop shell, Finder-like file UI, dock and launch UI.
-- Application manager, package/install UI and application lifecycle client.
+Cacao owns the graphical platform and native application framework:
+- Desktop-facing graphical experience and application manager.
+- Native application lifecycle and event-loop APIs.
+- Standard controls, views, layout, drawing and accessibility.
+- Client APIs for the separate Window Server.
+- Public application SDK and common graphical services.
 
-Choca produces a versioned USI token stream for presentation. The public token contract is `<xcm/usi_tokens.h>`: bounded text, row/column containers, spacers, buttons with numeric action IDs and images with numeric resource IDs. The stream contains no executable code, shell commands, arbitrary filesystem paths or raw system operations.
+Window Server remains a distinct service responsible for displays, windows, surfaces, composition, focus and input routing. Cacao uses its documented client protocol; it does not directly control privileged display devices.
 
-## XCM integration
+Cacao communicates with backend services through the XPU interface. The current XPU prototype is still implemented under `Sources/XCM/`. USI token validation remains a presentation-data contract, not an executable or privileged command format.
 
-Choca communicates with Darkin only through XCM. Native Choca components link the unprivileged `libxcm.a` client and include `<xcm/client.h>`. They send versioned request envelopes to `/run/mintosh/xcm.sock`; they never open Darkin's privileged service sockets directly.
-
-XCM validates peer identity, request bounds, token structure, UTF-8, token nesting, target and granted capability before routing. The first broker milestone supports read-only system information, forwarded to Darkin over a root-only backend socket. Presentation streams are validated but return `UNAVAILABLE` until the Choca renderer registers its endpoint. No app receives permission to mutate Darkin's kernel, boot files, security policy or privileged services.
-
-The USI language, window server, compositor and graphical implementation remain separate implementation milestones. Their absence is not represented as a completed desktop.
+The actual graphical framework, desktop, app manager and Window Server are not yet implemented. This file records ownership and migration direction; it does not claim those components are complete.
