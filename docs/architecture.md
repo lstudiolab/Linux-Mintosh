@@ -10,7 +10,7 @@ BSD-derived interfaces provide first-party Unix/POSIX and selected BSD compatibi
 
 Mach-inspired functionality provides task/thread abstractions, IPC messages, port-like endpoints, message rights and memory-object concepts backed by Linux primitives. These do not replace Linux's scheduler or memory manager. XCU is not three independently booted kernels.
 
-The current implementation is under `Sources/Darkin/XNV/` and `kernel/xnv/` pending a tested migration to XCU naming. The standalone EFI experiment in `Sources/XNV/` is not the selected kernel.
+The current implementation is under `Sources/Darkin/XNV/` and `kernel/xcu/` pending a tested migration to XCU naming. The standalone EFI experiment in `Sources/XNV/` is not the selected kernel.
 
 ## XPU
 
@@ -52,7 +52,7 @@ Cacao clients use Window Server's documented client protocol; applications do no
 
 ## Current prototype status
 
-The current preview boots upstream Linux with a transitional Debian userspace. It has Linux-backed XNV task/port/memory/event primitives, an initial XCM broker and a limited read-only system-information endpoint. These are prototype implementations for the XCU/XPU and Tarts/Core Services migration.
+The current preview boots upstream Linux with a transitional Debian userspace. XCU's public `libxcu.a`/`<xcu/xcu.h>` API wraps Linux-backed task/port/memory/event primitives; XPU is installed as `xpu` with `libxpu.a`/`<xpu/xpu.h>`; Tarts provides the `tarts-system` read-only system-information endpoint; Core Services exposes `libcoreservices.a`/`<coreservices/coreservices.h>`. These are initial compatibility-backed milestones, not the complete OS layers. These are prototype implementations for the XCU/XPU and Tarts/Core Services migration.
 
 Full XPU endpoint registration and per-app identities, Tarts orchestration, Core Services APIs, Window Server, Cacao, desktop shell and native application SDK remain implementation work. See [platform-architecture.md](platform-architecture.md) for the complete target and component migration table.
 
