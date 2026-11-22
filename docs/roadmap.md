@@ -32,7 +32,9 @@ This roadmap separates implemented source from verified release behavior. A dire
 - [~] System Logging syslog frontend (write path exists; structured querying, rotation policy and retention remain)
 - [~] Security baseline audit (account files, service definitions, runtime sockets, FMS database permissions and enforced module signatures; policy engine, capabilities and sandboxing remain)
 - [~] mstore APT frontend (Debian signed repository transport; Mintosh catalog, transaction UI and rollback remain)
-- [ ] Mintosh-signed package repository and curated catalog
+- [ ] Specify and implement the native Mintosh `.pkg` package format, including manifest, payload, dependency model, permissions, lifecycle and signatures
+- [ ] Multi-format package manager: safe `.deb` support and managed AppImage/Flatpak integration; RPM support only where compatibility can be guaranteed
+- [ ] Mintosh-signed `.pkg` repository, trust roots, curated catalog and transactional rollback
 - [ ] AppKit native GUI framework
 - [ ] Tarts widget toolkit
 - [ ] GT graphics backend and Window Server compositor
@@ -105,8 +107,9 @@ Mintosh follows a strict dependency order. Work on a later phase must not begin 
 - [ ] Accessibility, HiDPI, keyboard and input support
 
 ### Applications and updates
-- [ ] PackageKit integration and application catalog
-- [ ] Application install, remove and update flows
+- [ ] Mintosh Application Manager with native `.pkg` as its primary format and supported Linux package formats as compatibility inputs
+- [ ] Application install, remove, update and rollback flows
+- [ ] Mintosh SDK and Xcode-like integrated development environment (deferred until the system foundation and the user's programming language are stable; supports build, test, sign and publish workflows)
 - [ ] Signed Mintosh release metadata
 - [ ] Rollback-capable system updates
 - [ ] Kernel update and boot-entry management
