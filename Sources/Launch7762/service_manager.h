@@ -19,6 +19,9 @@ typedef struct {
     char command[MINTOSH_SERVICE_COMMAND_MAX];
     int enabled;
     MintoshRestartPolicy restart_policy;
+    unsigned int start_order;
+    gid_t group_id;
+    int has_group;
     int restart_pending;
     int kill_sent;
     unsigned int restart_count;
