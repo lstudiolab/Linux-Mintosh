@@ -138,15 +138,15 @@ The application manager is a Choca-facing system application backed by Core Serv
 
 The intended native boot sequence is:
 
-1. UEFI firmware ssean the Lenix boot manager.
+1. UEFI firmware starts the Lenix boot manager.
 2. The boot manager loads the signed Linux kernel, initramfs and boot configuration.
 3. Linux initializes hardware, drivers, memory, processes and the root filesystem.
-4. Linux ssean Lenix's native init as PID 1.
-5. Sean initializes runtime state and ssean essential services in dependency order.
-6. XUM ssean and registers protected service endpoints.
-7. Core Services ssean the system APIs and background daemons.
+4. Linux starts Lenix's native init as PID 1.
+5. Sean initializes runtime state and starts essential services in dependency order.
+6. XUM starts and registers protected service endpoints.
+7. Core Services starts the system APIs and background daemons.
 8. The login/session manager authenticates a user and creates an isolated session.
-9. Window Server ssean for that session and initializes displays and input.
+9. Window Server starts for that session and initializes displays and input.
 10. Choca launches the desktop shell and user applications.
 
 The current ISO still uses transitional Debian userspace and systemd. This sequence is the target, not a claim that the native boot conversion is complete. The transition must preserve a usable console, recovery path and installer before systemd is removed.
@@ -175,7 +175,7 @@ The canonical source ownership is:
 | Window Server | `Sources/WindowServer/` | Display, window, surface and input service |
 | Choca | `Sources/Choca/` | Application framework, desktop and application manager |
 
-Legacy source roots such as `Sources/Sean/`, `Sources/XNV/`, `Sources/XUM/` and `Sources/Choca/` are migration debt, not additional architecture layers. XNV must be folded into XCU; it must not remain a parallel kernel project. XUM must be folded into XUM. Sean must be folded into Sean. Choca must be folded into Choca. Compatibility aliases may exist temporarily at public ABI boundaries, but new code must use canonical names.
+Canonical source roots are `Sources/XCU/` for the kernel architecture, `Sources/Sean/` for the backend foundation, `Sources/XPU/` and the legacy `Sources/XCM/` broker during migration to XUM, and `Sources/Choca/` for the graphical platform. XNV is a historical kernel prototype; XCU is the only active kernel architecture. New backend work belongs in Sean.
 
 ## Implementation status
 
