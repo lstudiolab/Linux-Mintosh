@@ -155,7 +155,19 @@ int mf_file_write_atomic(const char *path, const void *bytes, size_t length,
     if (result == 0 && rename(temporary, path) < 0) { result = -1; saved = errno; }
     if (result == 0) {
         int directory_fd = open(directory, O_RDONLY | O_DIRECTORY | O_CLOEXEC);
-        if (directory_fd >= 0) { if (fsync(directory_fd) < 0) { result = -1; saved = errno; } close(directory_fd); }
+        if (directory_fd < 0) {
+            result = -1;
+            saved = errno;
+        } else {
+            if (fsync(directory_fd) < 0) {
+                result = -1;
+                saved = errno;
+            }
+            if (close(directory_fd) < 0 && result == 0) {
+                result = -1;
+                saved = errno;
+            }
+        }
     }
     if (result < 0) {
         unlink(temporary);
