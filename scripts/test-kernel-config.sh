@@ -26,4 +26,9 @@ if sh scripts/verify-kernel-config.sh "$CONFIG" hp-probook-450-g6 >/dev/null 2>&
   echo "Kernel config verifier accepted a missing ProBook Wi-Fi driver." >&2
   exit 1
 fi
+ARM_CONFIG=$(mktemp)
+trap 'rm -f "$CONFIG" "$ARM_CONFIG"' EXIT HUP INT TERM
+grep -E '^CONFIG_(MODULES|MODULE_SIG|MODULE_SIG_ALL|MODULE_SIG_FORCE|MODULE_SIG_SHA256|BLK_DEV_INITRD|DEVTMPFS|DEVTMPFS_MOUNT|EXT4_FS|VIRTIO|VIRTIO_BLK|VIRTIO_NET|SERIAL_8250|SERIAL_8250_CONSOLE|PROC_FS|SYSFS|TMPFS|CGROUPS|SECCOMP|SECCOMP_FILTER)=y
+ "$CONFIG" > "$ARM_CONFIG"
+sh scripts/verify-kernel-config.sh "$ARM_CONFIG" generic arm64 >/dev/null
 echo "Kernel configuration verification tests passed."
