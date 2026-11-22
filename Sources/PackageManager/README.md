@@ -33,6 +33,7 @@ Local file inputs are resolved to canonical paths and must be regular files. The
 - `mstore search QUERY`: search package names.
 - `mstore info PACKAGE`: show package metadata.
 - `mstore list`: list installed packages.
+- `mstore run FILE.AppImage`: launch an executable AppImage as the current unprivileged user; root execution is refused.
 - `sudo mstore install PACKAGE...`: install repository packages without recommended extras; a supported local file path selects its format-specific backend.
 - `sudo mstore remove PACKAGE...`: remove packages.
 - `sudo mstore update`: refresh signed repository metadata.
