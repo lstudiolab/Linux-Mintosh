@@ -30,7 +30,7 @@ EFI_LIBDIR := $(dir $(EFI_CRT))
 .PHONY: help check-makefiles test-native-core test-kernel-config test-installer-safety test-mboot mboot check-host check-release check-scripts verify release-info host-deps kernel-fetch kernel-config kernel kernel-install rootfs initramfs iso image qemu test-qemu usb clean
 
 help:
-	@printf '%s\\n' \
+	@printf '%s\n' \
 	  'Mintosh release and build targets:' \
 	  '  make check-release  Validate release manifest and architecture pins' \
 	  '  make check-scripts  Validate shell scripts' \
