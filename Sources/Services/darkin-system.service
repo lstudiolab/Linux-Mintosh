@@ -26,6 +26,7 @@ LockPersonality=true
 MemoryDenyWriteExecute=true
 RestrictAddressFamilies=AF_UNIX
 SystemCallArchitectures=native
+CapabilityBoundingSet=
 ReadWritePaths=/run/mintosh-darkin
 
 [Install]
