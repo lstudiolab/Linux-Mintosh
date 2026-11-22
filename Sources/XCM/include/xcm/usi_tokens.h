@@ -3,6 +3,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include "protocol.h"
 
 #define XCM_USI_STREAM_MAGIC UINT32_C(0x49535558)
 #define XCM_USI_STREAM_VERSION 1U
