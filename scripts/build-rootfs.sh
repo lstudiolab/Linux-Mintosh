@@ -62,9 +62,9 @@ EOF
 mkdir -p "$ROOTFS/usr/src/mintosh" "$ROOTFS/etc/mintosh/services"
 cp -a "$ROOT/Sources" "$ROOTFS/usr/src/mintosh/"
 chroot "$ROOTFS" make -C /usr/src/mintosh/Sources/MintoshCore install
-chroot "$ROOTFS" make -C /usr/src/mintosh/Sources/Darkin install
-chroot "$ROOTFS" make -C /usr/src/mintosh/Sources/XCM install
-chroot "$ROOTFS" make -C /usr/src/mintosh/Sources/Darkin/XNV install
+chroot "$ROOTFS" make -C /usr/src/mintosh/Sources/Tarts install
+chroot "$ROOTFS" make -C /usr/src/mintosh/Sources/XPU install
+chroot "$ROOTFS" make -C /usr/src/mintosh/Sources/XCU install
 rm -rf "$ROOTFS/usr/src/mintosh"
 chroot "$ROOTFS" apt-mark manual libsqlite3-0 libstdc++6
 chroot "$ROOTFS" apt-get purge --yes gcc g++ make libc6-dev libsqlite3-dev
@@ -72,8 +72,8 @@ chroot "$ROOTFS" apt-get autoremove --yes
 chroot "$ROOTFS" apt-get clean
 install -m 0644 "$ROOT/Sources/Services/launch7762.service" "$ROOTFS/etc/systemd/system/launch7762.service"
 install -m 0644 "$ROOT/Sources/Services/mintosh-ready.service" "$ROOTFS/etc/systemd/system/mintosh-ready.service"
-install -m 0644 "$ROOT/Sources/Services/darkin-system.service" "$ROOTFS/etc/systemd/system/darkin-system.service"
-install -m 0644 "$ROOT/Sources/Services/xcm.service" "$ROOTFS/etc/systemd/system/xcm.service"
+install -m 0644 "$ROOT/Sources/Services/tarts-system.service" "$ROOTFS/etc/systemd/system/tarts-system.service"
+install -m 0644 "$ROOT/Sources/Services/xpu.service" "$ROOTFS/etc/systemd/system/xpu.service"
 install -m 0644 "$ROOT/Sources/Services/ioplus-events.service" "$ROOTFS/etc/systemd/system/ioplus-events.service"
 install -m 0644 "$ROOT/Sources/Services/launch-client.service" "$ROOTFS/usr/lib/systemd/user/launch-client.service"
 ln -sfn /usr/lib/systemd/user/launch-client.service "$ROOTFS/etc/systemd/user/default.target.wants/launch-client.service"
@@ -120,7 +120,7 @@ ln -snf /usr/share/zoneinfo/UTC "$ROOTFS/etc/localtime"
 : > "$ROOTFS/etc/machine-id"
 mkdir -p "$ROOTFS/var/lib/dbus"
 ln -snf /etc/machine-id "$ROOTFS/var/lib/dbus/machine-id"
-systemctl --root="$ROOTFS" enable NetworkManager.service systemd-resolved.service serial-getty@ttyS0.service launch7762.service mintosh-ready.service darkin-system.service xcm.service mintosh-installer.service ioplus-events.service
+systemctl --root="$ROOTFS" enable NetworkManager.service systemd-resolved.service serial-getty@ttyS0.service launch7762.service mintosh-ready.service tarts-system.service xpu.service mintosh-installer.service ioplus-events.service
 ln -snf /run/systemd/resolve/stub-resolv.conf "$ROOTFS/etc/resolv.conf"
 rm -rf "$ROOTFS/var/lib/apt/lists/"*
 echo "Mintosh root filesystem created at out/rootfs."
