@@ -5,7 +5,7 @@
 
 #define DARKIN_PROTOCOL_VERSION 1U
 #define DARKIN_MAX_PACKET_SIZE 4096U
-#define DARKIN_SYSTEM_SOCKET "/run/mintosh-darkin/system.sock"
+#define DARKIN_SYSTEM_SOCKET "/run/tarts/system.sock"
 
 enum darkin_operation {
     DARKIN_OP_NONE = 0,
