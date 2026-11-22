@@ -1,149 +1,184 @@
 # Mintosh platform architecture
 
-This document defines the target architecture for Mintosh. It adopts the mature separation of responsibilities used by macOS as a design reference, while retaining independent Mintosh implementations and APIs.
+This is the canonical architecture for Mintosh. It adopts the proven *separation of responsibilities* used by macOS as a design reference, while keeping Mintosh's own implementation, APIs, and Linux kernel. XCU is the rebranded and redesigned continuation of XNV; it is not a second kernel alongside XNV.
 
-## Architecture at a glance
+## System architecture
+
+Mintosh is organized as a layered platform with independently protected services. The layers describe ownership and dependency direction, not a single call stack through which every operation must pass.
 
 ```text
-Applications
-    │
-    ▼
-Cacao — native application and graphical framework
-    │
-    ├──────────────► Window Server — windows, displays, composition, input
-    │
-    ▼
-Core Services — stable user-space system APIs and shared services
-    │
-    ▼
-Tarts — complete backend foundation, system services and service lifecycle
-    │
-    ▼
-XPU — authenticated IPC, message routing and security policy
-    │
-    ▼
-XCU Kernel — Linux main kernel + BSD-derived Unix interfaces
-              + Mach-inspired messaging/task/port abstractions
-    │
-    ▼
-Hardware
+┌──────────────────────────────────────────────────────────────┐
+│                         Applications                         │
+│                 Native .app bundles / CLI tools              │
+├──────────────────────────────────────────────────────────────┤
+│                           Cacao                              │
+│       ApplicationKit · UI framework · app lifecycle          │
+│       controls · views · drawing · accessibility · SDK       │
+├───────────────────────────────┬──────────────────────────────┤
+│         Window Server         │       Session Services       │
+│ displays · windows · surfaces │ input · clipboard · launch   │
+│ composition · focus · routing │ notifications · preferences  │
+├───────────────────────────────┴──────────────────────────────┤
+│                       Core Services                          │
+│   stable APIs · storage · users · sessions · networking      │
+│   security clients · logging · events · application services │
+├──────────────────────────────────────────────────────────────┤
+│                           Tarts                              │
+│     backend foundation · service lifecycle · system daemons   │
+│       device services · storage · security · power · logs    │
+├──────────────────────────────────────────────────────────────┤
+│                            XCU                               │
+│      Linux kernel integration · BSD/POSIX · Mach concepts     │
+│       process · VM · IPC primitives · drivers · hardware     │
+├──────────────────────────────────────────────────────────────┤
+│                          Hardware                            │
+└──────────────────────────────────────────────────────────────┘
+
+XPU is the authenticated IPC and capability boundary used horizontally
+between applications, Cacao, Window Server, Core Services and Tarts.
+It is not another kernel layer and not a mandatory hop for every call.
 ```
 
-The diagram shows the conceptual layers, not a requirement that every operation travel through one serial call chain. Components use the narrowest documented API appropriate to their trust level. XPU is the controlled cross-component IPC and authorization boundary; kernel primitives remain kernel-enforced.
+## 1. XCU — kernel architecture
 
-## XCU Kernel
+**XCU is XNV's successor name and the single kernel architecture of Mintosh.** All kernel integration, kernel-facing abstractions, and low-level process/memory/IPC primitives belong to XCU. There is no separate XNV subsystem.
 
-XCU is Mintosh's hybrid-kernel architecture and integration layer.
+XCU uses a Linux-first hybrid architecture:
 
-- **Linux is the actual, primary kernel.** It provides scheduling, virtual memory, process execution, VFS, networking, device drivers, interrupt handling, hardware support and kernel security mechanisms.
-- **BSD-derived functionality** provides first-party Unix/POSIX and selected BSD-compatible interfaces on top of Linux. This is not a second BSD kernel.
-- **Mach-inspired functionality** provides task/port/message abstractions, message rights and memory-object concepts using Linux primitives. It does not replace Linux's scheduler or memory manager.
+- **Linux is the actual kernel.** It owns privileged execution, scheduling, virtual memory, process isolation, VFS, networking, device drivers, interrupts, hardware discovery and kernel security.
+- **BSD-derived interfaces** provide the Unix/POSIX and selected BSD-compatible user-facing contracts on top of Linux. BSD is not a second booted kernel and does not replace Linux's VFS or networking implementation.
+- **Mach-inspired abstractions** provide task/port/message and memory-object concepts using Linux mechanisms such as pidfds, sequenced-packet sockets, descriptor passing, sealed memory objects and event facilities. These abstractions do not introduce a second scheduler or VM manager.
+- **Kernel modules and drivers** extend Linux through its supported module and driver interfaces. They are not macOS-style Kext binaries and must follow Linux's kernel ABI and licensing requirements.
 
-XCU is not a collection of three independently booted kernels. It is one Linux-based kernel architecture with compatible interfaces and additional first-party abstractions.
+XCU is therefore one integrated Linux-based kernel platform. It is not a custom Mach/BSD kernel, and the old standalone EFI kernel experiment is not part of the selected architecture. The normal boot path loads the Linux kernel; XCU configures, integrates and extends that kernel.
 
-## XPU
+## 2. Tarts — backend foundation
 
-XPU is Mintosh's system communication and security service. It is inspired by the combination of Mach IPC concepts and Apple's XPC-style service boundaries.
+Tarts is the non-graphical system foundation above XCU. It owns the trusted system runtime and the services required to make the machine usable before any graphical session exists.
 
-Responsibilities:
-- Authenticated local IPC and component identity.
-- Typed, versioned messages and bounded payload validation.
-- Endpoint registration and service discovery.
-- Capability-based authorization and operation-specific policy.
-- Message routing, replies, events and error reporting.
-- Replay resistance, auditing and rate/resource limits.
-- Explicit protection for kernel, boot, security policy and system components.
+Tarts responsibilities:
+- Early userspace, PID 1 and system startup.
+- System service manager, dependency graph, ordering, supervision and recovery.
+- Hardware and device service coordination.
+- Storage and filesystem management.
+- Network configuration and connectivity services.
+- System security policy, credentials integration and privileged operations.
+- Power, thermal, battery and platform management.
+- System logging, diagnostics, crash reporting and update coordination.
+- Runtime directories, service identities, resource limits and service health.
 
-XPU must not trust caller-supplied identity, raw pointers, arbitrary paths, executable payloads or UI tokens as privileged instructions. The kernel authenticates local peers; XPU validates protocol and policy; each receiving service independently enforces authorization. XPU is not a substitute for kernel isolation.
+Tarts must boot and operate without Cacao, Window Server or a logged-in user. It must not contain desktop UI, application controls or graphical application APIs.
 
-The XPU broker is built and installed as `xpu` and listens on `/run/mintosh/xpu.sock`. Its implementation source remains under `Sources/XCM/` until a tested source/API migration is completed. The privileged Tarts system-information endpoint is `/run/tarts/system.sock`.
+Tarts is the foundation that *contains and runs* the backend. Core Services is a separately versioned API/service layer within that foundation; it is not a second competing backend.
 
-## Tarts — backend foundation
+## 3. Core Services — shared system APIs
 
-Tarts is the complete non-graphical backend foundation of Mintosh. It owns and contains the XCU Kernel integration, boot/runtime infrastructure, hardware and device services, process and memory services, storage, filesystems, networking, security enforcement, logging, power management and system services.
+Core Services provides stable, documented user-space contracts for platform components and applications. It hides implementation details of Tarts daemons and avoids exposing privileged interfaces directly to applications.
 
-Tarts must operate without Cacao or the Window Server. It does not contain graphical UI, the desktop, application manager or native application framework.
-
-Tarts also owns system service lifecycle and coordination:
-- Start, stop, restart and supervise system services.
-- Resolve service dependencies and startup ordering.
-- Manage service health, crash recovery and resource limits.
-- Coordinate system-level and user-session service instances.
-- Provide controlled service registration and discovery through XPU.
-- Record service lifecycle events.
-
-Tarts contains the backend implementation; **Core Services** defines stable shared user-space APIs and service contracts used by applications and platform components. These responsibilities are related but should remain separate modules within the backend foundation.
-
-The existing Tarts backend and launch/service-supervision prototypes are the initial Tarts implementation candidates. They must be audited and migrated to stable contracts rather than renamed blindly.
-
-## Core Services
-
-Core Services is the stable user-space system API and shared-service layer used by applications and platform components.
-
-It will contain narrowly scoped APIs and daemons for areas such as:
-- Files, volumes and storage coordination.
+Planned service families:
+- File and volume coordination.
+- User accounts, authentication and session state.
+- Preferences, localization, time and notifications.
 - Networking and connectivity.
-- User accounts, sessions and preferences.
-- Notifications, time, localization and accessibility.
-- Security identities, credentials and authorization clients.
-- Application lifecycle support and system events.
-- Logging, diagnostics and system information.
+- Security identity, credential and authorization clients.
+- System events, logging, diagnostics and system information.
+- Application registration, metadata and lifecycle support.
+- Updates, installation transactions and recovery coordination.
 
-Core Services APIs are not all privileged. Each service has its own identity, permissions and public contract. Privileged operations are implemented by a dedicated service and authorized independently; applications do not receive broad system access merely by linking a framework.
+Each daemon has a distinct identity and least-privilege policy. Linking a library never grants privileged access. Core Services clients use direct library calls for local non-privileged work and XPU for protected cross-process operations.
 
-## Window Server
+## 4. XPU — system communication and security
 
-The Window Server owns the graphical session's windowing and display responsibilities:
-- Display discovery, modes and topology.
+XPU is Mintosh's system-wide authenticated message and capability broker. It is inspired by Mach port concepts and service-oriented IPC such as XPC, but uses a Mintosh-defined protocol.
+
+XPU provides:
+- Kernel-authenticated peer identity.
+- Typed, versioned request, response and event messages.
+- Service endpoint registration and discovery.
+- Capability and operation-level authorization.
+- Bounded payloads, descriptor validation and resource limits.
+- Replay protection, rate limiting and security audit records.
+- Session-aware routing between applications and system services.
+
+XPU is a *horizontal communication facility*. It connects clients to the service they are authorized to use; it is not placed beneath Tarts as though all system calls pass through it. Linux kernel permissions remain authoritative, and each receiving service independently validates and authorizes its requests. XPU cannot grant a process permissions it does not possess.
+
+## 5. Window Server — graphical session service
+
+Window Server is a separate system service. It owns:
+- Display discovery, display modes and topology.
 - Window creation, ownership, stacking, focus and lifecycle.
-- Surface allocation and composition.
+- Client surface allocation and composition.
 - Input routing, hit testing and pointer/keyboard focus.
-- Per-session isolation and application visibility.
-- Display changes, scaling and multi-display behavior.
+- Per-session isolation and display scaling.
+- Window decorations and system-level display transitions where appropriate.
 
-The Window Server is a system service, not an application framework. It uses kernel display/input facilities through controlled device interfaces and exposes a documented client protocol to Cacao and trusted platform components.
+Window Server runs as a protected session service and accesses graphics/input devices through XCU/Linux driver interfaces. Applications submit untrusted surfaces and receive only their own input events. Window Server is not part of Cacao and is not an application framework.
 
-## Cacao
+## 6. Cacao — native application platform
 
-Cacao is Mintosh's native application and graphical framework, conceptually comparable to Cocoa.
+Cacao is Mintosh's native application and graphical framework, conceptually comparable in *role* to Cocoa. It is built above Core Services and the Window Server client protocol.
 
-It will provide:
-- Application lifecycle and event-loop APIs.
-- Standard controls, views, layout and accessibility.
-- Windows and scenes through the Window Server client API.
-- Text, images, animation and drawing abstractions.
-- Menus, dialogs, preferences and common interaction patterns.
-- Resource, localization and document APIs.
-- A stable public SDK for native Mintosh applications.
+Cacao provides:
+- Application lifecycle, event loops and application delegate contracts.
+- ApplicationKit: windows, scenes, menus, dialogs and standard controls.
+- View hierarchy, layout, drawing, text and animation APIs.
+- Accessibility, localization, themes and user preferences.
+- Document, resource and application bundle APIs.
+- A stable SDK and ABI for native Mintosh applications.
 
-Cacao is a framework, not the Window Server and not the kernel. Applications use Cacao APIs rather than calling privileged system services directly.
+Cacao applications do not open privileged display devices or call backend daemons through private sockets. They use Cacao APIs, Core Services contracts and XPU-authorized service interfaces.
 
-## Security and trust boundaries
+## 7. Application model
 
-1. Kernel enforcement is authoritative for memory isolation, process identity, device access and mandatory kernel controls.
-2. XPU authenticates IPC peers, validates messages and enforces capability policy for cross-component requests.
-3. Every receiving service performs its own authorization and input validation.
-4. Tarts owns and supervises backend services but does not grant them privileges they do not already possess.
-5. Cacao applications run with per-application identities and least-privilege access.
-6. The Window Server treats application surfaces and input as untrusted.
-7. System updates require signed artifacts, verification, atomic activation and rollback. No general-purpose IPC endpoint may rewrite the kernel, boot chain or security policy.
+Native applications are packaged as structured `.app` bundles with a manifest, executable, resources, icons, declared capabilities and version metadata. The application manager registers bundles, validates metadata and signatures, resolves dependencies, assigns an application identity and launches the executable with a restricted environment.
 
-## Migration from the current prototype
+The application manager is a Cacao-facing system application backed by Core Services and Tarts installation/launch services. The package format and installer are separate concerns; no third-party installer implementation is assumed to be part of the system foundation.
 
-The repository currently contains a working first milestone under earlier names. Preserve source paths until each migration is tested:
+## 8. Boot and launch sequence
 
-| Current prototype | Target architecture | Migration rule |
+The intended native boot sequence is:
+
+1. UEFI firmware starts the Mintosh boot manager.
+2. The boot manager loads the signed Linux kernel, initramfs and boot configuration.
+3. Linux initializes hardware, drivers, memory, processes and the root filesystem.
+4. Linux starts Mintosh's native init as PID 1.
+5. Tarts initializes runtime state and starts essential services in dependency order.
+6. XPU starts and registers protected service endpoints.
+7. Core Services starts the system APIs and background daemons.
+8. The login/session manager authenticates a user and creates an isolated session.
+9. Window Server starts for that session and initializes displays and input.
+10. Cacao launches the desktop shell and user applications.
+
+The current ISO still uses transitional Debian userspace and systemd. This sequence is the target, not a claim that the native boot conversion is complete. The transition must preserve a usable console, recovery path and installer before systemd is removed.
+
+## 9. Trust boundaries
+
+- Linux/XCU enforces process, memory, device and kernel security boundaries.
+- Tarts supervises services but does not implicitly grant privileges.
+- XPU authenticates peers and enforces message-level capability policy.
+- Every receiving service validates its own inputs and authorization.
+- Core Services exposes least-privilege APIs rather than raw privileged handles.
+- Window Server isolates sessions and treats application surfaces as untrusted.
+- Cacao applications run under distinct identities and declared capabilities.
+- Updates use verified artifacts, atomic activation and rollback.
+
+## 10. Source ownership and migration
+
+The canonical source ownership is:
+
+| Component | Canonical source root | Ownership |
 |---|---|---|
-| `Sources/Darkin/XNV/` (legacy path) and `kernel/xcu/` | XCU Kernel | Retain Linux-backed pidfd, port, memory and event primitives; update public naming/contracts after compatibility tests |
-| `Sources/XCM/` | XPU | Evolve the broker into a typed, authenticated IPC/security service; preserve deny-by-default policy |
-| Tarts backend service prototypes | Tarts and Core Services | Migrate the complete backend foundation to Tarts; organize stable shared APIs as Core Services |
-| Cacao graphical platform plan | Window Server and Cacao | Separate the window/compositor service from the public application framework |
-| USI token prototype | Cacao rendering/API contract | Keep presentation data non-executable; do not treat UI tokens as privileged commands |
+| XCU | `Sources/XCU/`, `kernel/linux/`, `kernel/xcu/` | Linux integration and kernel-facing abstractions |
+| Tarts | `Sources/Tarts/` | Backend runtime, init, service manager and system daemons |
+| Core Services | `Sources/CoreServices/` | Public system APIs and shared service contracts |
+| XPU | `Sources/XPU/` | Authenticated IPC, routing and capability policy |
+| Window Server | `Sources/WindowServer/` | Display, window, surface and input service |
+| Cacao | `Sources/Cacao/` | Application framework, desktop and application manager |
 
-The earlier names remain in implementation paths for now and must not be mistaken for the final public architecture.
+Legacy source roots such as `Sources/Darkin/`, `Sources/XNV/`, `Sources/XCM/` and `Sources/Choca/` are migration debt, not additional architecture layers. XNV must be folded into XCU; it must not remain a parallel kernel project. XCM must be folded into XPU. Darkin must be folded into Tarts. Choca must be folded into Cacao. Compatibility aliases may exist temporarily at public ABI boundaries, but new code must use canonical names.
 
-## Implementation constraints and status
+## Implementation status
+
+The architecture above is the target architecture. The repository currently has Linux kernel configuration, an initial Linux-backed XNV/XCU primitive implementation, a restricted XPU broker, a read-only Tarts system-information endpoint, an initial Core Services API and a native service-supervisor prototype. The current ISO still uses a transitional Debian userspace and systemd. The Window Server, Cacao framework, application manager, native session stack and complete service catalogue are not implemented. The native Tarts init/service lifecycle is not yet the default boot path.
 
 The OS foundation is implemented in C, C++ and architecture-specific assembly. Build configuration and CI scripts are tooling, not OS implementation languages.
-
-This architecture is a target specification, not a claim that every layer is already implemented. The current preview has a Linux-backed XCU primitive library (`libxcu.a`), an XPU broker (`xpu`, `libxpu.a`) with a restricted read-only system-information path, a Tarts backend endpoint (`tarts-system`), a first Core Services API (`libcoreservices.a`), and the native `tarts-services` supervisor (legacy implementation: launch7762) with deterministic service ordering and per-service primary-group isolation. The current ISO/rootfs still uses a transitional Debian userspace and systemd-based boot; Tarts is not yet the PID 1 init/service manager for the complete system. Full XPU endpoint registration and per-app identities, a complete Tarts backend/service catalogue, Core Services APIs, the Window Server, Cacao, the desktop and native application SDK remain implementation work.
