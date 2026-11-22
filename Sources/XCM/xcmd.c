@@ -141,7 +141,7 @@ static void handle_client(int client, gid_t service_gid) {
         return;
     }
 
-    if (replay_seen(credentials.uid, request.request_id)) {
+    if (replay_seen(credentials.uid, credentials.pid, request.request_id)) {
         audit_event(LOG_WARNING, "replayed request uid=%lu request=%llu",
                     (unsigned long)credentials.uid,
                     (unsigned long long)request.request_id);
