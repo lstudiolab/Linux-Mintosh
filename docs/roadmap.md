@@ -84,6 +84,16 @@ The graphical desktop does not start until the following are complete:
 6. The installer passes destructive-path tests in disposable virtual disks, preserves existing partitions in alongside mode, and verifies firmware boot entries before reboot.
 7. QEMU boot, network and service tests pass for each advertised architecture.
 
+## Mandatory development sequence
+
+Mintosh follows a strict dependency order. Work on a later phase must not begin while its prerequisite phase is incomplete.
+
+1. **System foundation (current phase):** finish and verify the complete boot-to-operational-system foundation. This includes boot and initramfs, hardware and device management, process and service lifecycle, IPC, storage and filesystems, networking, security and privilege boundaries, logging, package transactions, power management, recovery, and installer safety. Each subsystem must have documented contracts, failure handling, and automated tests. The foundation must boot and operate without a graphical session.
+2. **Programming language:** wait until the user's programming language, compiler, runtime, standard library, and required development tools are complete and usable for real system software.
+3. **AppKit and graphical system:** only after phases 1 and 2 are complete, design and implement AppKit, the graphics backend, window server, desktop shell, and native applications using that programming language.
+
+**Explicitly deferred:** no graphical interface, AppKit, widget toolkit, window server, desktop shell, or graphical application implementation is part of the current foundation phase. Existing roadmap entries for those components are future work, not permission to begin them early.
+
 ## Later releases
 
 ### Mintosh Desktop
