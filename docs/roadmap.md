@@ -20,7 +20,7 @@ This roadmap separates implemented source from verified release behavior. A dire
 - [~] launch7762 system supervisor and Launch Client per-user supervisor (protected definitions, direct argv execution, peer credentials, bounded restart and clean shutdown; dependency graphs and resource limits remain)
 - [~] launch511 command execution helper (direct argv execution; policy and privilege model remain)
 - [~] CSF system framework (Darl status/version and launch7762 service list/control APIs; structured IPC, notifications and asynchronous requests remain)
-- [~] Foundation library (strings, byte buffers, arrays, dictionaries, URL parsing, errors, lexical paths and bounded atomic file I/O; date/time, localization, serialization and broader filesystem APIs remain)
+- [~] Foundation library (strings, byte buffers, arrays, dictionaries, URL parsing with truncated-escape regression coverage, errors, lexical paths and bounded atomic file I/O with directory durability checks; date/time, localization, serialization and broader filesystem APIs remain)
 - [~] GVD task management and dispatch (bounded worker queue, process inventory, nice values and non-realtime scheduler policies; cancellation, cgroup resource controls and cross-process task policy remain)
 - [~] IOPS power services (battery/thermal telemetry, CPU governor and platform profile controls; vendor-specific policy daemon, suspend integration and power event API remain)
 - [~] I/O+ inventory and kernel uevent monitor (structured device data and live hotplug events; driver capability probing and stable device identity remain)
@@ -43,6 +43,7 @@ This roadmap separates implemented source from verified release behavior. A dire
 - [x] systemd as PID 1
 - [x] GNU core utilities and Bash
 - [x] Native Mintosh programs compiled in the target root filesystem
+- [x] Native C readiness checker for the base service (no shell wrapper)
 - [x] Native service manager and Darl started during boot
 - [~] NetworkManager base integration for automatic wired networking and Wi-Fi via wpa_supplicant (image configuration added; runtime validation pending)
 - [x] systemd-resolved DNS integration
