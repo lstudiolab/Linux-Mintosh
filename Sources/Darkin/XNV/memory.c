@@ -18,7 +18,9 @@ int xnv_memory_create(const char *name, size_t size)
     int descriptor = (int)syscall(SYS_memfd_create, name,
                                   MFD_CLOEXEC | MFD_ALLOW_SEALING);
     if (descriptor < 0) return -1;
-    if (ftruncate(descriptor, (off_t)size) < 0 ||
+    off_t object_size = (off_t)size;
+    if (object_size <= 0 || (uint64_t)object_size != (uint64_t)size ||
+        ftruncate(descriptor, object_size) < 0 ||
         fcntl(descriptor, F_ADD_SEALS, F_SEAL_GROW | F_SEAL_SHRINK | F_SEAL_SEAL) < 0) {
         int saved = errno;
         close(descriptor);
