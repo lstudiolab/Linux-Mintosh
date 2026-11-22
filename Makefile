@@ -28,7 +28,7 @@ EFI_CRT := $(firstword $(wildcard /usr/lib/crt0-efi-x86_64.o /usr/lib/gnuefi/crt
 EFI_LDS := $(firstword $(wildcard /usr/lib/elf_x86_64_efi.lds /usr/lib/gnuefi/elf_x86_64_efi.lds))
 EFI_LIBDIR := $(dir $(EFI_CRT))
 
-.PHONY: help check-makefiles test-native-core test-kernel-config test-installer-safety test-hardware-audit test-mboot test-mboot-qemu mboot package-installer check-host check-release check-scripts verify release-info host-deps kernel-fetch kernel-config kernel kernel-install rootfs initramfs iso image qemu test-qemu usb clean xnv-verify test-xcm
+.PHONY: help check-makefiles test-native-core test-kernel-config test-installer-safety test-hardware-audit test-mboot test-mboot-qemu mboot package-installer check-host check-release check-scripts verify release-info host-deps kernel-fetch kernel-config kernel kernel-install rootfs initramfs iso image qemu test-qemu usb clean test-xcm
 
 help:
 	@printf '%s\n' \
@@ -54,9 +54,6 @@ help:
 	  'Options: ARCH=x86_64|arm64 MINTOSH_HARDWARE_PROFILE=generic|hp-probook-450-g6 JOBS=<parallel jobs>' \
 	  'The first live ISO and installer target x86_64.'
 
-xnv-verify:
-	@$(MAKE) --no-print-directory -C Sources/XNV verify
-
 # XNV target-kernel work uses Linux; this target tests the separate XCM policy boundary.
 test-xcm:
 	@$(MAKE) --no-print-directory -C Sources/XCM test
@@ -68,9 +65,8 @@ check-release:
 check-makefiles:
 	@$(MAKE) --no-print-directory -n help >/dev/null
 	@$(MAKE) --no-print-directory -C Sources/MintoshCore -n all test-foundation >/dev/null
-	@$(MAKE) --no-print-directory -C Sources/XNV -n verify >/dev/null
 	@$(MAKE) --no-print-directory -C Sources/XCM -n test >/dev/null
-	@echo 'Root, XNV prototype and XCM policy Makefiles parse and resolve all build prerequisites.'
+	@echo 'Root, native-core and XCM policy Makefiles parse and resolve all build prerequisites.'
 
 check-scripts:
 	@python3 -c 'import pathlib, subprocess; bash={"mintosh-installer.sh", "installer-bootstrap.sh", "package-installer.sh", "installer-disk-safety.sh", "installer-storage.sh", "test-installer-disk-safety.sh", "test-installer-partitioning.sh"}; [subprocess.run(["bash" if p.name in bash else "sh", "-n", str(p)], check=True) for p in pathlib.Path("scripts").glob("*.sh")]'
@@ -119,8 +115,8 @@ $(MBOOT_OUT)/BOOTX64.EFI: $(MBOOT_OUT)/boot.efi
 	cp $< $@
 
 
-verify: check-release check-makefiles check-scripts test-kernel-config test-installer-safety test-hardware-audit test-native-core test-mboot xnv-verify test-xcm
-	@echo 'Mintosh preview validation, XCM policy tests and retained XNV prototype tests passed.'
+verify: check-release check-makefiles check-scripts test-kernel-config test-installer-safety test-hardware-audit test-native-core test-mboot test-xcm
+	@echo 'Mintosh preview validation and XCM policy tests passed.'
 
 release-info: check-release
 	@python3 -c 'import json; d=json.load(open("configs/release.json")); print("Mintosh", d["release"]); print("Linux", d["kernel"]["version"]); print("Debian", d["debian_suite"]); print("Bootable architectures:", ", ".join(d["architectures"])); print("Kernel build architectures:", ", ".join(d["kernel_build_architectures"])); print("Planned architectures:", ", ".join(d["planned_architectures"]) or "none"); print("Bootable ISO:", d["image"]["primary_architecture"])'
