@@ -19,3 +19,8 @@ Supported restart policies are `no`, `on-failure`, and `always`. Repeated failur
 ## Control API
 
 `mintoshctl services` lists service states. `start`, `stop`, and `restart` require the local daemon owner or root; the socket's group permission grants listing access, not service-control authority.
+
+
+## Executable trust boundary
+
+Before forking a service, launch7762 validates the executable path component-by-component using openat with O_NOFOLLOW. Every parent directory must be a trusted, non-group/world-writable directory, and the final target must be a trusted regular executable that is not group/world-writable. This prevents service definitions from launching binaries out of user-writable paths such as /tmp. The service executable is still executed by absolute path; trusted directory ownership and write permissions are therefore part of the security boundary.

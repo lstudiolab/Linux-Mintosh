@@ -2,6 +2,7 @@
 #include "service_manager.h"
 #include "libsys.h"
 #include <ctype.h>
+#include <fcntl.h>
 #include <errno.h>
 #include <signal.h>
 #include <limits.h>
@@ -36,6 +37,65 @@ static int time_reached(struct timespec now, struct timespec deadline) {
 }
 
 /* ExecStart is a plain whitespace-separated argument vector, never a shell program. */
+static int trusted_executable(const char *path) {
+    if (!path || path[0] != '/' || path[1] == '\0' || strstr(path, "//"))
+        return 0;
+
+    char copy[MINTOSH_SERVICE_COMMAND_MAX];
+    if (strlen(path) >= sizeof copy) return 0;
+    strcpy(copy, path);
+
+    int directory = open("/", O_PATH | O_DIRECTORY | O_CLOEXEC);
+    if (directory < 0) return 0;
+    char *cursor = copy + 1;
+    char *component = cursor;
+    int valid = 1;
+
+    for (;;) {
+        char *separator = strchr(cursor, '/');
+        if (separator) *separator = '\0';
+        if (!component[0] || strcmp(component, ".") == 0 ||
+            strcmp(component, "..") == 0) {
+            valid = 0;
+            break;
+        }
+
+        if (separator) {
+            int next = openat(directory, component,
+                              O_PATH | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC);
+            struct stat metadata;
+            if (next < 0 || fstat(next, &metadata) < 0 ||
+                !S_ISDIR(metadata.st_mode) ||
+                (metadata.st_uid != 0 && metadata.st_uid != geteuid()) ||
+                (metadata.st_mode & 0022) != 0) {
+                if (next >= 0) close(next);
+                valid = 0;
+                break;
+            }
+            close(directory);
+            directory = next;
+            cursor = separator + 1;
+            component = cursor;
+            if (!*cursor) { valid = 0; break; }
+        } else {
+            int executable = openat(directory, component,
+                                    O_RDONLY | O_NOFOLLOW | O_CLOEXEC);
+            struct stat metadata;
+            if (executable < 0 || fstat(executable, &metadata) < 0 ||
+                !S_ISREG(metadata.st_mode) ||
+                (metadata.st_uid != 0 && metadata.st_uid != geteuid()) ||
+                (metadata.st_mode & 0022) != 0 ||
+                (metadata.st_mode & 0111) == 0)
+                valid = 0;
+            if (executable >= 0) close(executable);
+            break;
+        }
+    }
+
+    close(directory);
+    return valid;
+}
+
 static int parse_arguments(char *command, char **arguments, size_t capacity) {
     size_t count = 0;
     char *cursor = command;
@@ -58,6 +118,20 @@ static int parse_arguments(char *command, char **arguments, size_t capacity) {
 int ms_service_start(MintoshService *service) {
     if (!service || !service->command[0]) { errno = EINVAL; return -1; }
     if (service->process_id > 0) return 0;
+
+    char validated_command[MINTOSH_SERVICE_COMMAND_MAX];
+    char *validated_arguments[SERVICE_ARGUMENT_LIMIT];
+    memcpy(validated_command, service->command, sizeof validated_command);
+    validated_command[sizeof validated_command - 1] = '\0';
+    if (parse_arguments(validated_command, validated_arguments,
+                        SERVICE_ARGUMENT_LIMIT) < 0 ||
+        !trusted_executable(validated_arguments[0])) {
+        errno = EPERM;
+        ms_log("launch7762", "error",
+               "refused service executable outside trusted root-owned paths");
+        return -1;
+    }
+
     pid_t child = fork();
     if (child < 0) {
         ms_log("launch7762", "error", "unable to fork service process");

@@ -137,7 +137,7 @@ $(BUILD)/security-tests: ../Security/tests/security_tests.c ../Security/permissi
 $(BUILD)/service-control-tests: ../Launch7762/tests/service_control_tests.c ../Launch7762/service_control.c ../LibSys/file_descriptor.c | $(BUILD)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -I../Launch7762 $^ -o $@
 
-test-foundation: $(BUILD)/foundation-tests $(BUILD)/foundation-tests-sanitize $(BUILD)/package-validation-tests $(BUILD)/service-control-tests $(BUILD)/libsys-tests $(BUILD)/libsys-filesystem-tests $(BUILD)/darl-protocol-tests $(BUILD)/ioplus-uevent-tests $(BUILD)/gvd-tests $(BUILD)/iops-tests $(BUILD)/gvd-dispatch-tests $(BUILD)/csf-tests $(BUILD)/kext-policy-tests $(BUILD)/security-tests
+test-foundation: $(BUILD)/foundation-tests $(BUILD)/foundation-tests-sanitize $(BUILD)/package-validation-tests $(BUILD)/service-control-tests $(BUILD)/libsys-tests $(BUILD)/libsys-filesystem-tests $(BUILD)/darl-protocol-tests $(BUILD)/ioplus-uevent-tests $(BUILD)/gvd-tests $(BUILD)/iops-tests $(BUILD)/gvd-dispatch-tests $(BUILD)/csf-tests $(BUILD)/kext-policy-tests $(BUILD)/security-tests $(BUILD)/service-control-tests $(BUILD)/service-executable-tests
 	$(BUILD)/foundation-tests
 	ASAN_OPTIONS=detect_leaks=1 UBSAN_OPTIONS=halt_on_error=1 $(BUILD)/foundation-tests-sanitize
 	$(BUILD)/package-validation-tests
@@ -152,7 +152,7 @@ test-foundation: $(BUILD)/foundation-tests $(BUILD)/foundation-tests-sanitize $(
 	$(BUILD)/csf-tests
 	$(BUILD)/kext-policy-tests
 	$(BUILD)/security-tests
-	@echo 'Foundation, package validation and service control tests passed.'
+	@echo 'Foundation, package validation, service control and executable trust tests passed.'
 
 install: all
 	install -d $(BINDIR) $(LIBDIR) $(INCLUDEDIR)

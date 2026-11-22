@@ -7,6 +7,8 @@
 #include <sys/mount.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <sys/vfs.h>
+#include <linux/magic.h>
 #include <sys/wait.h>
 #include <time.h>
 #include <unistd.h>
@@ -25,20 +27,39 @@ static void handle_shutdown(int signal_number)
 
 static int ensure_directory(const char *path, mode_t mode)
 {
-    if (mkdir(path, mode) == 0 || errno == EEXIST)
-        return 0;
-    fprintf(stderr, "mintosh-init: mkdir %s: %s\n", path, strerror(errno));
-    return -1;
+    if (mkdir(path, mode) < 0 && errno != EEXIST) {
+        fprintf(stderr, "mintosh-init: mkdir %s: %s\n", path, strerror(errno));
+        return -1;
+    }
+
+    struct stat metadata;
+    if (lstat(path, &metadata) < 0 || !S_ISDIR(metadata.st_mode)) {
+        fprintf(stderr, "mintosh-init: %s is not a real directory\n", path);
+        return -1;
+    }
+    return 0;
 }
 
 static int mount_once(const char *source, const char *target,
-                      const char *filesystem, unsigned long flags,
-                      const char *options)
+                      const char *filesystem, long expected_magic,
+                      unsigned long flags, const char *options)
 {
-    if (mount(source, target, filesystem, flags, options) == 0 || errno == EBUSY)
+    if (mount(source, target, filesystem, flags, options) == 0)
         return 0;
+
+    int mount_error = errno;
+    if (mount_error == EBUSY) {
+        struct statfs mounted;
+        if (statfs(target, &mounted) == 0 &&
+            (long)mounted.f_type == expected_magic)
+            return 0;
+        fprintf(stderr, "mintosh-init: %s is already mounted with an unexpected filesystem\n",
+                target);
+        return -1;
+    }
+
     fprintf(stderr, "mintosh-init: mount %s on %s: %s\n",
-            filesystem, target, strerror(errno));
+            filesystem, target, strerror(mount_error));
     return -1;
 }
 
@@ -51,15 +72,15 @@ static int prepare_kernel_interfaces(void)
         ensure_directory("/tmp", 01777) < 0)
         return -1;
 
-    if (mount_once("devtmpfs", "/dev", "devtmpfs", MS_NOSUID, "mode=0755") < 0 ||
+    if (mount_once("devtmpfs", "/dev", "devtmpfs", DEVFS_SUPER_MAGIC, MS_NOSUID, "mode=0755") < 0 ||
         ensure_directory("/dev/pts", 0755) < 0 ||
-        mount_once("devpts", "/dev/pts", "devpts",
+        mount_once("devpts", "/dev/pts", "devpts", DEVPTS_SUPER_MAGIC,
                    MS_NOSUID | MS_NOEXEC, "mode=0620,ptmxmode=0666") < 0 ||
-        mount_once("proc", "/proc", "proc",
+        mount_once("proc", "/proc", "proc", PROC_SUPER_MAGIC,
                    MS_NOSUID | MS_NOEXEC | MS_NODEV, NULL) < 0 ||
-        mount_once("sysfs", "/sys", "sysfs",
+        mount_once("sysfs", "/sys", "sysfs", SYSFS_MAGIC,
                    MS_NOSUID | MS_NOEXEC | MS_NODEV, NULL) < 0 ||
-        mount_once("tmpfs", "/run", "tmpfs",
+        mount_once("tmpfs", "/run", "tmpfs", TMPFS_MAGIC,
                    MS_NOSUID | MS_NODEV, "mode=0755") < 0 ||
         ensure_directory("/run/lock", 0755) < 0)
         return -1;
