@@ -11,7 +11,7 @@ Group=mintosh-services
 UMask=0007
 RuntimeDirectory=mintosh
 RuntimeDirectoryMode=0750
-ExecStart=/usr/bin/xcmd
+ExecStart=/usr/bin/xpu
 Restart=on-failure
 RestartSec=1
 NoNewPrivileges=true
@@ -29,7 +29,7 @@ RestrictAddressFamilies=AF_UNIX
 SystemCallArchitectures=native
 CapabilityBoundingSet=
 ReadWritePaths=/run/mintosh
-ReadOnlyPaths=/run/mintosh-darkin
+ReadOnlyPaths=/run/tarts
 
 [Install]
 WantedBy=multi-user.target
