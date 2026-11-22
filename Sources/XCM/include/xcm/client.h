@@ -4,7 +4,7 @@
 #include "protocol.h"
 #include <stddef.h>
 
-#define XCM_DEFAULT_SOCKET "/run/mintosh/xcm.sock"
+#define XCM_DEFAULT_SOCKET "/run/mintosh/xpu.sock"
 
 /* Returns 0 for a valid XCM response, -1 for transport/protocol errors.
  * A non-OK response is returned normally in response->status.
