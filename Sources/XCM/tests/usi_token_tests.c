@@ -25,7 +25,7 @@ int main(void)
     offset = append_token(stream, offset, XCM_USI_ROW_BEGIN, NULL, 0);
     const char text[] = "Mintosh";
     offset = append_token(stream, offset, XCM_USI_TEXT, text, sizeof(text) - 1U);
-    struct xcm_usi_button_prefix button = { 7, 2, 0 };
+    struct xcm_usi_button_prefix button = { 7, 2, 0, 0 };
     unsigned char button_data[sizeof(button) + 2U];
     memcpy(button_data, &button, sizeof(button));
     memcpy(button_data + sizeof(button), "OK", 2);
