@@ -14,7 +14,7 @@ Mintosh USB installer
 1. Extract this ZIP archive.
 2. Open Rufus on Windows.
 3. Select mintosh-x86_64.iso as the boot selection.
-4. Use GPT for a UEFI computer. Use MBR only for legacy BIOS systems.
+4. Use GPT for UEFI. Mintosh installation requires UEFI firmware.
 5. Start the write operation and allow Rufus to erase the selected USB drive.
 6. Restart the laptop and select the USB device from its firmware boot menu.
 7. Select Install Mintosh.
