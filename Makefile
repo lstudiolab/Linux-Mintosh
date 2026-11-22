@@ -39,6 +39,7 @@ help:
 	  '  make test-tarts     Test the Tarts backend foundation' \\
 	  '  make test-xpu       Test the XPU communication broker' \\
 	  '  make test-xcu       Test XCU Linux kernel primitives' \\
+	  '  make test-core-services  Test shared native system libraries' \\
 	  '  make package-installer  Package ISO and checksum for Rufus' \\
 	  '  make mboot          Build the native x86-64 UEFI bootloader' \\
 	  '  make release-info   Print release and kernel versions' \\
