@@ -30,28 +30,27 @@ EFI_LIBDIR := $(dir $(EFI_CRT))
 .PHONY: help check-makefiles test-native-core test-kernel-config test-installer-safety test-mboot mboot check-host check-release check-scripts verify release-info host-deps kernel-fetch kernel-config kernel kernel-install rootfs initramfs iso image qemu test-qemu usb clean
 
 help:
-	@printf '%s\\n' \\
-	  'Mintosh release and build targets:' \\
-	  '  make check-release  Validate release manifest and architecture pins' \\
-	  '  make check-scripts  Validate shell scripts' \\
-	  '  make verify         Run all offline validation' \\
-	  '  make mboot          Build the native x86-64 UEFI bootloader' \\
-	  '  make release-info   Print release and kernel versions' \\
-	  '  make host-deps      Install Debian/Ubuntu build dependencies' \\
-	  '  make kernel-fetch   Fetch the release-pinned upstream Linux kernel' \\
-	  '  make kernel-config  Configure Linux for Mintosh/QEMU' \\
-	  '  make kernel         Build the kernel and modules' \\
-	  '  make rootfs         Build the Debian-based Mintosh root filesystem' \\
-	  '  make initramfs      Package the live root filesystem as initramfs' \\
-	  '  make iso            Build the bootable BIOS/UEFI GRUB ISO' \\
-	  '  make qemu           Boot the ISO interactively in QEMU' \\
-	  '  make test-qemu      Run the serial-console boot smoke test' \\
-	  '  make usb USB=/dev/sdX  Write ISO to USB (erases that drive)' \\
-	  '  make clean          Remove generated output' \\
-	  '' \\
-	  'Options: ARCH=x86_64|arm64 MINTOSH_HARDWARE_PROFILE=generic|hp-probook-450-g6 JOBS=<parallel jobs>' \\
+	@printf '%s\\n' \
+	  'Mintosh release and build targets:' \
+	  '  make check-release  Validate release manifest and architecture pins' \
+	  '  make check-scripts  Validate shell scripts' \
+	  '  make verify         Run all offline validation' \
+	  '  make mboot          Build the native x86-64 UEFI bootloader' \
+	  '  make release-info   Print release and kernel versions' \
+	  '  make host-deps      Install Debian/Ubuntu build dependencies' \
+	  '  make kernel-fetch   Fetch the release-pinned upstream Linux kernel' \
+	  '  make kernel-config  Configure Linux for Mintosh/QEMU' \
+	  '  make kernel         Build the kernel and modules' \
+	  '  make rootfs         Build the Debian-based Mintosh root filesystem' \
+	  '  make initramfs      Package the live root filesystem as initramfs' \
+	  '  make iso            Build the bootable BIOS/UEFI GRUB ISO' \
+	  '  make qemu           Boot the ISO interactively in QEMU' \
+	  '  make test-qemu      Run the serial-console boot smoke test' \
+	  '  make usb USB=/dev/sdX  Write ISO to USB (erases that drive)' \
+	  '  make clean          Remove generated output' \
+	  '' \
+	  'Options: ARCH=x86_64|arm64 MINTOSH_HARDWARE_PROFILE=generic|hp-probook-450-g6 JOBS=<parallel jobs>' \
 	  'The first live ISO and installer target x86_64.'
-
 check-release:
 	@python3 scripts/check-release.py
 	@python3 -m json.tool configs/release.json >/dev/null
