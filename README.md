@@ -7,13 +7,13 @@ Lenix is a Linux-based operating system with a layered architecture separating t
 The canonical target architecture is documented in [docs/platform-architecture.md](docs/platform-architecture.md).
 
 - **XCU Kernel** — Lenix's Linux-based hybrid-kernel architecture. Linux is the actual primary kernel; BSD-derived interfaces provide Unix/POSIX compatibility; Mach-inspired task, port and messaging abstractions are implemented using Linux primitives.
-- **XUM / XUM migration** — the existing authenticated IPC broker and the planned system-wide messaging interface. These are user-space communication facilities, not another kernel.
-- **Sean / Sean migration** — the existing backend foundation and service lifecycle implementation.
+- **XUM** — the system-wide messaging and IPC layer connecting system components. These are user-space communication facilities, not another kernel.
+- **Sean** — the non-graphical system foundation and backend service runtime.
 - **Core Services** — stable shared user-space APIs and services for storage, networking, sessions, notifications, security clients, logging and application lifecycle.
 - **Window Server** — display management, windows, surfaces, composition, focus and input routing.
 - **Choca** — the graphical platform and native application framework, including desktop UI, application manager, application lifecycle, controls, layout, accessibility and public application APIs.
 
-The source tree retains historical directory names while components are migrated and tested. See [docs/upstream-integration.md](docs/upstream-integration.md) for the upstream code integrated into the Lenix architecture and the license/provenance record.
+The canonical backend source root is `Sources/Sean/`; the kernel architecture is maintained under `Sources/XCU/`. See [docs/upstream-integration.md](docs/upstream-integration.md) for the upstream code integrated into the Lenix architecture and the license/provenance record.
 
 ## Linux kernel model
 
