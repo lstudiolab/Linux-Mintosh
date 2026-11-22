@@ -10,6 +10,12 @@ on:
 permissions:
   contents: read
 
+# Several verification runs can finish for the same commit. Only build one ISO
+# for a given source revision so concurrent kernel builds do not waste runners.
+concurrency:
+  group: mintosh-qemu-${{ github.event.workflow_run.head_sha || github.sha }}
+  cancel-in-progress: true
+
 jobs:
   qemu-boot:
     if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
@@ -36,13 +42,20 @@ jobs:
           make iso JOBS=2
       - name: Boot installer image in QEMU
         run: make test-qemu
-      - name: Upload boot image and serial log
+      - name: Package ISO and SHA-256 checksum
+        if: success()
+        run: |
+          sha256sum out/mintosh-x86_64.iso > out/SHA256SUMS
+          (cd out && zip -q mintosh-x86_64.zip mintosh-x86_64.iso SHA256SUMS)
+      - name: Upload boot image, installer package and serial log
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: mintosh-qemu-boot-${{ github.run_number }}
           path: |
             out/mintosh-x86_64.iso
+            out/mintosh-x86_64.zip
+            out/SHA256SUMS
             out/qemu-boot.log
           if-no-files-found: warn
           retention-days: 7
