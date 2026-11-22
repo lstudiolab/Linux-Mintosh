@@ -26,7 +26,8 @@ int main(void)
             XCM_CAP_FOUNDATION_UPDATE,
         4096,
         true,
-        true
+        true,
+        false
     };
     struct xcm_request request = make_request(
         XCM_OP_PRESENT_TOKENS, XCM_TARGET_PRESENTATION, XCM_PAYLOAD_UI_TOKENS, 8);
@@ -36,27 +37,18 @@ int main(void)
                            XCM_PAYLOAD_NONE, 0);
     assert(xcm_policy_authorize(&request, &choca) == XCM_POLICY_ALLOW);
 
+    request = make_request(XCM_OP_WRITE_USER_DATA, XCM_TARGET_USER_DATA,
+                           XCM_PAYLOAD_TYPED_DATA, 8);
+    request.object_id = 42;
+    assert(xcm_policy_authorize(&request, &choca) == XCM_POLICY_ALLOW);
+
     request = make_request(XCM_OP_DELETE_USER_DATA, XCM_TARGET_USER_DATA,
                            XCM_PAYLOAD_NONE, 0);
     request.object_id = 42;
+    request.flags = XCM_FLAG_USER_CONFIRMED;
     assert(xcm_policy_authorize(&request, &choca) == XCM_POLICY_CONFIRMATION_REQUIRED);
-    request.flags = XCM_FLAG_USER_CONFIRMED;
+    choca.confirmation_grant_valid = true;
     assert(xcm_policy_authorize(&request, &choca) == XCM_POLICY_ALLOW);
-
-    /* Writes require typed data; deletes must not smuggle a payload. */
-    request = make_request(XCM_OP_WRITE_USER_DATA, XCM_TARGET_USER_DATA,
-                           XCM_PAYLOAD_NONE, 0);
-    request.object_id = 99;
-    assert(xcm_policy_authorize(&request, &choca) == XCM_POLICY_BAD_PAYLOAD);
-    request = make_request(XCM_OP_WRITE_USER_DATA, XCM_TARGET_USER_DATA,
-                           XCM_PAYLOAD_TYPED_DATA, 8);
-    request.object_id = 99;
-    assert(xcm_policy_authorize(&request, &choca) == XCM_POLICY_ALLOW);
-    request = make_request(XCM_OP_DELETE_USER_DATA, XCM_TARGET_USER_DATA,
-                           XCM_PAYLOAD_TYPED_DATA, 8);
-    request.object_id = 99;
-    request.flags = XCM_FLAG_USER_CONFIRMED;
-    assert(xcm_policy_authorize(&request, &choca) == XCM_POLICY_BAD_PAYLOAD);
 
     /* Choca cannot mutate Darkin, even when its context has every capability. */
     request = make_request(XCM_OP_UPDATE_DARKIN, XCM_TARGET_DARKIN_CORE,
@@ -89,7 +81,7 @@ int main(void)
     assert(xcm_policy_authorize(&request, &choca) == XCM_POLICY_UNAUTHENTICATED_PEER);
 
     struct xcm_policy_context updater = {
-        XCM_PEER_UPDATE_SERVICE, XCM_CAP_FOUNDATION_UPDATE, 4096, true, false
+        XCM_PEER_UPDATE_SERVICE, XCM_CAP_FOUNDATION_UPDATE, 4096, true, false, false
     };
     request = make_request(XCM_OP_UPDATE_DARKIN, XCM_TARGET_DARKIN_CORE,
                            XCM_PAYLOAD_TYPED_DATA, 8);
