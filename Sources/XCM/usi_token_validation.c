@@ -91,7 +91,8 @@ int xcm_usi_validate(const void *data, size_t size)
             struct xcm_usi_button_prefix button;
             memcpy(&button, payload, sizeof(button));
             if (button.action_id == 0 || button.reserved != 0 ||
-                button.label_size == 0 || button.label_size > 128 ||
+                button.reserved2 != 0 || button.label_size == 0 ||
+                button.label_size > 128 ||
                 token.size != sizeof(button) + button.label_size ||
                 !valid_utf8(payload + sizeof(button), button.label_size))
                 return -1;
