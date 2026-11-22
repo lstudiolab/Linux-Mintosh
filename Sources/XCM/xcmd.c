@@ -29,6 +29,7 @@
 
 struct replay_entry {
     uid_t uid;
+    pid_t pid;
     uint64_t request_id;
 };
 
@@ -70,12 +71,13 @@ static bool group_member(uid_t uid, gid_t required_group) {
     return found;
 }
 
-static bool replay_seen(uid_t uid, uint64_t request_id) {
+static bool replay_seen(uid_t uid, pid_t pid, uint64_t request_id) {
     for (size_t i = 0; i < XCM_REPLAY_SLOTS; ++i)
-        if (replay_cache[i].uid == uid &&
+        if (replay_cache[i].uid == uid && replay_cache[i].pid == pid &&
             replay_cache[i].request_id == request_id)
             return true;
     replay_cache[replay_cursor].uid = uid;
+    replay_cache[replay_cursor].pid = pid;
     replay_cache[replay_cursor].request_id = request_id;
     replay_cursor = (replay_cursor + 1U) % XCM_REPLAY_SLOTS;
     return false;
