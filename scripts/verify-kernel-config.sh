@@ -85,5 +85,5 @@ case "$PROFILE" in
         ;;
     *) echo "Unknown hardware profile: $PROFILE" >&2; exit 64 ;;
 esac
-grep -qx "CONFIG_LOCALVERSION=\"-mintosh-xnv\"" "$CONFIG" || { echo "XNV kernel local version is not set." >&2; exit 1; }
-echo "XNV Linux kernel configuration includes required boot, security, compatibility and $PROFILE hardware options."
+grep -qx "CONFIG_LOCALVERSION=\"-mintosh-xcu\"" "$CONFIG" || { echo "XCU kernel local version is not set." >&2; exit 1; }
+echo "XCU Linux kernel configuration includes required boot, security, compatibility and $PROFILE hardware options."
