@@ -77,9 +77,9 @@ test-installer-safety:
 	@bash scripts/test-installer-partitioning.sh
 
 test-mboot: mboot
-	@python3 scripts/test-mboot.py $(MBOOT_OUT)/BOOTX64.EFI
+	@python3 scripts/test-mboot.py $(MBOOT_OUT)/boot.efi $(MBOOT_OUT)/BOOTX64.EFI
 
-mboot: $(MBOOT_OUT)/BOOTX64.EFI
+mboot: $(MBOOT_OUT)/boot.efi $(MBOOT_OUT)/BOOTX64.EFI
 
 $(MBOOT_OUT):
 	@mkdir -p $@
@@ -91,8 +91,11 @@ $(MBOOT_OUT)/mboot.o: Sources/mBoot/mboot.c | $(MBOOT_OUT)
 $(MBOOT_OUT)/mboot.so: $(MBOOT_OUT)/mboot.o
 	ld -nostdlib -znocombreloc -T $(EFI_LDS) -shared -Bsymbolic $(EFI_CRT) $< -L$(EFI_LIBDIR) -lefi -lgnuefi -o $@
 
-$(MBOOT_OUT)/BOOTX64.EFI: $(MBOOT_OUT)/mboot.so
+$(MBOOT_OUT)/boot.efi: $(MBOOT_OUT)/mboot.so
 	objcopy -j .text -j .sdata -j .data -j .dynamic -j .dynsym -j .rel -j .rela -j .reloc --target=efi-app-x86_64 $< $@
+
+$(MBOOT_OUT)/BOOTX64.EFI: $(MBOOT_OUT)/boot.efi
+	cp $< $@
 
 verify: check-release check-makefiles check-scripts test-kernel-config test-installer-safety test-native-core test-mboot
 	@echo 'Mintosh validation and native core tests passed.'
