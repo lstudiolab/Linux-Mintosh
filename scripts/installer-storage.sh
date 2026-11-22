@@ -60,3 +60,18 @@ mintosh_prepare_erase_layout() {
         parted -s "$disk" mkpart primary ext4 3MiB 100% || return 1
     fi
 }
+
+# Erase mode needs room for a 1 GiB EFI System Partition and a usable root
+# filesystem. Accept regular image files too, so this guard is testable offline.
+mintosh_disk_meets_erase_minimum() {
+    local disk=$1 bytes
+    if [[ -b "$disk" ]]; then
+        bytes=$(blockdev --getsize64 "$disk") || return 1
+    elif [[ -f "$disk" ]]; then
+        bytes=$(stat -Lc '%s' "$disk") || return 1
+    else
+        return 1
+    fi
+    [[ "$bytes" =~ ^[0-9]+$ ]] || return 1
+    (( bytes >= 24 * 1024 * 1024 * 1024 ))
+}
