@@ -1,10 +1,10 @@
 [Unit]
-Description=Mintosh native service manager
+Description=Tarts native service manager
 After=systemd-user-sessions.service
 Before=mintosh-ready.service
 [Service]
 Type=simple
-ExecStart=/usr/bin/launch7762
+ExecStart=/usr/bin/tarts-services
 Restart=always
 RestartSec=1
 [Install]
