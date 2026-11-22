@@ -101,7 +101,7 @@ EOF
 chroot "$ROOTFS" groupadd --system mintosh
 chroot "$ROOTFS" groupadd --system mintosh-services
 mkdir -p "$ROOTFS/var/lib/mintosh"
-chroot "$ROOTFS" useradd --create-home --shell /bin/bash --groups sudo,mintosh-services "$TARGET_USER"
+chroot "$ROOTFS" useradd --create-home --gid mintosh --shell /bin/bash --groups sudo,mintosh-services "$TARGET_USER"
 if [ -n "$TARGET_PASSWORD" ]; then
   printf '%s:%s\n' "$TARGET_USER" "$TARGET_PASSWORD" | chroot "$ROOTFS" chpasswd
 else
