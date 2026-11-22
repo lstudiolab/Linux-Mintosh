@@ -23,7 +23,8 @@ static int valid_scheme_character(unsigned char value, int first) {
 static int valid_percent_encoding(const char *text) {
     for (const unsigned char *cursor = (const unsigned char *)text; *cursor; ++cursor) {
         if (*cursor != '%') continue;
-        if (!isxdigit(cursor[1]) || !isxdigit(cursor[2])) return 0;
+        if (!cursor[1] || !cursor[2] ||
+            !isxdigit(cursor[1]) || !isxdigit(cursor[2])) return 0;
         cursor += 2;
     }
     return 1;
