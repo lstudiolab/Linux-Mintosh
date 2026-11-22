@@ -2,6 +2,7 @@
 #include "include/xnv/xnv.h"
 
 #include <errno.h>
+#include <stdbool.h>
 #include <string.h>
 #include <sys/socket.h>
 #include <unistd.h>
@@ -60,31 +61,34 @@ ssize_t xnv_port_receive(int port, void *buffer, size_t capacity, int *receive_f
 
     ssize_t received = recvmsg(port, &header, MSG_CMSG_CLOEXEC);
     if (received < 0) return -1;
-    if ((header.msg_flags & (MSG_TRUNC | MSG_CTRUNC)) != 0) {
-        for (struct cmsghdr *item = CMSG_FIRSTHDR(&header); item != NULL;
-             item = CMSG_NXTHDR(&header, item)) {
-            if (item->cmsg_level == SOL_SOCKET && item->cmsg_type == SCM_RIGHTS) {
-                size_t count = (item->cmsg_len - CMSG_LEN(0)) / sizeof(int);
-                int *descriptors = (int *)CMSG_DATA(item);
-                for (size_t i = 0; i < count; ++i) close(descriptors[i]);
-            }
-        }
-        errno = EMSGSIZE;
-        return -1;
-    }
 
     int found_fd = -1;
+    bool invalid_control = false;
     for (struct cmsghdr *item = CMSG_FIRSTHDR(&header); item != NULL;
          item = CMSG_NXTHDR(&header, item)) {
-        if (item->cmsg_level != SOL_SOCKET || item->cmsg_type != SCM_RIGHTS)
+        if (item->cmsg_level != SOL_SOCKET || item->cmsg_type != SCM_RIGHTS ||
+            item->cmsg_len < CMSG_LEN(sizeof(int))) {
+            invalid_control = true;
             continue;
+        }
         size_t bytes = item->cmsg_len - CMSG_LEN(0);
+        if (bytes % sizeof(int) != 0) invalid_control = true;
         size_t count = bytes / sizeof(int);
         int *descriptors = (int *)CMSG_DATA(item);
         for (size_t i = 0; i < count; ++i) {
             if (found_fd < 0) found_fd = descriptors[i];
-            else close(descriptors[i]);
+            else {
+                close(descriptors[i]);
+                invalid_control = true;
+            }
         }
+    }
+
+    if ((header.msg_flags & (MSG_TRUNC | MSG_CTRUNC)) != 0 || invalid_control) {
+        if (found_fd >= 0) close(found_fd);
+        errno = (header.msg_flags & (MSG_TRUNC | MSG_CTRUNC)) != 0
+            ? EMSGSIZE : EPROTO;
+        return -1;
     }
     if (found_fd >= 0) {
         if (receive_fd == NULL) {
