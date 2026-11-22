@@ -43,6 +43,7 @@ enum xcm_payload_type {
     XCM_PAYLOAD_EXECUTABLE = 3
 };
 
+/* This request flag is only a client hint; it is not proof of confirmation. */
 enum xcm_request_flags {
     XCM_FLAG_USER_CONFIRMED = 1U
 };
@@ -56,8 +57,9 @@ enum xcm_capability {
     XCM_CAP_FOUNDATION_UPDATE = 1ULL << 5
 };
 
-/* Constructed by XCM from authenticated transport credentials and
- * server-held capability state. Never deserialize this structure from Choca.
+/* Constructed by XCM from authenticated credentials and broker-held state.
+ * Never deserialize this structure from Choca. Confirmation is true only
+ * after a one-time grant is verified for this exact operation and object.
  */
 struct xcm_policy_context {
     enum xcm_peer authenticated_peer;
@@ -65,9 +67,10 @@ struct xcm_policy_context {
     uint32_t maximum_payload_size;
     bool transport_authenticated;
     bool verified_update_bundle;
+    bool confirmation_grant_valid;
 };
 
-/* This is the fixed-size wire header. Payload bytes immediately follow it. */
+/* Fixed-size wire header. Payload bytes immediately follow this header. */
 struct xcm_request {
     uint32_t size;
     uint16_t version;
