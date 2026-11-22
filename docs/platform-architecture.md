@@ -56,7 +56,7 @@ Responsibilities:
 
 XPU must not trust caller-supplied identity, raw pointers, arbitrary paths, executable payloads or UI tokens as privileged instructions. The kernel authenticates local peers; XPU validates protocol and policy; each receiving service independently enforces authorization. XPU is not a substitute for kernel isolation.
 
-The current XCM broker is the first implementation prototype for XPU. Its code remains under `Sources/XCM/` until a tested migration is completed.
+The XPU broker is built and installed as `xpu` and listens on `/run/mintosh/xpu.sock`. Its implementation source remains under `Sources/XCM/` until a tested source/API migration is completed. The privileged Tarts system-information endpoint is `/run/tarts/system.sock`.
 
 ## Tarts — backend foundation
 
@@ -74,7 +74,7 @@ Tarts also owns system service lifecycle and coordination:
 
 Tarts contains the backend implementation; **Core Services** defines stable shared user-space APIs and service contracts used by applications and platform components. These responsibilities are related but should remain separate modules within the backend foundation.
 
-The existing Darkin backend and launch/service-supervision prototypes are the initial Tarts implementation candidates. They must be audited and migrated to stable contracts rather than renamed blindly.
+The existing Tarts backend and launch/service-supervision prototypes are the initial Tarts implementation candidates. They must be audited and migrated to stable contracts rather than renamed blindly.
 
 ## Core Services
 
@@ -134,10 +134,10 @@ The repository currently contains a working first milestone under earlier names.
 
 | Current prototype | Target architecture | Migration rule |
 |---|---|---|
-| `Sources/Darkin/XNV/` and `kernel/xnv/` | XCU Kernel | Retain Linux-backed pidfd, port, memory and event primitives; update public naming/contracts after compatibility tests |
+| `Sources/Darkin/XNV/ (legacy path)` and `kernel/xnv/` | XCU Kernel | Retain Linux-backed pidfd, port, memory and event primitives; update public naming/contracts after compatibility tests |
 | `Sources/XCM/` | XPU | Evolve the broker into a typed, authenticated IPC/security service; preserve deny-by-default policy |
-| Darkin backend service prototypes | Tarts and Core Services | Migrate the complete backend foundation to Tarts; organize stable shared APIs as Core Services |
-| Choca graphical platform plan | Window Server and Cacao | Separate the window/compositor service from the public application framework |
+| Tarts backend service prototypes | Tarts and Core Services | Migrate the complete backend foundation to Tarts; organize stable shared APIs as Core Services |
+| Cacao graphical platform plan | Window Server and Cacao | Separate the window/compositor service from the public application framework |
 | USI token prototype | Cacao rendering/API contract | Keep presentation data non-executable; do not treat UI tokens as privileged commands |
 
 The earlier names remain in implementation paths for now and must not be mistaken for the final public architecture.
