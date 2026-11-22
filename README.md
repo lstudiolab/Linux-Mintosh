@@ -34,7 +34,7 @@ Run it interactively with `make qemu`, or run the serial-console boot test with 
 
 `Sources/` contains the native source for Darl, launch7762, launch511, LibSys, CSF, Foundation, I/O+, GVD, FMS, DM, IOPS, Kexts, Security, and System Logging. CSF exposes typed system status/version and protected service-control APIs for future native applications. The target root filesystem compiles these programs inside its own Debian userspace and installs them into the image.
 
-Network setup is provided by NetworkManager. Ethernet connects automatically when DHCP is available. For Wi-Fi, use `nmcli device wifi list` and `nmcli --ask device wifi connect \"NETWORK_NAME\"`.
+Network setup is provided by NetworkManager. Ethernet connects automatically when DHCP is available. For Wi-Fi, use `nmcli device wifi list` and `nmcli --ask device wifi connect "NETWORK_NAME"`.
 
 After boot, use:
 
