@@ -14,7 +14,7 @@
 #include <unistd.h>
 
 #define EXT4_SUPER_MAGIC 0xEF53
-enum probe_kind { P_EXISTS, P_DIR, P_CONTAINS, P_CPUFLAG, P_MEMMIN, P_PCICLASS, P_PCIDRIVER, P_PCIATTR, P_COMMAND, P_ARCH, P_ROOT, P_WORKSPACE };
+enum probe_kind { P_EXISTS, P_DIR, P_CONTAINS, P_CPUFLAG, P_MEMMIN, P_PCICLASS, P_PCIDRIVER, P_PCIATTR, P_COMMAND, P_ARCH, P_ROOT, P_WORKSPACE, P_OVMF };
 struct probe { const char *id,*name,*group; enum probe_kind kind; const char *path,*value; unsigned long long minimum; int required; };
 static const struct probe probes[] = {
     {"001","uefi-firmware","Firmware and platform",P_DIR,"/sys/firmware/efi","",0ULL,1},
@@ -251,6 +251,7 @@ static int run_probe(const struct probe *p,const char *workspace) {
         case P_ARCH: { struct utsname u; return uname(&u)==0 && strcmp(u.machine,p->path)==0; }
         case P_ROOT: return geteuid()==0;
         case P_WORKSPACE: return workspace_ok(workspace);
+        case P_OVMF: return access("/usr/share/OVMF/OVMF_CODE_4M.fd",R_OK)==0 || access("/usr/share/OVMF/OVMF_CODE.fd",R_OK)==0 || access("/usr/share/qemu/OVMF_CODE.fd",R_OK)==0;
     }
     return 0;
 }
