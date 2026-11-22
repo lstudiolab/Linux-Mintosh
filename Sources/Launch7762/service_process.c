@@ -3,6 +3,7 @@
 #include "libsys.h"
 #include <ctype.h>
 #include <fcntl.h>
+#include <grp.h>
 #include <errno.h>
 #include <signal.h>
 #include <limits.h>
@@ -159,6 +160,10 @@ int ms_service_start(MintoshService *service) {
         command[sizeof command - 1] = '\0';
         if (setsid() < 0 || parse_arguments(command, arguments,
                                              SERVICE_ARGUMENT_LIMIT) < 0)
+            _exit(126);
+        if (service->has_group &&
+            (geteuid() != 0 || setgroups(0, NULL) < 0 ||
+             setgid(service->group_id) < 0))
             _exit(126);
         (void)umask(027);
         if (chdir("/") < 0) _exit(126);
