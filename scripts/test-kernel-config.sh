@@ -12,7 +12,7 @@ for option in \
   CONFIG_CGROUP_SCHED CONFIG_CPUSETS CONFIG_MEMCG CONFIG_NAMESPACES \
   CONFIG_UTS_NS CONFIG_IPC_NS CONFIG_USER_NS CONFIG_PID_NS CONFIG_NET_NS \
   CONFIG_EPOLL CONFIG_EVENTFD CONFIG_SIGNALFD CONFIG_TIMERFD CONFIG_POSIX_MQUEUE \
-  CONFIG_UNIX CONFIG_UNIX_DIAG CONFIG_FHANDLE CONFIG_INOTIFY_USER CONFIG_INET \
+  CONFIG_SYSVIPC CONFIG_SYSVIPC_SYSCTL CONFIG_UNIX CONFIG_UNIX_DIAG CONFIG_FHANDLE CONFIG_INOTIFY_USER CONFIG_INET \
   CONFIG_SECURITY CONFIG_KEYS CONFIG_AUDIT CONFIG_AUDITSYSCALL \
   CONFIG_BPF CONFIG_BPF_SYSCALL CONFIG_SECCOMP CONFIG_SECCOMP_FILTER \
   CONFIG_IWLWIFI CONFIG_IWLMVM CONFIG_R8169 CONFIG_DRM_I915 \
@@ -21,7 +21,7 @@ for option in \
 do
   echo "$option=y" >> "$CONFIG"
 done
-printf '%s\n' 'CONFIG_LOCALVERSION="-mintosh-xcu"' >> "$CONFIG"
+printf '%s\n' 'CONFIG_LOCALVERSION="-lenix-xcu"' >> "$CONFIG"
 sh scripts/verify-kernel-config.sh "$CONFIG" hp-probook-450-g6 x86_64 >/dev/null
 sed -i '/^CONFIG_MODULE_SIG_FORCE=y$/d' "$CONFIG"
 if sh scripts/verify-kernel-config.sh "$CONFIG" >/dev/null 2>&1; then
@@ -35,6 +35,6 @@ if sh scripts/verify-kernel-config.sh "$CONFIG" hp-probook-450-g6 x86_64 >/dev/n
   exit 1
 fi
 cp "$CONFIG" "$ARM_CONFIG"
-printf '%s\n' 'CONFIG_LOCALVERSION="-mintosh-xcu"' >> "$ARM_CONFIG"
+printf '%s\n' 'CONFIG_LOCALVERSION="-lenix-xcu"' >> "$ARM_CONFIG"
 sh scripts/verify-kernel-config.sh "$ARM_CONFIG" generic arm64 >/dev/null
 echo "Kernel configuration verification tests passed."

@@ -1,0 +1,74 @@
+{
+  "schema_version": 1,
+  "project": "Lenix",
+  "policy": "Use upstream implementations where they are compatible with the Linux-based platform. Do not transplant an independent kernel into XCU.",
+  "sources": [
+    {
+      "component": "XCU Linux kernel",
+      "repository": "https://github.com/torvalds/linux",
+      "license": "GPL-2.0-only",
+      "mode": "build-pinned-upstream",
+      "files": [
+        {"path": "ipc/msg.c", "blob": "62996b97f0ac2137dfc2fa109394d6db1fcb4a0f", "purpose": "System V message queues"},
+        {"path": "net/unix/af_unix.c", "blob": "91c1d6cad4974c3e30292cac2ab09ef7156161a1", "purpose": "Unix-domain sockets and descriptor passing"},
+        {"path": "drivers/base/core.c", "blob": "cbe05197d4a0bc1ce24fcc05667fc4dd7570833e", "purpose": "Linux device and driver core"}
+      ],
+      "integration": "These files are supplied by the pinned Linux kernel source fetched by scripts/fetch-kernel.sh. Do not vendor duplicate copies into Sources/XCU."
+    },
+    {
+      "component": "BSD/POSIX behavior reference",
+      "repository": "https://github.com/freebsd/freebsd-src",
+      "license": "BSD-2-Clause and BSD-3-Clause (per file)",
+      "mode": "behavioral-reference",
+      "files": [
+        {"path": "sys/kern/uipc_syscalls.c", "blob": "b40624200837806492f6e88424e92e85d1f82c05", "purpose": "BSD socket syscall semantics"},
+        {"path": "sys/kern/uipc_mqueue.c", "blob": "cd402fa3e80bc5b65b631a040e6594d8817150ce", "purpose": "POSIX message queue behavior"},
+        {"path": "sys/kern/sysv_msg.c", "blob": "f4ec7919b4760d2066ed921294e7e5e9e04c1549", "purpose": "System V message queue behavior"},
+        {"path": "sys/net/if.c", "blob": "6bbacbeb78b677a11ff2dfaf0d75c1c7bfeedeb0", "purpose": "Network interface behavior"}
+      ],
+      "integration": "Use as a compatibility and behavior reference. These FreeBSD kernel files are not drop-in Linux modules."
+    },
+    {
+      "component": "Bootloader research",
+      "repository": "https://github.com/u-boot/u-boot",
+      "license": "GPL-2.0-or-later",
+      "mode": "reference-only",
+      "files": [
+        {"path": "common/main.c", "blob": "4b4504557f6e07a13b069ac4420c2e6d6d62d9d4", "purpose": "Boot command and handoff flow"},
+        {"path": "boot/bootm.c", "blob": "daf67be3e0c5c6d9612341f06db06aa2e6d9a9d4", "purpose": "Kernel image loading"},
+        {"path": "drivers/core/device.c", "blob": "6024534ff9395f5df5f99a27e4a50e736ec69ab5", "purpose": "Bootloader device model"}
+      ],
+      "integration": "Not linked into the current boot path. Lenix currently uses its GRUB and mBoot path; U-Boot remains a reference unless the bootloader strategy changes."
+    },
+    {
+      "component": "Sean service runtime reference",
+      "repository": "https://github.com/systemd/systemd",
+      "license": "LGPL-2.1-or-later (per project and file)",
+      "mode": "reference-and-existing-host-runtime",
+      "files": [
+        {"path": "src/core/main.c", "blob": "cbddeab4d207d775239dc2e7dbc48f2f9725e4f6", "purpose": "PID 1 startup flow"},
+        {"path": "src/core/manager.c", "blob": "d74ee48ec3ce81d29170c9efc8c55a4f2bad5367", "purpose": "Service manager lifecycle"}
+      ],
+      "integration": "systemd is present in the transitional Debian userspace. Native Lenix service management remains first-party; do not copy systemd internals into it."
+    },
+    {
+      "component": "Window Server protocol reference",
+      "repository": "https://github.com/wayland-mirror/wayland",
+      "license": "MIT",
+      "mode": "future-protocol-dependency",
+      "files": [
+        {"path": "src/wayland-server.c", "blob": "a0e118e8d4976b64020a11d302740fa7ba02351c", "purpose": "Display server protocol implementation"},
+        {"path": "src/wayland-client.c", "blob": "19298845ce94bbbcd6f1ffbc31138b4b48e3eb8e", "purpose": "Display client protocol implementation"}
+      ],
+      "integration": "Reference for the future Window Server. No Wayland source is vendored or linked yet."
+    },
+    {
+      "component": "Cacao graphics stack",
+      "repository": "https://gitlab.freedesktop.org/mesa/mesa",
+      "license": "Multiple licenses; inspect each file's SPDX identifier",
+      "mode": "future-upstream-dependency",
+      "files": [],
+      "integration": "Use the official Mesa upstream for OpenGL/Vulkan userspace drivers when the graphics stack is implemented. Do not use the unrelated GitHub project named mesa/mesa."
+    }
+  ]
+}

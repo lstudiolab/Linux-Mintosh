@@ -6,6 +6,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <sys/epoll.h>
+#include <sys/ipc.h>
+#include <sys/msg.h>
 #include <unistd.h>
 
 int main(void)
@@ -23,6 +25,18 @@ int main(void)
     assert(memcmp(message, received, sizeof(message)) == 0);
     close(ports[0]);
     close(ports[1]);
+
+    struct xcu_test_message {
+        long type;
+        char text[32];
+    } sent = { .type = 1, .text = "bsd-sysv-ipc" }, received_message = {0};
+    int message_queue = msgget(IPC_PRIVATE, IPC_CREAT | 0600);
+    assert(message_queue >= 0);
+    assert(msgsnd(message_queue, &sent, sizeof(sent.text), 0) == 0);
+    assert(msgrcv(message_queue, &received_message, sizeof(received_message.text), 1, 0)
+           == (ssize_t)sizeof(sent.text));
+    assert(strcmp(received_message.text, sent.text) == 0);
+    assert(msgctl(message_queue, IPC_RMID, NULL) == 0);
 
     int memory = xcu_memory_create("xcu-test", 4096);
     assert(memory >= 0);

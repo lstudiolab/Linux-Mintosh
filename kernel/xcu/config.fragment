@@ -1,7 +1,7 @@
 # XCU baseline Linux kernel configuration fragment
-# Linux remains the sole kernel; these options provide the XCU isolation,
-# compatibility and message-passing primitives.
-CONFIG_LOCALVERSION="-mintosh-xcu"
+# Linux remains the sole kernel; these options provide XCU isolation,
+# BSD/POSIX compatibility and Mach-inspired message-passing primitives.
+CONFIG_LOCALVERSION="-lenix-xcu"
 
 # Linux namespaces and resource controls.
 CONFIG_NAMESPACES=y
@@ -26,6 +26,10 @@ CONFIG_UNIX=y
 CONFIG_UNIX_DIAG=y
 CONFIG_POSIX_MQUEUE=y
 CONFIG_FHANDLE=y
+
+# BSD/POSIX and System V IPC compatibility provided by Linux.
+CONFIG_SYSVIPC=y
+CONFIG_SYSVIPC_SYSCTL=y
 
 # Filesystem observation and descriptor-based service APIs.
 CONFIG_INOTIFY_USER=y
