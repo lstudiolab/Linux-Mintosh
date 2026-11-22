@@ -29,7 +29,7 @@ On a Debian/Ubuntu x86_64 build host with internet access and sudo:
 
 The bootable ISO is created at `out/mintosh-x86_64.iso`. The Rufus-ready ZIP is `out/mintosh-installer.zip`; it contains the ISO, `SHA256SUMS`, and USB-writing instructions. Extract the ZIP before selecting the ISO in Rufus. The ISO build enforces a 3.5 GiB maximum to leave room on a nominal 4 GB USB drive.
 
-Run the image interactively with `make qemu`, or run the serial-console boot test with `make test-qemu`.
+Run the image interactively with `make qemu`, or run the serial-console boot tests with `make test-qemu`. The automated test boots the image in both legacy BIOS and OVMF UEFI firmware.
 
 ## Native Mintosh source
 
@@ -66,7 +66,7 @@ After boot, use:
 - `make kernel`: compile the kernel and modules.
 - `make rootfs`: bootstrap the Debian-based base and compile/install native Mintosh components.
 - `make iso`: create BIOS/UEFI GRUB installer media.
-- `make test-qemu`: verify the live environment reaches the Mintosh readiness check.
+- `make test-qemu`: verify the live environment reaches the Mintosh readiness check under BIOS and OVMF UEFI.
 - `make package-installer`: create a Rufus-ready ZIP containing the ISO and checksum.
 - `make usb USB=/dev/sdX`: write the ISO to a USB drive after explicit confirmation.
 
