@@ -309,6 +309,7 @@ int main(int argc, char **argv) {
         }
         struct timeval timeout = { .tv_sec = 2, .tv_usec = 0 };
         (void)setsockopt(client, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
+        (void)setsockopt(client, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout));
         handle_client(client, services->gr_gid);
         close(client);
     }
