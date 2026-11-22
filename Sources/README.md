@@ -1,29 +1,22 @@
 # Mintosh native source tree
 
-Mintosh's native source is implemented in C17, C++ where appropriate, and architecture-specific assembly. The final kernel is XNV and is freestanding C/assembly. Existing POSIX/Linux-dependent programs are preview userspace prototypes, not the final XNV userspace ABI.
+Mintosh's native foundation is implemented in C, C++ and architecture-specific assembly. **Darkin** owns the backend foundation, including the Linux-based XNV kernel integration and non-graphical system services. **XCM** and **Choca** are separate top-level components.
 
-## Source layout
+## Ownership
 
-- XNV/: first-party hybrid kernel bootstrap, boot ABI, memory, paging, interrupt and architecture code.
-- Darl/: system foundation daemon and local protocol.
-- Launch7762/: service configuration, process lifecycle, restart policy, control protocol and Unix socket.
-- Launch511/: command argument handling and process execution.
-- LaunchClient/: per-user service supervisor entry point.
-- LibSys/: POSIX filesystem, descriptors, Unix sockets, line framing, runtime paths and logging.
-- CSF/: C client API for Darl.
-- Foundation/: strings, byte buffers, arrays, dictionaries, URL parsing, errors, paths and bounded atomic file I/O.
-- GVD/: process inspection/control and native worker-queue library.
-- IOPS/: power and thermal inventory and controls.
-- IOPlus/: Linux preview hardware inventory and uevent monitoring.
-- HPCompatibility/: HP/ProBook diagnostics.
-- Kexts/: legacy Linux module operations through kmod.
-- Security/: baseline permissions audit.
-- SystemLogging/: current journald/syslog integration.
+- `kernel/linux/`: upstream Linux kernel source used as the primary kernel for XNV.
+- `kernel/xnv/`: XNV Linux integration policy, configuration and architecture documentation.
+- `Sources/Darkin/`: Darkin ownership map and backend foundation contracts.
+- `Sources/XCM/`: external request broker, message validation and security policy.
+- `Sources/Choca/`: graphical platform ownership and UI-token contract.
+- `Sources/XNV/`: retained standalone EFI bootstrap experiment; not the selected XNV kernel.
+- Existing backend prototypes such as Launch7762, Launch511, LibSys, Foundation, GVD, IOPS, Security and SystemLogging are Darkin-owned candidates and require migration to stable service contracts.
+
+Choca owns USI, the window server, graphical frameworks and app manager. None of these belong inside Darkin.
 
 ## Build and test
 
-    make -C Sources/MintoshCore clean all test-foundation
-    sh Sources/MintoshCore/tests/smoke.sh
-    make xnv-verify
-
-See docs/c-language-standard.md.
+    make verify
+    make kernel-fetch
+    make kernel-config
+    make kernel

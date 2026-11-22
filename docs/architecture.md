@@ -1,33 +1,53 @@
-# Mintosh architecture
+# Mintosh system architecture
 
-## Target kernel: XNV
+## Darkin — backend foundation
 
-Mintosh is moving from the Linux-based Developer Preview to a first-party **XNV hybrid kernel**. XNV is inspired by the broad Mach/BSD architecture of Apple's XNU; it is an independent implementation and does not reuse Apple's source.
+Darkin is the complete backend foundation and owns all privileged and non-graphical system responsibilities: XNV kernel integration, boot, CPU/platform setup, memory, process/thread management, devices, storage, filesystems, networking, security, logging, power, hardware management and system services.
 
-- **Mach subsystem:** tasks, threads, scheduling, virtual memory, IPC, synchronization and port rights.
-- **BSD subsystem:** POSIX process interfaces, file descriptors, VFS, sockets, networking, credentials and permissions.
-- **XNV core:** boot, CPU/platform abstraction, interrupt dispatch, physical memory, paging, system calls and kernel diagnostics.
-- **XCM:** first-party userspace system communication and session platform. It connects system services and interfaces to kernel facilities; it is not a kernel subsystem.
-- **USI:** future graphical interface built above XCM using the user's programming language. It is deferred until that language, compiler, runtime and standard library are ready.
+Darkin must operate without Choca. It must not load UI code or accept direct filesystem/code mutation requests from the graphical platform.
 
-Mach and BSD are integrated in one privileged kernel address space. XNV must boot and operate without XCM or USI.
+## XNV — Linux-based kernel architecture inside Darkin
 
-## Current XNV milestone
+XNV uses a Linux-main-kernel model:
 
-The XNV source tree is under Sources/XNV. The current x86-64 bring-up includes a versioned UEFI boot ABI, UEFI memory-map conversion, ExitBootServices, COM1 diagnostics, GDT/IDT installation, fail-stop exception stubs, a physical page allocator for the low 32 GiB and a 32 GiB identity map using 2 MiB pages. Host regression tests cover the boot ABI and allocator.
+1. **Linux is the actual kernel.** Its scheduler, virtual memory, VFS, networking, device model, drivers, interrupt handling, security framework and hardware support are the execution foundation.
+2. **BSD-derived functionality** supplies first-party compatibility interfaces: Unix/BSD-oriented process and socket semantics and selected BSD-style event/API behavior. This is implemented on Linux facilities; it is not a second BSD kernel.
+3. **Mach-inspired functionality** supplies structured task/thread abstractions, IPC messages, port-like endpoints, capability rights and memory-object concepts. These are first-party abstractions backed by Linux primitives; they do not replace the Linux scheduler or memory manager.
 
-This is an early kernel bootstrap, not a complete operating system. The current implementation still assumes UEFI's initial identity mapping while entering the kernel. It does not yet provide a scheduler, userspace, device drivers, storage, networking, a filesystem, a login service or XCM. QEMU boot verification and real hardware testing remain required.
+XNV is the Mintosh kernel architecture and integration layer, not an independently booted kernel.
 
-## Transitional Developer Preview
+## XCM — external communication and security boundary
 
-The current installer image still boots the pinned upstream Linux kernel and a Debian Trixie userspace. GRUB, systemd, udev, NetworkManager, GNU utilities, Debian package tooling and external firmware packages remain in that preview. They are temporary migration dependencies and do not satisfy the final first-party system policy.
+XCM is a separate broker between Choca and Darkin. It is not part of the kernel, Darkin or the graphical platform.
 
-Do not remove the Linux preview path until XNV has a bootable image and passes automated boot, storage, device, networking, security, installation and recovery tests.
+- Choca sends versioned, typed requests to XCM.
+- XCM authenticates the local peer, validates message bounds/schema, checks operation-specific capabilities and applies policy before forwarding.
+- Darkin services accept requests only through defined service interfaces; they never trust Choca pointers, arbitrary paths, executable code or raw UI tokens.
+- Responses are typed data/events routed back through XCM.
+- Unknown operations, malformed messages, privilege escalation, protected-foundation mutation and out-of-scope requests are rejected and audited.
 
-## Implementation languages
+Choca cannot directly modify or delete Darkin's kernel, boot files, system binaries, security policy or service implementation. Foundation updates require a separate authenticated, signed update/rollback workflow. User-data deletion is separate and requires an explicit capability, object-scoped target and confirmation.
 
-The OS foundation uses C, C++ and architecture-specific assembly only. XNV's early kernel is freestanding C and assembly; it must not depend on a host C library, Linux kernel headers or a third-party kernel runtime. C++ is permitted only when exceptions, RTTI, constructors and runtime dependencies are explicitly controlled. Makefiles and CI configuration are build tooling, not OS implementation languages.
+XCM is one policy enforcement point, not a substitute for authorization inside each Darkin service and kernel boundary.
 
-## Deferred graphical system
+## Choca — graphical platform
 
-XCM is implemented after the kernel's IPC, process, device, display and input interfaces stabilize. USI begins only after the user's programming language and its toolchain are complete. AppKit, Tarts, GT, Window Server, Finder and Dock remain deferred.
+Choca is separate from Darkin and contains USI, the window server/compositor, graphical frameworks, desktop shell, Finder-like UI, dock, launch UI, app manager and package/install UI.
+
+Choca may emit typed UI-token streams for presentation. These tokens are data, not executable authority. XCM validates and routes them only to the intended rendering endpoint; they cannot become Darkin commands.
+
+## Communication direction
+
+`Choca / USI → XCM → Darkin service API → XNV → Linux`
+
+Replies travel back through XCM. Darkin has no dependency on Choca.
+
+## Migration status
+
+The current preview boots upstream Linux and a transitional Debian userspace. The earlier standalone XNV EFI bootstrap under `Sources/XNV` is a retained experiment and is not the selected kernel path. Do not integrate or ship that EFI image.
+
+Existing native programs under `Sources/` are backend prototypes. They need explicit ownership and service contracts under Darkin. XCM and Choca remain separate top-level components.
+
+## Foundation implementation languages
+
+The OS foundation uses C, C++ and architecture-specific assembly only. Build configuration and CI files are tooling, not OS implementation languages.
