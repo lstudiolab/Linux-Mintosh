@@ -9,7 +9,7 @@ KERNEL_DIR := kernel/linux
 KERNEL_OUT := out/kernel/$(ARCH)
 ROOTFS := out/rootfs
 ISO_ROOT := out/iso
-ISO := out/lenix-$(ARCH).iso
+ISO := out/mintosh-$(ARCH).iso
 KERNEL_ARCH_x86_64 := x86
 KERNEL_ARCH_arm64 := arm64
 KERNEL_DEFCONFIG_x86_64 := x86_64_defconfig
@@ -37,7 +37,7 @@ help:
 	  '  make check-scripts  Validate shell scripts' \\
 	  '  make verify         Run all offline validation' \\
 	  '  make test-sean     Test the Sean backend foundation' \\
-	  '  make test-xpu       Test the XPU communication broker' \\
+	  '  make test-xpu       Test the XUM communication broker' \\
 	  '  make test-xcu       Test XCU Linux kernel primitives' \\
 	  '  make test-core-services  Test shared native system libraries' \\
 	  '  make package-installer  Package ISO and checksum for Rufus' \\
@@ -93,7 +93,7 @@ check-makefiles:
 	@$(MAKE) --no-print-directory -C Sources/XPU -n test >/dev/null
 	@$(MAKE) --no-print-directory -C Sources/XCU -n test >/dev/null
 	@$(MAKE) --no-print-directory -C Sources/CoreServices -n test >/dev/null
-	@echo 'Root, native-core and canonical Tarts/XPU/XCU/Core Services Makefiles parse and resolve all build prerequisites.'
+	@echo 'Root, native-core and canonical Sean/XUM/XCU/Core Services Makefiles parse and resolve all build prerequisites.'
 
 check-scripts:
 	@python3 -c 'import pathlib, subprocess; bash={"mintosh-installer.sh", "installer-bootstrap.sh", "package-installer.sh", "installer-disk-safety.sh", "installer-storage.sh", "test-installer-disk-safety.sh", "test-installer-partitioning.sh"}; [subprocess.run(["bash" if p.name in bash else "sh", "-n", str(p)], check=True) for p in pathlib.Path("scripts").glob("*.sh")]'
