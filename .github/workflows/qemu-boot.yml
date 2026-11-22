@@ -34,8 +34,8 @@ jobs:
       - name: Verify HP ProBook and generic hardware configurations
         run: |
           make kernel-fetch
-          make kernel-config MINTOSH_HARDWARE_PROFILE=hp-probook-450-g6
           make kernel-config MINTOSH_HARDWARE_PROFILE=generic
+          make kernel-config MINTOSH_HARDWARE_PROFILE=hp-probook-450-g6
       - name: Build kernel and installer image
         run: |
           make kernel JOBS=2
