@@ -2,6 +2,13 @@
 
 This roadmap separates implemented source from verified release behavior. A directory, binary, or successful compilation is not proof that a subsystem is complete.
 
+## Mandatory third-party dependency policy
+
+The Linux kernel is the only third-party software allowed in the installed Mintosh operating system. All other operating-system components must be first-party Mintosh implementations in C, C++ or assembly. Build-host tools (compiler, linker, Make, GitHub Actions and QEMU) are permitted only for development and testing and must not become installed runtime dependencies. Firmware blobs are not silently exempt; any hardware-specific exception requires an explicit decision.
+
+The current Debian-based preview is a temporary noncompliant bootstrap, not the target architecture. GRUB, systemd, udev, NetworkManager, GNU userland utilities, APT/dpkg, third-party package managers and firmware packages must be replaced or removed before foundation completion. Do not begin AppKit or graphical work during this migration.
+
+
 ## Release 0.1.0 — Developer Preview
 
 ### Release and build infrastructure
@@ -31,28 +38,31 @@ This roadmap separates implemented source from verified release behavior. A dire
 - [~] Kexts Linux module frontend (safe module names, fixed-path modprobe and kernel-enforced signatures; trusted third-party signing and lifecycle integration remain)
 - [~] System Logging syslog frontend (write path exists; structured querying, rotation policy and retention remain)
 - [~] Security baseline audit (account files, service definitions, runtime sockets, FMS database permissions and enforced module signatures; policy engine, capabilities and sandboxing remain)
-- [~] mstore APT frontend (Debian signed repository transport; Mintosh catalog, transaction UI and rollback remain)
+- [~] mstore native CLI shell (APT/dpkg/Flatpak dispatch removed; native repository, package database and transaction engine remain unimplemented)
 - [ ] Specify and implement the native Mintosh `.pkg` package format, including manifest, payload, dependency model, permissions, lifecycle and signatures
-- [ ] Multi-format package manager: safe `.deb` support and managed AppImage/Flatpak integration; RPM support only where compatibility can be guaranteed
+- [ ] Implement first-party `.pkg` repository, signature verification, package database, dependency solver, atomic install/remove transactions and rollback; no third-party package-manager backends
 - [ ] Mintosh-signed `.pkg` repository, trust roots, curated catalog and transactional rollback
 - [ ] AppKit native GUI framework
 - [ ] Tarts widget toolkit
 - [ ] GT graphics backend and Window Server compositor
 - [ ] Finder and Dock applications
 
-### Mintosh Base
-- [x] Debian Trixie bootstrap
-- [x] systemd as PID 1
-- [x] GNU core utilities and Bash
-- [x] Native Mintosh programs compiled in the target root filesystem
-- [x] Native C readiness checker for the base service (no shell wrapper)
-- [x] Native service manager and Darl started during boot
-- [~] NetworkManager base integration for automatic wired networking and Wi-Fi via wpa_supplicant (image configuration added; runtime validation pending)
-- [x] systemd-resolved DNS integration
-- [x] sudo user creation and root-account lock
-- [~] Generic x86-64 hardware profile is the default; HP ProBook driver profile is opt-in
+### First-party Mintosh Base (required migration)
+- [~] Existing Debian Trixie bootstrap retained temporarily for development; must be replaced
+- [ ] Mintosh-owned root filesystem builder and base directory layout
+- [ ] Mintosh-owned PID 1 init and shutdown sequence (replace systemd)
+- [ ] Mintosh-owned device discovery and event manager (replace udev)
+- [ ] Mintosh-owned networking, DHCP, DNS and Wi-Fi configuration services (replace NetworkManager and external supplicants)
+- [ ] First-party implementations of required command-line and account-management utilities
+- [ ] Remove all Debian package database, APT/dpkg and external package-manager dependencies
+- [ ] Remove GRUB and boot the image directly through mBoot
+- [ ] Replace shell-based live installer and recovery paths with native C/C++/assembly programs
+- [ ] Define firmware policy; do not silently bundle third-party firmware blobs
+- [x] Native Mintosh programs compiled in the target root filesystem (incremental components only)
+- [x] Native service supervisor and Darl implementations exist (not yet the system PID 1)
+- [ ] Integrate Mintosh init, service supervisor, device manager and networking into one boot-to-operational-system path
 - [ ] Hardware matrix beyond QEMU
-- [ ] NetworkManager wired/Wi-Fi connection smoke test in QEMU and physical hardware
+- [ ] Wired/Wi-Fi connection smoke test using only first-party Mintosh services
 - [ ] End-to-end service control and package transaction tests in installed rootfs
 
 ### Boot and installer
