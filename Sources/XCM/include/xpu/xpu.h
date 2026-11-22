@@ -1,0 +1,64 @@
+#ifndef MINTOSH_XPU_H
+#define MINTOSH_XPU_H
+
+#include <xcm/client.h>
+
+/* Canonical XPU names over the v1 compatibility ABI. */
+#define XPU_PROTOCOL_VERSION XCM_PROTOCOL_VERSION
+#define XPU_MAX_MESSAGE_SIZE XCM_MAX_MESSAGE_SIZE
+
+typedef enum xcm_peer xpu_peer;
+typedef enum xcm_target xpu_target;
+typedef enum xcm_operation xpu_operation;
+typedef enum xcm_response_payload_type xpu_response_payload_type;
+typedef enum xcm_response_status xpu_response_status;
+typedef enum xcm_payload_type xpu_payload_type;
+typedef enum xcm_capability xpu_capability;
+typedef enum xcm_policy_result xpu_policy_result;
+typedef struct xcm_policy_context xpu_policy_context;
+typedef struct xcm_request xpu_request;
+typedef struct xcm_response xpu_response;
+
+#define XPU_PEER_UNKNOWN XCM_PEER_UNKNOWN
+#define XPU_PEER_CACAO XCM_PEER_CHOCA
+#define XPU_PEER_TARTS_SERVICE XCM_PEER_DARKIN_SERVICE
+#define XPU_PEER_UPDATE_SERVICE XCM_PEER_UPDATE_SERVICE
+
+#define XPU_TARGET_NONE XCM_TARGET_NONE
+#define XPU_TARGET_PRESENTATION XCM_TARGET_PRESENTATION
+#define XPU_TARGET_SYSTEM_INFO XCM_TARGET_SYSTEM_INFO
+#define XPU_TARGET_USER_DATA XCM_TARGET_USER_DATA
+#define XPU_TARGET_TARTS_CORE XCM_TARGET_DARKIN_CORE
+#define XPU_TARGET_SECURITY_POLICY XCM_TARGET_SECURITY_POLICY
+#define XPU_TARGET_CACAO_CORE XCM_TARGET_CHOCA_CORE
+#define XPU_TARGET_XPU_CORE XCM_TARGET_XCM_CORE
+#define XPU_TARGET_TARTS_BOOT XCM_TARGET_DARKIN_BOOT
+
+#define XPU_OP_NONE XCM_OP_NONE
+#define XPU_OP_PRESENT_TOKENS XCM_OP_PRESENT_TOKENS
+#define XPU_OP_READ_SYSTEM_INFO XCM_OP_READ_SYSTEM_INFO
+#define XPU_OP_LIST_USER_DATA XCM_OP_LIST_USER_DATA
+#define XPU_OP_READ_USER_DATA XCM_OP_READ_USER_DATA
+#define XPU_OP_WRITE_USER_DATA XCM_OP_WRITE_USER_DATA
+#define XPU_OP_DELETE_USER_DATA XCM_OP_DELETE_USER_DATA
+#define XPU_OP_UPDATE_TARTS XCM_OP_UPDATE_DARKIN
+#define XPU_OP_EXECUTE_RAW XCM_OP_EXECUTE_RAW
+#define XPU_OP_CHANGE_SECURITY_POLICY XCM_OP_CHANGE_SECURITY_POLICY
+
+#define XPU_PAYLOAD_NONE XCM_PAYLOAD_NONE
+#define XPU_PAYLOAD_TYPED_DATA XCM_PAYLOAD_TYPED_DATA
+#define XPU_PAYLOAD_UI_TOKENS XCM_PAYLOAD_UI_TOKENS
+#define XPU_PAYLOAD_EXECUTABLE XCM_PAYLOAD_EXECUTABLE
+
+#define XPU_CAP_PRESENT XCM_CAP_PRESENT
+#define XPU_CAP_READ_SYSTEM XCM_CAP_READ_SYSTEM
+#define XPU_CAP_READ_USER_DATA XCM_CAP_READ_USER_DATA
+#define XPU_CAP_WRITE_USER_DATA XCM_CAP_WRITE_USER_DATA
+#define XPU_CAP_DELETE_USER_DATA XCM_CAP_DELETE_USER_DATA
+#define XPU_CAP_FOUNDATION_UPDATE XCM_CAP_FOUNDATION_UPDATE
+
+#define xpu_call xcm_call
+#define xpu_policy_authorize xcm_policy_authorize
+#define XPU_DEFAULT_SOCKET XCM_DEFAULT_SOCKET
+
+#endif
