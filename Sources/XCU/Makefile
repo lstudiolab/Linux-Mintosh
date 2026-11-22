@@ -22,8 +22,12 @@ $(BUILD)/libxcu.a: $(OBJECTS)
 $(BUILD)/xcu-tests: tests/xcu_tests.c $(SOURCES) include/xcu/xcu.h | $(BUILD)
 	$(CC) $(CFLAGS) -Iinclude tests/xcu_tests.c $(SOURCES) -o $@
 
-test: all $(BUILD)/xcu-tests
+$(BUILD)/upstream-compat-tests: tests/upstream_compat_tests.c | $(BUILD)
+	$(CC) $(CFLAGS) $< -o $@ -lrt
+
+test: all $(BUILD)/xcu-tests $(BUILD)/upstream-compat-tests
 	./$(BUILD)/xcu-tests
+	./$(BUILD)/upstream-compat-tests
 
 install: all
 	install -d $(DESTDIR)$(PREFIX)/lib $(DESTDIR)$(PREFIX)/include/xcu
