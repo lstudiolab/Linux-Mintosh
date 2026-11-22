@@ -20,8 +20,8 @@ $(BUILD)/policy.o: policy.c include/xcm/protocol.h | $(BUILD)
 $(BUILD)/client.o: client.c include/xcm/client.h include/xcm/protocol.h | $(BUILD)
 	$(CC) $(CFLAGS) -I. -c $< -o $@
 
-$(BUILD)/xpu: xpu.c policy.c darkin_client.c usi_token_validation.c include/xcm/protocol.h include/xcm/darkin_client.h include/xcm/usi_tokens.h ../Darkin/include/darkin/protocol.h | $(BUILD)
-	$(CC) $(CFLAGS) -I. -I../Darkin/include xpu.c policy.c darkin_client.c usi_token_validation.c -o $@
+$(BUILD)/xpu: xcmd.c policy.c darkin_client.c usi_token_validation.c include/xcm/protocol.h include/xcm/darkin_client.h include/xcm/usi_tokens.h ../Darkin/include/darkin/protocol.h | $(BUILD)
+	$(CC) $(CFLAGS) -I. -I../Darkin/include xcmd.c policy.c darkin_client.c usi_token_validation.c -o $@
 
 $(BUILD)/libxcm.a: $(BUILD)/client.o $(BUILD)/policy.o
 	$(AR) rcs $@ $^
