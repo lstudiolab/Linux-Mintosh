@@ -6,7 +6,7 @@ Darkin is independent of the graphical platform. It does not contain USI, a wind
 
 Existing backend prototypes in `Sources/` are Darkin-owned candidates. Their current Linux/POSIX dependencies and service boundaries must be audited before they are treated as final Darkin components.
 
-Darkin exposes typed, versioned service APIs. It does not accept arbitrary code, pointers, paths or untrusted UI tokens as privileged commands. Choca reaches Darkin only through the separate XCM broker. Each Darkin service must enforce authorization itself even when XCM has already checked the request.
+Darkin exposes typed, versioned service APIs. It does not accept arbitrary code, pointers, paths or untrusted UI tokens as privileged commands. Choca reaches Darkin only through the separate XCM broker. Each Darkin service must enforce authorization itself even when XCM has already checked the request.\n\nThe first protected backend endpoint is `darkin-system`, which serves read-only system information only to the root XCM service over `/run/mintosh-darkin/system.sock`. The socket lives in a root-only runtime directory and is not accessible to Choca.
 
 XNV is the Linux-based kernel architecture inside Darkin. The first-party XNV API in `Sources/Darkin/XNV` wraps Linux pidfds, Unix sequenced-packet ports with descriptor passing, sealed memfd memory objects and epoll event queues. These provide Mach-inspired task/port/memory abstractions without introducing a second kernel.
 
