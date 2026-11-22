@@ -91,6 +91,7 @@ static void handle_client(int client, gid_t xcm_group)
 static int create_socket(void)
 {
     const char *path = DARKIN_SYSTEM_SOCKET;
+    if (mkdir("/run/tarts", 0700) < 0 && errno != EEXIST) return -1;
     struct stat directory;
     if (lstat("/run/tarts", &directory) < 0 ||
         !S_ISDIR(directory.st_mode) || directory.st_uid != 0 ||
