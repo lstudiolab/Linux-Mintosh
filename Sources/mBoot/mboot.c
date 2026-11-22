@@ -64,7 +64,7 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE image_handle,
     EFI_LOADED_IMAGE *kernel_image = NULL;
     VOID *kernel_buffer = NULL;
     UINTN kernel_size = 0;
-    CHAR16 initrd_options[] = MBOOT_INITRD_OPTION;
+    
 
     InitializeLib(image_handle, system_table);
     Print(L"mBoot 0.1 - Mintosh UEFI Bootloader\r\n");
@@ -134,13 +134,13 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE image_handle,
         return status;
     }
 
-    kernel_image->LoadOptions = AllocatePool(sizeof(initrd_options));
+    kernel_image->LoadOptions = AllocatePool(sizeof(mboot_kernel_options));
     if (kernel_image->LoadOptions == NULL) {
         uefi_call_wrapper(BS->UnloadImage, 1, kernel_handle);
         return EFI_OUT_OF_RESOURCES;
     }
-    CopyMem(kernel_image->LoadOptions, initrd_options, sizeof(initrd_options));
-    kernel_image->LoadOptionsSize = sizeof(initrd_options);
+    CopyMem(kernel_image->LoadOptions, mboot_kernel_options, sizeof(mboot_kernel_options));
+    kernel_image->LoadOptionsSize = sizeof(mboot_kernel_options);
 
     Print(L"Starting Mintosh Linux kernel...\r\n");
     status = uefi_call_wrapper(BS->StartImage, 3, kernel_handle, NULL, NULL);
