@@ -47,8 +47,7 @@ printf "MINTOSH_SOURCE_REPOSITORY='https://github.com/lstudiolab/Linux-Mintosh.g
   "$SOURCE_COMMIT" > "$STAGING/etc/mintosh/installer-source.env"
 chmod 0644 "$STAGING/etc/mintosh/installer-source.env"
 
-COMPILER=$CC
-[ -n "$COMPILER" ] || COMPILER=cc
+COMPILER=cc
 "$COMPILER" -static -Os -std=c17 -Wall -Wextra -Werror \
   "$ROOT/Sources/Boot/early_init.c" -o "$ROOT/out/mintosh-init"
 install -m 0755 "$ROOT/out/mintosh-init" "$STAGING/init"
