@@ -1,16 +1,17 @@
-# Cacao — graphical platform (legacy source location)
+# Cacao — legacy source root
 
-The platform's final name is **Cacao**. This directory remains named `Sources/Choca/` temporarily so existing references and build integration are not broken during migration.
+Cacao is Mintosh's native graphical and application platform. `Sources/Cacao/` is the canonical future source root; this old Choca path is migration debt, not a separate component.
 
-Cacao owns the graphical platform and native application framework:
-- Desktop-facing graphical experience and application manager.
+Cacao owns:
 - Native application lifecycle and event-loop APIs.
-- Standard controls, views, layout, drawing and accessibility.
-- Client APIs for the separate Window Server.
-- Public application SDK and common graphical services.
+- ApplicationKit: windows, menus, dialogs and standard controls.
+- Views, layout, drawing, text, animation and accessibility.
+- Localization, preferences, document and resource APIs.
+- The desktop shell and application manager.
+- The public native application SDK and application bundle contract.
 
-Window Server remains a distinct service responsible for displays, windows, surfaces, composition, focus and input routing. Cacao uses its documented client protocol; it does not directly control privileged display devices.
+The **Window Server is separate**. It owns displays, windows, surfaces, composition, focus and input routing. Cacao uses its client protocol and must not access privileged display devices directly.
 
-Cacao communicates with backend services through the XPU interface. The current XPU prototype is still implemented under `Sources/XCM/`. USI token validation remains a presentation-data contract, not an executable or privileged command format.
+Cacao communicates with backend services through Core Services and XPU. XPU is the authenticated cross-process capability boundary, not a replacement for service APIs.
 
-The actual graphical framework, desktop, app manager and Window Server are not yet implemented. This file records ownership and migration direction; it does not claim those components are complete.
+The framework, Window Server, desktop, app manager and SDK are not yet implemented. New Cacao code belongs under `Sources/Cacao/`.
