@@ -170,7 +170,7 @@ static const struct probe probes[] = {
 };
 static int read_text(const char *path, char *buffer, size_t size) {
     FILE *f=fopen(path,"r"); if(!f) return -1;
-    size_t n=fread(buffer,1,size-1,f); fclose(f); buffer[n]='\\0'; return 0;
+    size_t n=fread(buffer,1,size-1,f); fclose(f); buffer[n]='\0'; return 0;
 }
 static int directory_nonempty(const char *path) {
     DIR *d=opendir(path); if(!d) return 0; struct dirent *e; int found=0;
@@ -260,30 +260,30 @@ int main(int argc,char **argv) {
         if(!strcmp(argv[i],"--list")) list=1;
         else if(!strcmp(argv[i],"--self-test")) self=1;
         else if(!strcmp(argv[i],"--workspace") && i+1<argc) workspace=argv[++i];
-        else { fprintf(stderr,"usage: %s [--list|--self-test] [--workspace PATH]\\n",argv[0]); return 64; }
+        else { fprintf(stderr,"usage: %s [--list|--self-test] [--workspace PATH]\n",argv[0]); return 64; }
     }
     const size_t count=sizeof(probes)/sizeof(probes[0]);
     if(list || self) {
-        for(size_t i=0;i<count;i++) printf("%s\\t%s\\t%s\\n",probes[i].id,probes[i].group,probes[i].name);
+        for(size_t i=0;i<count;i++) printf("%s\t%s\t%s\n",probes[i].id,probes[i].group,probes[i].name);
         if(self) {
-            if(count!=150) { fprintf(stderr,"expected 150 checks, found %zu\\n",count); return 1; }
+            if(count!=150) { fprintf(stderr,"expected 150 checks, found %zu\n",count); return 1; }
             for(size_t i=0;i<count;i++) for(size_t j=i+1;j<count;j++)
                 if(!strcmp(probes[i].id,probes[j].id)||!strcmp(probes[i].name,probes[j].name)) {
-                    fprintf(stderr,"duplicate hardware check: %s\\n",probes[i].id); return 1;
+                    fprintf(stderr,"duplicate hardware check: %s\n",probes[i].id); return 1;
                 }
-            fprintf(stderr,"PASS: exactly 150 unique hardware compatibility checks are registered.\\n");
+            fprintf(stderr,"PASS: exactly 150 unique hardware compatibility checks are registered.\n");
         }
         return 0;
     }
-    if(!workspace) { fprintf(stderr,"hardware audit requires --workspace PATH\\n"); return 64; }
+    if(!workspace) { fprintf(stderr,"hardware audit requires --workspace PATH\n"); return 64; }
     unsigned pass=0,skip=0,fail=0;
-    printf("Mintosh hardware compatibility audit: %zu checks\\n",count);
+    printf("Mintosh hardware compatibility audit: %zu checks\n",count);
     for(size_t i=0;i<count;i++) {
         const struct probe *p=&probes[i]; int ok=run_probe(p,workspace);
-        if(ok) { pass++; printf("PASS %s %s\\n",p->id,p->name); }
-        else if(!p->required) { skip++; printf("SKIP %s %s (optional capability not present)\\n",p->id,p->name); }
-        else { fail++; printf("FAIL %s %s (required capability missing)\\n",p->id,p->name); }
+        if(ok) { pass++; printf("PASS %s %s\n",p->id,p->name); }
+        else if(!p->required) { skip++; printf("SKIP %s %s (optional capability not present)\n",p->id,p->name); }
+        else { fail++; printf("FAIL %s %s (required capability missing)\n",p->id,p->name); }
     }
-    printf("SUMMARY total=%zu pass=%u skip=%u fail=%u\\n",count,pass,skip,fail);
+    printf("SUMMARY total=%zu pass=%u skip=%u fail=%u\n",count,pass,skip,fail);
     return fail?1:0;
 }
