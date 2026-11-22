@@ -28,7 +28,7 @@ $(BUILD)/efi_main.o: efi_main.c include/xnv/boot.h include/xnv/arch.h | $(BUILD)
 $(BUILD)/xnv.so: $(BUILD)/efi_main.o $(BUILD)/entry.o $(BUILD)/isr.o $(BUILD)/boot-contract.o $(BUILD)/memory.o $(BUILD)/paging.o $(BUILD)/interrupts.o $(BUILD)/serial.o
 	ld -nostdlib -znocombreloc -T $(EFI_LDS) -shared -Bsymbolic $(EFI_CRT) $^ -L$(EFI_LIBDIR) -lefi -lgnuefi -o $@
 $(BUILD)/XNV.EFI: $(BUILD)/xnv.so
-	objcopy -j .peheader -j .text -j .sdata -j .data -j .rodata -j .dynamic -j .dynsym -j .rel -j .rela -j .rel.* -j .rela.* --target=efi-app-x86_64 --subsystem=10 $< $@
+	objcopy -j .peheader -j .text -j .sdata -j .data -j .rodata -j .dynamic -j .dynsym -j .rel -j .rela -j .rel.* -j .rela.* -j .bss --target=efi-app-x86_64 --subsystem=10 $< $@
 verify: all $(BUILD)/boot-contract-tests $(BUILD)/memory-tests
 	$(BUILD)/boot-contract-tests
 	$(BUILD)/memory-tests

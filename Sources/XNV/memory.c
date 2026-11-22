@@ -15,7 +15,7 @@ enum xnv_memory_status xnv_phys_init(const struct xnv_memory_region *r,xnv_u64 n
         if(!r[i].length||r[i].base>(~(xnv_u64)0)-r[i].length) return XNV_MEMORY_INVALID_MAP;
         if(r[i].type!=XNV_MEMORY_USABLE) continue;
         end=r[i].base+r[i].length;
-        first=(r[i].base+XNV_PAGE_SIZE-1)/XNV_PAGE_SIZE;
+        first=r[i].base/XNV_PAGE_SIZE+(r[i].base%XNV_PAGE_SIZE!=0);
         last=end/XNV_PAGE_SIZE;
         if(first<256) first=256;
         if(last>XNV_MAX_PHYSICAL_PAGES) last=XNV_MAX_PHYSICAL_PAGES;

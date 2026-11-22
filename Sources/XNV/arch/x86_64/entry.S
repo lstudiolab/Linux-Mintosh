@@ -36,7 +36,7 @@ xnv_arch_load_tables:
 xnv_arch_enable_paging:
     movq %rdi,%cr3
     movq %cr4,%rax
-    orq $0x20,%rax
+    orq $0x30,%rax
     movq %rax,%cr4
     movq %cr0,%rax
     orq $0x80000000,%rax

@@ -1,7 +1,7 @@
 #include "include/xnv/arch.h"
 struct xnv_idt_gate{xnv_u16 low,selector;xnv_u8 ist,attributes;xnv_u16 middle;xnv_u32 high,zero;}__attribute__((packed));
 static struct xnv_idt_gate idt[256] __attribute__((aligned(16)));
-static xnv_u64 gdt[3] __attribute__((aligned(16)))={0,0x00af9a000000ffffULL,0x00af92000000ffffULL};
+static xnv_u64 gdt[3] __attribute__((aligned(16)))={0,0x00af9a000000ffffULL,0x00cf92000000ffffULL};
 extern void xnv_isr_default(void);
 #define DECL(n) extern void xnv_isr_##n(void)
 DECL(0);DECL(1);DECL(2);DECL(3);DECL(4);DECL(5);DECL(6);DECL(7);
