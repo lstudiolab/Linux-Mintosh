@@ -12,7 +12,7 @@ int ms_send_command(const char *path, const char *command,
                     char *response, size_t capacity) {
     assert(strcmp(path, "/run/mintosh/launch.sock") == 0);
     snprintf(last_request, sizeof last_request, "%s", command);
-    snprintf(response, capacity, "END\n");
+    snprintf(response, capacity, "OK\n");
     return 0;
 }
 int csf_request(const char *request, char *response, size_t capacity) {
