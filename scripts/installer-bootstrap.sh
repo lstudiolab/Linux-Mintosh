@@ -45,7 +45,7 @@ mintosh_prepare_local_build() {
   [ "$count" -gt 0 ] || { mintosh_bootstrap_fail "An unused internal ext4 partition is required for a temporary build workspace with 40 GiB free. No partition will be formatted to create one."; return 1; }
 
   local selected
-  selected=$(dialog --stdout --title "Temporary build storage" --menu "Choose an internal ext4 partition with at least 40 GiB free. Mintosh will create a temporary hidden directory and will not format this partition." 20 78 8 "${menu[@]}") || return 1
+  selected=$(dialog --stdout --title "Temporary build storage" --menu "Choose an ext4 partition on internal or external storage with at least 40 GiB free. Mintosh will create a temporary hidden directory and will not format this partition." 20 78 8 "${menu[@]}") || return 1
   mount -o rw,noatime "$selected" "$WORKSPACE_MOUNT" >>"$LOG" 2>&1 || { mintosh_bootstrap_fail "Cannot mount the selected workspace."; return 1; }
   local free_kib
   free_kib=$(df -Pk "$WORKSPACE_MOUNT" | awk 'NR==2 {print $4}')
