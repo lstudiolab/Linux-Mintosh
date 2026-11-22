@@ -4,10 +4,10 @@ Mintosh's native foundation is implemented in C, C++ and architecture-specific a
 
 ## Canonical components
 
-- **XCU Kernel** — upstream Linux plus Mintosh's kernel integration and BSD-derived/Mach-inspired interfaces. Canonical build entry point: `Sources/XCU/`; current implementation: `kernel/linux/`, `kernel/xnv/` and `Sources/Darkin/XNV/`.
-- **XPU** — authenticated IPC and security broker. Canonical build entry point: `Sources/XPU/`; current implementation: `Sources/XCM/`.
+- **XCU Kernel** — upstream Linux plus Mintosh's kernel integration and BSD-derived/Mach-inspired interfaces. Canonical build entry point: `Sources/XCU/`; public API/library: `<xcu/xcu.h>` and `libxcu.a`; current implementation: `kernel/linux/`, `kernel/xnv/` and `Sources/Darkin/XNV/`.
+- **XPU** — authenticated IPC and security broker. Canonical build entry point: `Sources/XPU/`; public API/library: `<xpu/xpu.h>` and `libxpu.a`; current implementation: `Sources/XCM/`.
 - **Tarts** — complete backend foundation, including kernel integration, boot/runtime, hardware, security, system services, service launch and supervision. Canonical build entry point: `Sources/Tarts/`; current backend implementation: `Sources/Darkin/`.
-- **Core Services** — stable system APIs and shared user-space services. Canonical build entry point: `Sources/CoreServices/`; initial libraries and service APIs are under `Sources/CSF/`, `Sources/Foundation/`, `Sources/LibSys/` and selected service modules. The aggregate native build remains in `Sources/MintoshCore/`.
+- **Core Services** — stable system APIs and shared user-space services. Canonical build entry point: `Sources/CoreServices/`; initial public API/library: `<coreservices/coreservices.h>` and `libcoreservices.a`; implementation libraries and service APIs are under `Sources/CSF/`, `Sources/Foundation/`, `Sources/LibSys/` and selected service modules. The aggregate native build remains in `Sources/MintoshCore/`.
 - **Window Server** — planned display, window, surface, composition and input service. It is not yet implemented.
 - **Cacao** — graphical platform and native application framework. It will own the desktop-facing UI, application manager, application lifecycle APIs, controls, layout and public SDK. Current legacy design path: `Sources/Choca/`.
 
