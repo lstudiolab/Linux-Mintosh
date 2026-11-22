@@ -1,9 +1,15 @@
-# XCU Kernel integration
+# XCU
 
-XCU is Mintosh's Linux-based kernel architecture. Linux remains the actual primary kernel; BSD-derived Unix compatibility and Mach-inspired task/port/message abstractions are implemented over Linux.
+XCU is the single kernel architecture of Mintosh and the rebranded continuation of XNV. Do not create or maintain a parallel XNV kernel.
 
-The canonical userspace library is `libxcu.a`, with public header `<xcu/xcu.h>`. The original `libxnv.a` and `<xnv/xnv.h>` remain installed as compatibility aliases. The implementation sources are retained in `../Darkin/XNV/` pending migration. It wraps Linux pidfds, Unix sequenced-packet sockets with descriptor passing, sealed memfd objects and epoll event queues.
+Linux is the actual kernel. XCU integrates and configures Linux, then provides Mintosh-owned kernel-facing interfaces and abstractions:
+- Linux process, scheduling, virtual memory, VFS, networking and driver facilities remain authoritative.
+- BSD-derived interfaces provide Unix/POSIX compatibility on Linux.
+- Mach-inspired task, port, message and memory-object concepts are implemented using Linux primitives.
+- Linux modules and drivers provide hardware extension points.
 
-The selected kernel is upstream Linux plus `kernel/xcu/` integration. The standalone EFI experiment in `../XNV/` is not the selected kernel.
+XCU is not a custom standalone kernel and does not boot alongside Linux. The abandoned standalone EFI experiment formerly under `Sources/XNV/` is not part of the selected architecture. Mintosh boots the Linux kernel through its boot manager.
 
-Run `make -C Sources/XCU test` to run the current Linux primitive tests. These userspace wrappers are not a replacement kernel.
+The initial primitive implementation currently remains under `Sources/Darkin/XNV/`; it is migration debt and must be moved into this canonical source root. The public API is `libxcu.a` and `<xcu/xcu.h>`. New code must not introduce XNV names or include paths.
+
+Run `make -C Sources/XCU test` to build and execute the current Linux-backed primitive tests. A passing userspace test does not validate Linux kernel configuration, hardware drivers or a bootable release.
