@@ -1,5 +1,13 @@
 # Mintosh architecture
 
+## First-party system policy
+
+The upstream Linux kernel is the sole third-party software component permitted in the installed Mintosh operating system. Mintosh owns the bootloader, init process, service supervisor, device-management userspace, networking services, storage tools, security policy, logging, installer, recovery environment, package manager and all system frameworks. These components must be implemented in the repository using C, C++ and assembly. Standard kernel interfaces and open hardware protocols are interfaces, not bundled third-party implementations.
+
+No GRUB, systemd, udev, NetworkManager, APT/dpkg, Flatpak, RPM tooling, BusyBox, GNU userland suite or other external operating-system utility may be a runtime dependency. Vendor firmware blobs are also outside the permitted software set unless explicitly approved as a documented hardware exception. Build-host compilers, linkers, Make, GitHub Actions and QEMU may be used as development/test tools; they must not be copied into the installed system as substitutes for Mintosh components.
+
+**Migration status:** the current preview image does not yet comply with this target. It is still Debian-bootstrapped and currently uses GRUB, systemd, udev, NetworkManager, GNU utilities, Debian package tooling and third-party firmware packages. Existing native Mintosh programs are incremental work, not evidence that the userspace has already been replaced. The foundation is not complete or ready for graphical development until these dependencies have been removed from the shipped image and the first-party replacements pass boot and integration tests.
+
 Mintosh is a Linux distribution, not a replacement kernel. The upstream Linux kernel provides scheduling, memory management, drivers, networking, filesystems, and hardware abstraction.
 
 ## Live boot sequence
@@ -55,7 +63,7 @@ Mintosh-owned native system components use C for portable low-level interfaces a
 
 ## Base userspace
 
-The live root filesystem is bootstrapped from Debian Trixie and includes systemd, GNU core utilities, Bash, util-linux, networking tools, essential shared libraries, account tools, disk utilities, and the Mintosh installer. Debian is the package source for this bootstrap; Mintosh-specific configuration, native services and identity live in this repository.
+The current preview root filesystem is Debian Trixie-based and includes systemd, GNU core utilities, Bash, util-linux, NetworkManager, udev and other external utilities. This is a temporary development bootstrap and explicitly violates the first-party system policy above. It must be replaced with a Mintosh-built root filesystem containing only the Linux kernel and Mintosh-owned userspace. Do not describe the present rootfs as a completed or compliant Mintosh base system.
 
 ## Kernel and releases
 
@@ -67,13 +75,9 @@ The build creates a GRUB BIOS/UEFI hybrid ISO intended to be written to USB medi
 
 ## Package management
 
-`mstore` is the native command-line package interface. The current implementation uses APT/dpkg and signed Debian Trixie repository metadata for search, package inspection, installation, removal and upgrades. This avoids requiring a Mintosh-operated download server.
+`mstore` is the first-party package-manager interface. Its former APT/dpkg/Flatpak command dispatch has been removed. The current CLI can identify package extensions and directly launch a user-selected AppImage, but native package search, metadata, database, installation, removal, repository updates, dependency resolution, signature verification and rollback are not implemented. Installation is disabled until the native transaction engine is ready.
 
-Mintosh's primary native application package extension will be **`.pkg`**, using a Mintosh-defined and openly documented package specification. It is inspired by the macOS installer-package convention but is not Apple's format and will not reuse proprietary Apple internals. The intended package model includes a manifest, payload, dependency declarations, permission policy, lifecycle metadata and cryptographic signatures.
-
-The future Application Manager is intended to accept native `.pkg` packages and supported Linux formats. Debian `.deb` compatibility will use the Debian package database and APT/dpkg where dependencies and integration are compatible. AppImage and Flatpak will retain their respective execution, runtime, repository and sandbox semantics rather than being naively unpacked into system package transactions. RPM support is conditional on a safe backend and a compatible dependency environment. Unsupported or unsafe package features must be rejected explicitly; format conversion must not silently discard security or dependency semantics.
-
-A Mintosh-signed `.pkg` repository, trust roots, curated catalog, transaction rollback and graphical Application Manager are future work. None is claimed as implemented by the current APT frontend.
+Mintosh's only native installable format is **`.pkg`**, with a Mintosh-owned manifest, payload format, dependency model, permission policy, lifecycle metadata, signature format, package database and transactional installer. Linux package formats may be identified, but they are not runtime dependencies and must not be installed by delegating to their ecosystem's package managers. Any future import compatibility must be implemented by Mintosh-owned code and remain optional.
 
 ## Developer tools
 
