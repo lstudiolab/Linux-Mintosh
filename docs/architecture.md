@@ -1,61 +1,47 @@
 # Mintosh architecture
 
-The canonical target architecture is documented in [platform-architecture.md](platform-architecture.md). This file records the core design principles and migration constraints.
+The canonical system design is documented in [platform-architecture.md](platform-architecture.md). XCU is the renamed and redesigned continuation of XNV. There is one Linux-based kernel architecture, not parallel XCU and XNV kernels.
 
-## XCU Kernel
+## Component ownership
 
-XCU is the Mintosh kernel architecture and integration layer. Linux is the actual primary kernel and supplies scheduling, virtual memory, VFS, networking, drivers, device model, interrupts, hardware support and kernel security.
+- **XCU:** Linux kernel integration and low-level kernel-facing abstractions. Linux owns scheduling, memory management, process isolation, VFS, networking, drivers, interrupts and hardware support. BSD-derived interfaces and Mach-inspired task/port/message abstractions are integrated using Linux facilities.
+- **Tarts:** complete non-graphical backend foundation, including native init, service lifecycle, hardware/device services, storage, networking, security, power, logging and system daemons.
+- **Core Services:** stable user-space APIs and shared service contracts within the Tarts foundation.
+- **XPU:** authenticated, typed IPC and capability broker. It is a horizontal communication boundary, not a mandatory serial layer beneath Tarts.
+- **Window Server:** protected graphical session service for displays, windows, surfaces, composition, focus and input routing.
+- **Cacao:** native application and graphical framework, application lifecycle, controls, views, accessibility, desktop shell and application manager.
 
-BSD-derived interfaces provide first-party Unix/POSIX and selected BSD compatibility on Linux facilities. They are not a second BSD kernel.
+## macOS-inspired design principles
 
-Mach-inspired functionality provides task/thread abstractions, IPC messages, port-like endpoints, message rights and memory-object concepts backed by Linux primitives. These do not replace Linux's scheduler or memory manager. XCU is not three independently booted kernels.
+Mintosh adopts the *architecture principles* of macOS rather than Apple's proprietary implementation:
+- A clear boundary between kernel, system services, graphical server and application frameworks.
+- Small, independently supervised system services with narrow APIs.
+- A separate Window Server and public application framework.
+- Stable public frameworks above lower-level system APIs.
+- Per-process identity, least privilege and explicit IPC capabilities.
+- A consistent application bundle and lifecycle model.
+- A native boot and service lifecycle independent of the graphical session.
 
-The current implementation is under `Sources/Darkin/XNV/` and `kernel/xcu/` pending a tested migration to XCU naming. The standalone EFI experiment in `Sources/XNV/` is not the selected kernel.
+Mintosh remains Linux-based. It does not embed Apple's XNU, Darwin, Cocoa, XPC, launchd or private Apple source code.
 
-## XPU
+## Boot dependency direction
 
-XPU is the authenticated communication and security service. It evolves the current XCM broker under `Sources/XCM/`. XPU validates typed, versioned messages, authenticates local peers, applies capability policy, routes requests and responses, and audits denials.
+UEFI → Mintosh boot manager → Linux/XCU → Mintosh init (PID 1) → Tarts service manager → XPU and Core Services → user session → Window Server → Cacao desktop → applications.
 
-Kernel peer credentials and kernel isolation remain authoritative. Every receiving service must independently authorize requests. XPU is not a replacement for kernel security and is not a universal mandatory hop for every internal function call.
+The current preview has not completed this transition: the ISO still boots transitional Debian userspace and systemd. Do not remove systemd until native PID 1, console login, recovery and installer paths are working.
 
-## Tarts — backend foundation
+## Security model
 
-Tarts is the complete backend foundation. It owns boot/runtime infrastructure, kernel integration, hardware and device services, process and memory services, storage, filesystems, networking, security enforcement, logging, power management and system services.
+- Linux/XCU is authoritative for process, memory, device and kernel isolation.
+- Tarts supervises but does not grant privileges.
+- XPU authenticates peers and enforces capability policy for cross-process messages.
+- Each service performs its own authorization and input validation.
+- Window Server isolates sessions and treats client surfaces as untrusted.
+- Cacao applications run with separate identities and least-privilege capabilities.
+- Signed updates require verification, atomic activation and rollback.
 
-Tarts also owns service lifecycle responsibilities: dependency ordering, launch, supervision, restart, health and service registration. Existing Darkin backend prototypes are being migrated into Tarts or split into Core Services as appropriate.
+## Current implementation status
 
-## Core Services
+The repository has early Linux-backed kernel primitives, an initial XPU broker, a limited Tarts system-information service, a first Core Services API and a service-supervisor prototype. These are initial components, not a complete OS foundation. Window Server, Cacao, native sessions, full service catalogue and native PID 1 boot integration remain outstanding.
 
-Core Services owns stable user-space system APIs and shared services such as storage, networking, user sessions, notifications, preferences, security clients, logging and application lifecycle support.
-
-Tarts supervises service processes; Core Services provides shared APIs and service functionality. These are distinct responsibilities.
-
-## Window Server
-
-Window Server owns display topology, windows, surfaces, composition, focus and input routing. It is a system service, not an application framework. It treats client surfaces and input as untrusted.
-
-## Cacao — graphical platform and application framework
-
-Cacao is Mintosh's graphical platform and native application framework. It owns the desktop-facing experience, application manager and native application APIs. It provides application lifecycle, event loops, controls, views, layout, accessibility, drawing, dialogs and stable SDK APIs.
-
-Cacao clients use Window Server's documented client protocol; applications do not receive privileged access to display devices.
-
-## Trust and privilege boundaries
-
-- Kernel enforcement governs process identity, memory isolation, device access and mandatory controls.
-- XPU authenticates and authorizes cross-component IPC.
-- Each service validates and authorizes its own operations.
-- Tarts supervises services but does not grant privileges.
-- Cacao applications run with per-application identities and least privilege.
-- Window Server treats client surfaces and input as untrusted.
-- Signed system updates require verification, atomic activation and rollback. General IPC cannot rewrite the kernel, boot chain or security policy.
-
-## Current prototype status
-
-The current preview boots upstream Linux with a transitional Debian userspace. XCU's public `libxcu.a`/`<xcu/xcu.h>` API wraps Linux-backed task/port/memory/event primitives; XPU is installed as `xpu` with `libxpu.a`/`<xpu/xpu.h>`; Tarts provides the `tarts-system` read-only system-information endpoint; Core Services exposes `libcoreservices.a`/`<coreservices/coreservices.h>`. These are initial compatibility-backed milestones, not the complete OS layers. These are prototype implementations for the XCU/XPU and Tarts/Core Services migration.
-
-Full XPU endpoint registration and per-app identities, Tarts orchestration, Core Services APIs, Window Server, Cacao, desktop shell and native application SDK remain implementation work. See [platform-architecture.md](platform-architecture.md) for the complete target and component migration table.
-
-## Implementation languages
-
-The OS foundation uses C, C++ and architecture-specific assembly only. Build-system configuration and CI files are tooling, not OS implementation languages.
+The foundation implementation languages are C, C++ and architecture-specific assembly only. Build configuration and CI are tooling.
