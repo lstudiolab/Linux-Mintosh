@@ -1,6 +1,6 @@
 # XUM — system messaging broker (legacy source location)
 
-XUM is Lenix's standalone system communication and security service outside Sean and Choca. It is the controlled bridge between Choca clients and Sean-owned backend services. This directory remains named `Sources/XCM/` temporarily while source files, public headers and protocol symbols are migrated.
+XUM is Lenix's standalone system communication and security service outside Sean and Choca. It is the controlled bridge between Choca clients and Sean-owned backend services. This directory remains named `Sources/XUM/` temporarily while source files, public headers and protocol symbols are migrated.
 
 The broker is built and installed as `xpu`. It listens on `/run/mintosh/xpu.sock`. The unprivileged client library and wire structs still use the legacy `xcm_*` API names.
 
@@ -13,7 +13,7 @@ The broker is built and installed as `xpu`. It listens on `/run/mintosh/xpu.sock
 - `sean_client.c`: private XUM-to-Sean backend client (legacy filename/API).
 - `include/xcm/protocol.h`: versioned request/response wire envelopes and typed payload identifiers (legacy include path).
 - `include/xcm/usi_tokens.h`: bounded USI presentation token contract.
-- `Sources/Services/xpu.service`: confined systemd service.
+- `Sources/Services/xum.service`: confined systemd service.
 - Host tests for policy decisions, client transport framing and USI token validation.
 
 ## Request path
@@ -42,7 +42,7 @@ The broker is built and installed as `xpu`. It listens on `/run/mintosh/xpu.sock
 ## Build, install and test
 
     make -C Sources/XUM test
-    make test-xpu
+    make test-xum
 
 The root filesystem installs the `xpu` executable, `libxcm.a` and compatibility headers, then enables `xpu.service` after `sean-system.service`.
 
