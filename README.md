@@ -19,7 +19,9 @@ Linux supplies the real kernel execution foundation: scheduling, virtual memory,
 
 The Developer Preview boots upstream Linux with a transitional Debian userspace. The existing `Sources/XNV` UEFI code is an experimental standalone-kernel bootstrap and is **not** the selected XNV implementation; it is retained only as a reference prototype. Do not use its EFI image as the Mintosh kernel.
 
-Darkin, XCM and Choca architecture contracts are being established before their full implementations. Existing backend prototypes under `Sources/` still need migration to final Darkin service contracts. Choca/USI graphical implementation remains deferred until the language and toolchain are ready.
+The first implementation milestones now include an XNV C library backed by Linux pidfds, sequenced-packet ports, sealed memory objects and epoll; an XCM C17 policy engine, local broker and Choca client library; and an installed systemd unit for the broker. The broker currently exposes only read-only system information and policy-checks presentation requests; actual renderer registration, Darkin service dispatch, per-application capabilities, signed updates and destructive operations remain disabled until their backends are implemented. Kernel configuration enables the namespace, cgroup, IPC, seccomp and audit facilities needed for the target architecture.
+
+Existing backend prototypes under `Sources/` still need migration to final Darkin service contracts. Choca/USI graphical implementation, window server, compositor and app manager are not yet implemented. The Developer Preview must not be described as a completed desktop or production-secure operating system.
 
 ## Build and verification
 
