@@ -59,7 +59,7 @@ The live root filesystem is bootstrapped from Debian Trixie and includes systemd
 
 ## Kernel and releases
 
-Kernel versions are pinned in configs/release.json. Kernel source is downloaded during builds and is not vendored into Git. ARCH=x86_64 maps to the Linux kernel's ARCH=x86; ARCH=arm64 maps to ARCH=arm64. The verified bootable installer target is x86_64. Generic Intel/AMD hardware support is the default kernel profile; an HP ProBook 450 G6 overlay is optional and can be selected with `make kernel-config MINTOSH_HARDWARE_PROFILE=hp-probook-450-g6`. ARM64 can be kernel-cross-compiled but has no root filesystem, installer or bootable image yet. RISC-V is planned, not implemented. The Debian Trixie root filesystem enables non-free-firmware and installs firmware for common Intel, AMD, Realtek, Atheros, Broadcom, MediaTek and NVIDIA devices.
+Kernel versions are pinned in configs/release.json. Kernel source is downloaded during builds and is not vendored into Git. ARCH=x86_64 maps to the Linux kernel's ARCH=x86; ARCH=arm64 maps to ARCH=arm64. The verified bootable installer target is x86_64. Generic Intel/AMD hardware support is the default kernel profile; an HP ProBook 450 G6 overlay is optional and can be selected with `make kernel-config MINTOSH_HARDWARE_PROFILE=hp-probook-450-g6`. The QEMU workflow configures and validates both profiles before building the generic live image. ARM64 can be kernel-cross-compiled but has no root filesystem, installer or bootable image yet. RISC-V is planned, not implemented. The Debian Trixie root filesystem enables non-free-firmware and installs firmware for common Intel, AMD, Realtek, Atheros, Broadcom, MediaTek and NVIDIA devices.
 
 ## Image
 

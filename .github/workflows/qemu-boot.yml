@@ -25,10 +25,11 @@ jobs:
         run: make host-deps
       - name: Verify native foundation
         run: make verify
-      - name: Fetch and configure pinned Linux kernel
+      - name: Verify HP ProBook and generic hardware configurations
         run: |
           make kernel-fetch
-          make kernel-config
+          make kernel-config MINTOSH_HARDWARE_PROFILE=hp-probook-450-g6
+          make kernel-config MINTOSH_HARDWARE_PROFILE=generic
       - name: Build kernel and installer image
         run: |
           make kernel JOBS=2
