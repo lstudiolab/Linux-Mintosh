@@ -120,7 +120,7 @@ ln -snf /usr/share/zoneinfo/UTC "$ROOTFS/etc/localtime"
 : > "$ROOTFS/etc/machine-id"
 mkdir -p "$ROOTFS/var/lib/dbus"
 ln -snf /etc/machine-id "$ROOTFS/var/lib/dbus/machine-id"
-systemctl --root="$ROOTFS" enable NetworkManager.service systemd-resolved.service serial-getty@ttyS0.service launch7762.service mintosh-ready.service tarts-system.service xpu.service mintosh-installer.service ioplus-events.service
+systemctl --root="$ROOTFS" enable NetworkManager.service systemd-resolved.service serial-getty@ttyS0.service launch7762.service mintosh-ready.service sean-system.service xpu.service mintosh-installer.service ioplus-events.service
 ln -snf /run/systemd/resolve/stub-resolv.conf "$ROOTFS/etc/resolv.conf"
 rm -rf "$ROOTFS/var/lib/apt/lists/"*
 echo "Mintosh root filesystem created at out/rootfs."
