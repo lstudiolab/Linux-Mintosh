@@ -143,9 +143,9 @@ int main(int argc, char **argv)
         return 77;
     }
 
-    struct group *group = getgrnam("lenix-services");
+    struct group *group = getgrnam("mintosh-services");
     if (group == NULL) {
-        fputs("sean-system: lenix-services group is missing\n", stderr);
+        fputs("sean-system: mintosh-services group is missing\n", stderr);
         return 1;
     }
     int server = create_socket();
