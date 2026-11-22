@@ -25,7 +25,8 @@ Native source code lives under `Sources/`. The current core is compiled inside t
 - **GVD**: process scheduling inspection/control plus a bounded pthread task-dispatch library for native userspace.
 - **IOPS**: power-supply and thermal inventory, CPU frequency governor inspection/control and ACPI platform-profile management.
 - **I/O+**: structured kernel, CPU, memory, DMI, block, network, USB, graphics and power inventory, plus a read-only kernel uevent monitor.
-- **HP Compatibility**: DMI-based HP/ProBook identification and diagnostics; x86-64 kernel builds enable a broad HP laptop, graphics, wireless, audio, storage and input driver profile.
+- **Platform baseline**: x86-64 builds enable a generic Intel/AMD desktop and laptop driver profile covering ACPI, CPU power management, PCI-era storage, NVMe, SATA/AHCI, USB, common wired and wireless networking, Bluetooth, graphics, audio, input, webcams and Thunderbolt/USB-C. Device-specific drivers remain modules so missing hardware does not block boot.
+- **HP Compatibility**: optional DMI-based HP/ProBook identification and diagnostics. The HP-specific kernel profile is opt-in with `MINTOSH_HARDWARE_PROFILE=hp-probook`; it is not the default hardware target.
 - **Kexts**: kernel module operations delegated to Linux modprobe/kmod.
 - **Security**: basic permissions audit for critical account files.
 - **System Logging**: syslog client utility.
@@ -48,13 +49,17 @@ The erase-disk installer creates a new GPT partition table. UEFI installations r
 
 The first installer is x86_64-only. Automatic partition shrinking, encryption, LVM/RAID, Secure Boot, and ARM64 installation media are not supported.
 
+## Implementation languages
+
+Mintosh-owned native system components use C for portable low-level interfaces and core services, C++ where structured userspace system components benefit from it, and assembly only for architecture-specific CPU/boot primitives. Architecture-specific code belongs under an architecture directory and must not leak into portable interfaces. The upstream Linux kernel is implemented in C and assembly and remains responsible for privileged hardware access and device drivers. Mintosh userspace must use kernel interfaces such as sysfs, ioctl, udev and device nodes rather than executing privileged CPU instructions. Makefiles, GitHub Actions and host-side packaging scripts are build/release tooling, not kernel or native-system implementation code; the live installer and remaining shell-based runtime helpers are still migration work and are not represented as completed native C/C++/assembly components.
+
 ## Base userspace
 
 The live root filesystem is bootstrapped from Debian Trixie and includes systemd, GNU core utilities, Bash, util-linux, networking tools, essential shared libraries, account tools, disk utilities, and the Mintosh installer. Debian is the package source for this bootstrap; Mintosh-specific configuration, native services and identity live in this repository.
 
 ## Kernel and releases
 
-Kernel versions are pinned in configs/release.json. Kernel source is downloaded during builds and is not vendored into Git. ARCH=x86_64 maps to the Linux kernel's ARCH=x86; ARCH=arm64 maps to ARCH=arm64. The first bootable installer targets x86_64. Its kernel configuration includes a broad HP ProBook laptop driver profile. The Debian Trixie root filesystem enables non-free-firmware and installs firmware for common Intel, AMD, Realtek, Atheros, Broadcom, MediaTek and NVIDIA devices.
+Kernel versions are pinned in configs/release.json. Kernel source is downloaded during builds and is not vendored into Git. ARCH=x86_64 maps to the Linux kernel's ARCH=x86; ARCH=arm64 maps to ARCH=arm64. The verified bootable installer target is x86_64. Generic Intel/AMD hardware support is the default kernel profile; an HP ProBook overlay is optional. ARM64 can be kernel-cross-compiled but has no root filesystem, installer or bootable image yet. RISC-V is planned, not implemented. The Debian Trixie root filesystem enables non-free-firmware and installs firmware for common Intel, AMD, Realtek, Atheros, Broadcom, MediaTek and NVIDIA devices.
 
 ## Image
 
