@@ -25,10 +25,11 @@ On a Debian/Ubuntu x86_64 build host with internet access and sudo:
     make kernel-config
     make kernel
     make iso
+    make package-installer
 
-The ISO is created at `out/mintosh-x86_64.iso`.
+The bootable ISO is created at `out/mintosh-x86_64.iso`. The Rufus-ready ZIP is `out/mintosh-installer.zip`; it contains the ISO, `SHA256SUMS`, and USB-writing instructions. Extract the ZIP before selecting the ISO in Rufus. The ISO build enforces a 3.5 GiB maximum to leave room on a nominal 4 GB USB drive.
 
-Run it interactively with `make qemu`, or run the serial-console boot test with `make test-qemu`.
+Run the image interactively with `make qemu`, or run the serial-console boot test with `make test-qemu`.
 
 ## Native Mintosh source
 
@@ -53,7 +54,7 @@ After boot, use:
     kextctl list
     sudo security-audit
 
-`make verify` also validates required boot/module-signing kernel options, compiles the native core, runs regression/CLI smoke tests, verifies live boot-media exclusion and tests alongside partition preservation plus confirmation-gated UEFI and BIOS erase layouts. The manual GitHub Actions workflow **Mintosh QEMU boot verification** builds the pinned kernel and ISO, then boots the image under QEMU.
+`make verify` also validates required boot/module-signing kernel options, compiles the native core, runs regression/CLI smoke tests, verifies live boot-media exclusion, tests alongside partition preservation and confirmation-gated erase layouts, and checks the native 150-point hardware-audit registry. The manual GitHub Actions workflow **Mintosh QEMU boot verification** builds the pinned kernel and ISO, then boots the image under QEMU.
 
 ## Build stages
 
@@ -66,16 +67,19 @@ After boot, use:
 - `make rootfs`: bootstrap the Debian-based base and compile/install native Mintosh components.
 - `make iso`: create BIOS/UEFI GRUB installer media.
 - `make test-qemu`: verify the live environment reaches the Mintosh readiness check.
+- `make package-installer`: create a Rufus-ready ZIP containing the ISO and checksum.
 - `make usb USB=/dev/sdX`: write the ISO to a USB drive after explicit confirmation.
 
 A GitHub source ZIP is not bootable. Firmware needs the built ISO written to a USB device.
 
 ## Installation
 
-The text installer supports installation into existing unallocated space or erasing a selected disk after two explicit confirmations. The alongside flow does not shrink or format existing partitions. Back up important data before installing.
+The live USB is a source-build bootstrap, not the complete installed operating system. It requires internet access, clones the exact Git commit pinned into the ISO, builds the kernel and Mintosh root filesystem locally on the target laptop, runs 150 hardware/build preflight checks, and QEMU-tests the generated image before it displays installation-disk choices. Required-check failures stop installation before target partitioning and return to firmware setup.
+
+The build requires an existing ext4 workspace partition with at least 40 GiB free. The installer mounts it without formatting and creates a temporary hidden build directory. It can be internal or an external SSD; the 4 GB installer USB is excluded. An erase install must target a different physical disk from the workspace disk. Alongside installation can use unallocated space on the workspace disk without resizing or formatting the workspace partition. Disk selection remains manual. TPM 2.0 is optional; Secure Boot signing is not yet implemented, so this Developer Preview currently requires Secure Boot to be disabled. Back up important data before installing.
 
 See [installation](docs/installation.md), [architecture](docs/architecture.md), [development](docs/development.md), [release management](docs/release-management.md) and the [roadmap](docs/roadmap.md).
 
 ## Current limitations
 
-mBoot currently builds as a standalone x86-64 UEFI application, but it is not yet wired into the ISO's firmware boot path; GRUB remains the active BIOS/UEFI loader. OVMF runtime boot tests, firmware Secure Boot signing, TPM measured boot and kernel/initramfs measurement are pending. The graphical desktop (AppKit, Tarts, GT, Window Server, Dock and Finder), graphical application catalog, Mintosh update service, disk encryption, automatic partition resizing and ARM64 installer are also not implemented yet. The QEMU boot script and manual CI workflow exist, but a successful run on the current release commit is still required before calling the image boot-verified.
+mBoot currently builds as a standalone x86-64 UEFI application, but it is not yet wired into the ISO's firmware boot path; GRUB remains the active BIOS/UEFI loader. OVMF runtime boot tests, firmware Secure Boot signing, TPM measured boot and kernel/initramfs measurement are pending. The graphical desktop (AppKit, Tarts, GT, Window Server, Dock and Finder), graphical application catalog, Mintosh update service, disk encryption, automatic partition resizing, signed Secure Boot chain, TPM measured boot and ARM64 installer are also not implemented yet. The QEMU boot script and manual CI workflow exist, but a successful run on the current release commit is still required before calling the image boot-verified.
