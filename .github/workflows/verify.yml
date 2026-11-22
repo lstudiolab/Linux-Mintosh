@@ -9,6 +9,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: mintosh-verify-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   native-foundation:
     name: Native foundation and regression tests
