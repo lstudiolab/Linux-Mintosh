@@ -25,7 +25,7 @@ XCM is a standalone system component outside Darkin and Choca. It is the only su
 
 ## Security properties
 
-- Choca cannot update, delete, replace or execute code in Darkin core or security policy.
+- Choca cannot update, delete, replace or execute code in Darkin core, Darkin boot assets, Choca core, XCM core or security policy.
 - Arbitrary executable payloads are always rejected.
 - USI token payloads are accepted only for presentation; they are never treated as commands.
 - Local peer identity is kernel-derived, never supplied by the request.
