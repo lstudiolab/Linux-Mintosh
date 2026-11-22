@@ -21,7 +21,7 @@ Builds produce `libxcu.a`; new code must include `<xcu/xcu.h>` and use `xcu_*` s
 
 ## Upstream integration
 
-The upstream source map and exact retrieved file revisions are recorded in [docs/upstream-integration.md](../../../docs/upstream-integration.md) and [configs/upstream-sources.json](../../../configs/upstream-sources.json).
+The upstream source map and exact retrieved file revisions are recorded in [docs/upstream-integration.md](../../docs/upstream-integration.md) and [configs/upstream-sources.json](../../../configs/upstream-sources.json).
 
 Linux kernel files are supplied by the pinned Linux source fetched through `scripts/fetch-kernel.sh`; they are not duplicated here. FreeBSD sources are behavioral references because FreeBSD kernel internals cannot be dropped into Linux. See the source map for licenses and integration decisions.
 
