@@ -1,5 +1,5 @@
 [Unit]
-Description=Lenix XPU communication and security broker
+Description=Legacy XPU compatibility service; use xum.service
 After=local-fs.target sean-system.service
 Requires=sean-system.service
 Before=graphical.target
