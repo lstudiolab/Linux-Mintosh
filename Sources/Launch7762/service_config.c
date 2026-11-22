@@ -2,6 +2,8 @@
 #include "service_manager.h"
 #include <ctype.h>
 #include <dirent.h>
+#include <grp.h>
+#include <stdlib.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <stdio.h>
@@ -37,6 +39,25 @@ static int trusted_owner(uid_t owner) {
     return owner == 0 || owner == geteuid();
 }
 
+static int parse_start_order(const char *value, unsigned int *order) {
+    if (!value[0]) return -1;
+    errno = 0;
+    char *end = NULL;
+    unsigned long parsed = strtoul(value, &end, 10);
+    if (errno != 0 || end == value || *end != '\\0' || parsed > 9999UL)
+        return -1;
+    *order = (unsigned int)parsed;
+    return 0;
+}
+
+static int compare_services(const void *left, const void *right) {
+    const MintoshService *a = left;
+    const MintoshService *b = right;
+    if (a->start_order < b->start_order) return -1;
+    if (a->start_order > b->start_order) return 1;
+    return strcmp(a->name, b->name);
+}
+
 static int load_service(MintoshServiceManager *manager, const char *directory,
                         const char *filename) {
     size_t filename_length = strlen(filename);
@@ -70,6 +91,7 @@ static int load_service(MintoshServiceManager *manager, const char *directory,
     MintoshService service = {0};
     memcpy(service.name, name, name_length + 1);
     service.restart_policy = MINTOSH_RESTART_NEVER;
+    service.start_order = 10000U;
     unsigned int seen = 0;
     int valid = 1;
     char line[768];
@@ -93,6 +115,17 @@ static int load_service(MintoshServiceManager *manager, const char *directory,
         } else if (strcmp(line, "Restart") == 0) {
             key = 4u;
             if (parse_restart_policy(separator, &service.restart_policy) < 0) valid = 0;
+        } else if (strcmp(line, "Group") == 0) {
+            key = 8u;
+            struct group *group = getgrnam(separator);
+            if (!separator[0] || group == NULL) valid = 0;
+            else {
+                service.group_id = group->gr_gid;
+                service.has_group = 1;
+            }
+        } else if (strcmp(line, "Order") == 0) {
+            key = 16u;
+            if (parse_start_order(separator, &service.start_order) < 0) valid = 0;
         }
         if (key && (seen & key)) valid = 0;
         seen |= key;
@@ -128,6 +161,8 @@ int ms_services_load(MintoshServiceManager *manager, const char *directory) {
         }
     }
     closedir(stream);
+    qsort(manager->services, manager->count, sizeof(manager->services[0]),
+          compare_services);
     return 0;
 }
 
