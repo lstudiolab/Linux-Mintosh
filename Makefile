@@ -28,7 +28,7 @@ EFI_CRT := $(firstword $(wildcard /usr/lib/crt0-efi-x86_64.o /usr/lib/gnuefi/crt
 EFI_LDS := $(firstword $(wildcard /usr/lib/elf_x86_64_efi.lds /usr/lib/gnuefi/elf_x86_64_efi.lds))
 EFI_LIBDIR := $(dir $(EFI_CRT))
 
-.PHONY: help check-makefiles test-native-core test-kernel-config test-installer-safety test-hardware-audit test-mboot test-mboot-qemu mboot package-installer check-host check-release check-scripts verify release-info host-deps kernel-fetch kernel-config kernel kernel-install rootfs initramfs iso image qemu test-qemu usb clean test-xcm test-xnv test-darkin test-xpu test-xcu test-tarts
+.PHONY: help check-makefiles test-native-core test-kernel-config test-installer-safety test-hardware-audit test-mboot test-mboot-qemu mboot package-installer check-host check-release check-scripts verify release-info host-deps kernel-fetch kernel-config kernel kernel-install rootfs initramfs iso image qemu test-qemu usb clean test-xcm test-xnv test-darkin test-xpu test-xcu test-tarts test-core-services
 
 help:
 	@printf '%s\\n' \\
@@ -66,6 +66,9 @@ test-xpu:
 test-xcu:
 	@$(MAKE) --no-print-directory -C Sources/XCU test
 
+test-core-services:
+	@$(MAKE) --no-print-directory -C Sources/CoreServices test
+
 # Legacy implementation-path aliases remain available during migration.
 test-darkin:
 	@$(MAKE) --no-print-directory -C Sources/Darkin test
@@ -89,7 +92,8 @@ check-makefiles:
 	@$(MAKE) --no-print-directory -C Sources/Tarts -n test >/dev/null
 	@$(MAKE) --no-print-directory -C Sources/XPU -n test >/dev/null
 	@$(MAKE) --no-print-directory -C Sources/XCU -n test >/dev/null
-	@echo 'Root, native-core and canonical Tarts/XPU/XCU Makefiles parse and resolve all build prerequisites.'
+	@$(MAKE) --no-print-directory -C Sources/CoreServices -n test >/dev/null
+	@echo 'Root, native-core and canonical Tarts/XPU/XCU/Core Services Makefiles parse and resolve all build prerequisites.'
 
 check-scripts:
 	@python3 -c 'import pathlib, subprocess; bash={"mintosh-installer.sh", "installer-bootstrap.sh", "package-installer.sh", "installer-disk-safety.sh", "installer-storage.sh", "test-installer-disk-safety.sh", "test-installer-partitioning.sh"}; [subprocess.run(["bash" if p.name in bash else "sh", "-n", str(p)], check=True) for p in pathlib.Path("scripts").glob("*.sh")]'
@@ -138,7 +142,7 @@ $(MBOOT_OUT)/BOOTX64.EFI: $(MBOOT_OUT)/boot.efi
 	cp $< $@
 
 
-verify: check-release check-makefiles check-scripts test-kernel-config test-installer-safety test-hardware-audit test-native-core test-mboot test-tarts test-xpu test-xcu
+verify: check-release check-makefiles check-scripts test-kernel-config test-installer-safety test-hardware-audit test-native-core test-mboot test-tarts test-xpu test-xcu test-core-services
 	@echo 'Mintosh preview validation, Tarts backend, XPU broker and XCU Linux primitive tests passed.'
 
 release-info: check-release
