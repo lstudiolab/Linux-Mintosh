@@ -5,6 +5,7 @@ export TERM=${TERM:-linux}
 SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 . "$SCRIPT_DIR/installer-disk-safety.sh"
 . "$SCRIPT_DIR/installer-storage.sh"
+. "$SCRIPT_DIR/installer-bootstrap.sh"
 TITLE="Mintosh Installer"
 TARGET=/mnt/mintosh
 LOG=/var/log/mintosh-installer.log
@@ -17,6 +18,7 @@ fail() {
 cleanup() {
   if mountpoint -q "$TARGET/dev"; then umount -R "$TARGET/dev" || true; fi
   if mountpoint -q "$TARGET"; then umount -R "$TARGET" || true; fi
+  if mountpoint -q "$WORKSPACE_MOUNT"; then umount "$WORKSPACE_MOUNT" || true; fi
 }
 trap cleanup EXIT
 
@@ -40,6 +42,9 @@ case "$ACTION" in
   install) ;;
 esac
 
+mintosh_prepare_local_build || fail "The local source build or verification did not complete. No installation disk was modified."
+[ -d "$MINTOSH_BUILD_ROOTFS" ] || fail "The verified Mintosh build root filesystem is unavailable."
+
 MODE=$(dialog --stdout --title "$TITLE" --menu "Choose an installation type." 15 76 4 \
   alongside "Install alongside an existing operating system" \
   erase "Erase a disk and install Mintosh") || exit 0
@@ -57,6 +62,9 @@ done
 DISK=$(dialog --stdout --title "$TITLE" --menu "Select the destination disk. The live boot medium and removable devices are hidden." 18 78 8 "${MENU[@]}") || exit 0
 [[ -b "$DISK" ]] || fail "The selected disk is no longer available."
 mintosh_disk_is_protected "$DISK" && fail "The selected disk contains the live Mintosh boot medium. It is protected from installation."
+if [[ "$MODE" == erase && "$DISK" == "$MINTOSH_WORKSPACE_DISK" ]]; then
+  fail "This disk contains the temporary source/build workspace. Erasing it now would destroy the verified build. Choose another installation disk, or choose alongside installation to preserve the workspace partition."
+fi
 [[ "$(lsblk -dnro TYPE "$DISK")" == "disk" ]] || fail "Only whole physical disks can be selected."
 if [[ "$MODE" == erase ]] && ! mintosh_disk_meets_erase_minimum "$DISK"; then
   fail "Erase installation requires a disk of at least 24 GiB so Mintosh has room for its EFI and root partitions."
@@ -136,7 +144,7 @@ dialog --title "$TITLE" --infobox "Installing Mintosh system files. This can tak
 rsync -aHAXx --numeric-ids \
   --exclude=/dev/*** --exclude=/proc/*** --exclude=/sys/*** --exclude=/run/*** \
   --exclude=/tmp/*** --exclude=/mnt/*** --exclude=/media/*** --exclude=/lost+found \
-  --exclude=/init / "$TARGET/" >>"$LOG" 2>&1 || fail "Could not copy the Mintosh base system."
+  --exclude=/init "$MINTOSH_BUILD_ROOTFS/" "$TARGET/" >>"$LOG" 2>&1 || fail "Could not copy the locally built Mintosh system."
 
 rm -f "$TARGET/etc/systemd/system/multi-user.target.wants/mintosh-installer.service"
 ROOT_UUID=$(blkid -s UUID -o value "$ROOT_PART")
@@ -147,6 +155,14 @@ else
   printf 'UUID=%s / ext4 defaults,noatime 0 1\n' "$ROOT_UUID" > "$TARGET/etc/fstab"
 fi
 : > "$TARGET/etc/machine-id"
+mkdir -p "$TARGET/etc/mintosh"
+cat > "$TARGET/etc/mintosh/build-info" <<EOF
+source_repository=https://github.com/lstudiolab/Linux-Mintosh
+source_commit=$MINTOSH_BUILD_COMMIT
+hardware_checks=150
+qemu_boot_test=passed
+build_origin=local-laptop
+EOF
 rm -f "$TARGET/var/lib/dbus/machine-id"
 ln -s /etc/machine-id "$TARGET/var/lib/dbus/machine-id"
 ln -snf /run/systemd/resolve/stub-resolv.conf "$TARGET/etc/resolv.conf"
@@ -179,6 +195,7 @@ fi
 chroot "$TARGET" update-initramfs -c -k all >>"$LOG" 2>&1 || chroot "$TARGET" update-initramfs -u -k all >>"$LOG" 2>&1
 chroot "$TARGET" update-grub >>"$LOG" 2>&1 || fail "Could not generate the boot menu."
 sync
+rm -rf "$MINTOSH_WORKSPACE_DIR"
 if dialog --title "Installation complete" --yesno "Mintosh has been installed on $DISK.\n\nRemove the USB installer and restart.\n\nRestart now?" 12 72; then
   cleanup
   trap - EXIT
