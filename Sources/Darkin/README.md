@@ -1,17 +1,18 @@
-# Tarts — backend foundation (legacy source location)
+# Tarts — legacy source root
 
-The backend foundation's final name is **Tarts**. This directory remains named `Sources/Darkin/` temporarily so existing references and build integration are not broken during migration.
+This directory is a temporary migration location. **Tarts** is the canonical name and `Sources/Tarts/` is the canonical component root.
 
-Tarts owns the complete non-graphical foundation:
-- Linux kernel integration through XCU.
-- Boot and runtime infrastructure.
+Tarts owns the non-graphical backend foundation:
+- Linux/XCU integration and early userspace.
+- Native init and system service lifecycle.
 - Hardware, device, memory and process services.
 - Storage, filesystems and networking.
-- Security enforcement, logging and power management.
-- System service lifecycle, launch, dependency ordering, supervision and recovery.
+- Security enforcement, credentials and policy.
+- Logging, diagnostics, power and recovery.
+- Core Services daemons and their service contracts.
 
-Shared, stable user-space APIs and reusable system functionality are organized as **Core Services**. Tarts owns and supervises their service processes, but Core Services is a distinct API/service layer.
+Core Services is a distinct public API/service layer *inside the Tarts foundation*. Tarts owns the backend runtime and supervises its services; Core Services defines stable APIs used by Cacao and other clients.
 
-Tarts is independent of Cacao. It does not contain the desktop, graphical UI, Window Server, graphical framework or app-manager interface. Cacao reaches Tarts-owned services through the XPU security and IPC boundary.
+Tarts is independent of Cacao and Window Server. Graphical applications reach protected Tarts services through XPU and Core Services contracts.
 
-The existing Linux-backed XNV primitives and read-only system-information service are prototypes being migrated to XCU and Tarts contracts. Do not rename implementation paths until build and CI integration has been updated and tested.
+The existing implementation remains in this legacy directory until its source and build integration are migrated. New implementation must be added under `Sources/Tarts/`, not here.
