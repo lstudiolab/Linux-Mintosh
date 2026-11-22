@@ -37,15 +37,23 @@ int main(void)
 
     unsigned char invalid[256];
     memcpy(invalid, stream, offset);
-    ((struct xcm_usi_stream_header *)invalid)->magic = 0;
+    struct xcm_usi_stream_header invalid_header;
+    memcpy(&invalid_header, invalid, sizeof(invalid_header));
+    invalid_header.magic = 0;
+    memcpy(invalid, &invalid_header, sizeof(invalid_header));
     assert(xcm_usi_validate(invalid, offset) != 0);
 
     memcpy(invalid, stream, offset);
-    ((struct xcm_usi_token_header *)(invalid + sizeof(header)))->flags = 1;
+    struct xcm_usi_token_header invalid_token;
+    memcpy(&invalid_token, invalid + sizeof(header), sizeof(invalid_token));
+    invalid_token.flags = 1;
+    memcpy(invalid + sizeof(header), &invalid_token, sizeof(invalid_token));
     assert(xcm_usi_validate(invalid, offset) != 0);
 
     memcpy(invalid, stream, offset);
-    ((struct xcm_usi_stream_header *)invalid)->token_count = 3;
+    memcpy(&invalid_header, invalid, sizeof(invalid_header));
+    invalid_header.token_count = 3;
+    memcpy(invalid, &invalid_header, sizeof(invalid_header));
     assert(xcm_usi_validate(invalid, offset) != 0);
 
     memcpy(invalid, stream, offset);
@@ -54,7 +62,9 @@ int main(void)
     assert(xcm_usi_validate(invalid, offset) != 0);
 
     memcpy(invalid, stream, offset);
-    ((struct xcm_usi_token_header *)(invalid + sizeof(header)))->type = 999;
+    memcpy(&invalid_token, invalid + sizeof(header), sizeof(invalid_token));
+    invalid_token.type = 999;
+    memcpy(invalid + sizeof(header), &invalid_token, sizeof(invalid_token));
     assert(xcm_usi_validate(invalid, offset) != 0);
 
     assert(xcm_usi_validate(stream, sizeof(header) - 1U) != 0);
