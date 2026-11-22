@@ -7,11 +7,11 @@ Lenix is a Linux-based operating system with a layered architecture separating t
 The canonical target architecture is documented in [docs/platform-architecture.md](docs/platform-architecture.md).
 
 - **XCU Kernel** — Lenix's Linux-based hybrid-kernel architecture. Linux is the actual primary kernel; BSD-derived interfaces provide Unix/POSIX compatibility; Mach-inspired task, port and messaging abstractions are implemented using Linux primitives.
-- **XPU / XUM migration** — the existing authenticated IPC broker and the planned system-wide messaging interface. These are user-space communication facilities, not another kernel.
-- **Tarts / Sean migration** — the existing backend foundation and service lifecycle implementation.
+- **XUM / XUM migration** — the existing authenticated IPC broker and the planned system-wide messaging interface. These are user-space communication facilities, not another kernel.
+- **Sean / Sean migration** — the existing backend foundation and service lifecycle implementation.
 - **Core Services** — stable shared user-space APIs and services for storage, networking, sessions, notifications, security clients, logging and application lifecycle.
 - **Window Server** — display management, windows, surfaces, composition, focus and input routing.
-- **Cacao** — the graphical platform and native application framework, including desktop UI, application manager, application lifecycle, controls, layout, accessibility and public application APIs.
+- **Choca** — the graphical platform and native application framework, including desktop UI, application manager, application lifecycle, controls, layout, accessibility and public application APIs.
 
 The source tree retains historical directory names while components are migrated and tested. See [docs/upstream-integration.md](docs/upstream-integration.md) for the upstream code integrated into the Lenix architecture and the license/provenance record.
 
@@ -21,7 +21,7 @@ Linux is the real kernel and provides scheduling, virtual memory, drivers, VFS, 
 
 ## Current implementation
 
-The current preview boots upstream Linux with a transitional Debian userspace. XCU has initial Linux-backed primitives and configuration; the backend, graphical server, Cacao desktop and native application SDK remain in development. Do not describe the current preview as a finished desktop or production-secure OS.
+The current preview boots upstream Linux with a transitional Debian userspace. XCU has initial Linux-backed primitives and configuration; the backend, graphical server, Choca desktop and native application SDK remain in development. Do not describe the current preview as a finished desktop or production-secure OS.
 
 The selected kernel path is upstream Linux plus the XCU integration configuration under `kernel/xcu/`. The public XCU primitives are installed as `libxcu.a` with `<xcu/xcu.h>`.
 
