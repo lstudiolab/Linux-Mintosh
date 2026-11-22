@@ -14,7 +14,7 @@
 #include <time.h>
 #include <unistd.h>
 
-#define SUPERVISOR_PATH "/usr/bin/launch7762"
+#define SUPERVISOR_PATH "/usr/bin/tarts-services"
 #define RESTART_MAX_SECONDS 30
 #define SHUTDOWN_GRACE_SECONDS 5
 
@@ -120,7 +120,7 @@ static pid_t start_supervisor(void)
                 SUPERVISOR_PATH, strerror(errno));
         _exit(127);
     }
-    fprintf(stderr, "mintosh-init: launch7762 started (pid %ld)\n", (long)child);
+    fprintf(stderr, "mintosh-init: Tarts service manager started (pid %ld)\n", (long)child);
     return child;
 }
 
@@ -218,7 +218,7 @@ static int run_init(void)
         if (shutdown_requested)
             break;
 
-        fprintf(stderr, "mintosh-init: launch7762 exited; restarting in %u second(s)\n",
+        fprintf(stderr, "mintosh-init: Tarts service manager exited; restarting in %u second(s)\n",
                 restart_delay);
         sleep_seconds(restart_delay);
         if (restart_delay < RESTART_MAX_SECONDS) {
