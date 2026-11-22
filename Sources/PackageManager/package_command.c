@@ -126,9 +126,30 @@ static int run_packages(int argc, char **argv, const char *operation) {
     return mstore_execute(arguments);
 }
 
+static int run_appimage(const char *input) {
+    char path[PATH_MAX];
+    if (!resolve_regular_file(input, path)) return 64;
+    if (detect_format(path) != MSTORE_FORMAT_APPIMAGE) {
+        fputs("mstore: run currently accepts only .AppImage files.\\n", stderr);
+        return 65;
+    }
+    if (geteuid() == 0) {
+        fputs("mstore: refusing to launch an AppImage as root; run it as your user.\\n", stderr);
+        return 2;
+    }
+    if (access(path, X_OK) != 0) {
+        fprintf(stderr, "mstore: AppImage is not executable: %s\\n", path);
+        return 126;
+    }
+    char *arguments[] = {path, NULL};
+    execv(path, arguments);
+    fprintf(stderr, "mstore: cannot launch AppImage: %s\\n", strerror(errno));
+    return errno == ENOENT ? 127 : 126;
+}
+
 static int show_usage(void) {
     fputs("usage: mstore search QUERY | info PACKAGE | list | install PACKAGE... | "
-          "install-file FILE | format FILE | remove PACKAGE... | update | upgrade\n", stderr);
+          "install-file FILE | format FILE | run FILE.AppImage | remove PACKAGE... | update | upgrade\n", stderr);
     return 64;
 }
 
@@ -138,7 +159,7 @@ int main(int argc, char **argv) {
         return 0;
     }
     if (argc < 2) return show_usage();
-    if (strcmp(argv[1], "format") == 0 && argc == 3) {
+    if (strcmp(argv[1], "run") == 0 && argc == 3) return run_appimage(argv[2]);\n    if (strcmp(argv[1], "format") == 0 && argc == 3) {
         char path[PATH_MAX];
         if (!resolve_regular_file(argv[2], path)) return 64;
         enum mstore_format format = detect_format(path);
@@ -146,7 +167,7 @@ int main(int argc, char **argv) {
         return format == MSTORE_FORMAT_UNKNOWN ? 65 : 0;
     }
     if ((strcmp(argv[1], "install-file") == 0 && argc == 3) ||
-        (strcmp(argv[1], "install") == 0 && argc == 3 && strchr(argv[2], '/') != NULL))
+        (strcmp(argv[1], "install") == 0 && argc == 3 && detect_format(argv[2]) != MSTORE_FORMAT_UNKNOWN))
         return install_file(argv[2]);
     if (strcmp(argv[1], "search") == 0 && argc == 3) {
         char *arguments[] = {"apt-cache", "--names-only", "search", argv[2], NULL};
