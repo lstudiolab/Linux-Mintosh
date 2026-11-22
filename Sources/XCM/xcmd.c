@@ -1,5 +1,6 @@
 #define _GNU_SOURCE
 #include "include/xcm/protocol.h"
+#include "include/xcm/darkin_client.h"
 
 #include <errno.h>
 #include <grp.h>
@@ -21,7 +22,6 @@
 #include <time.h>
 #include <unistd.h>
 #include <stddef.h>
-#include <sys/utsname.h>
 
 #define XCM_SOCKET_DEFAULT "/run/mintosh/xcm.sock"
 #define XCM_REPLAY_SLOTS 512U
@@ -182,26 +182,21 @@ static void handle_client(int client, gid_t service_gid) {
     }
 
     if (request.operation == XCM_OP_READ_SYSTEM_INFO) {
-        struct utsname system;
-        char info[512];
-        if (uname(&system) < 0) {
-            send_response(client, request.request_id, XCM_RESPONSE_INTERNAL_ERROR,
+        char information[512];
+        uint32_t information_size = 0;
+        if (xcm_darkin_system_info(request.request_id, information,
+                                   sizeof(information), &information_size) < 0) {
+            audit_event(LOG_ERR, "Darkin system-info endpoint unavailable: %s",
+                        strerror(errno));
+            send_response(client, request.request_id, XCM_RESPONSE_UNAVAILABLE,
                           XCM_RESPONSE_PAYLOAD_NONE, NULL, 0);
             return;
         }
-        int length = snprintf(info, sizeof(info),
-                              "Mintosh; kernel=%s; release=%s; machine=%s",
-                              system.sysname, system.release, system.machine);
-        if (length < 0 || (size_t)length >= sizeof(info)) {
-            send_response(client, request.request_id, XCM_RESPONSE_INTERNAL_ERROR,
-                          XCM_RESPONSE_PAYLOAD_NONE, NULL, 0);
-            return;
-        }
-        audit_event(LOG_INFO, "allowed system-info query uid=%lu request=%llu",
+        audit_event(LOG_INFO, "forwarded system-info request uid=%lu request=%llu",
                     (unsigned long)credentials.uid,
                     (unsigned long long)request.request_id);
         send_response(client, request.request_id, XCM_RESPONSE_OK,
-                      XCM_RESPONSE_DARKIN_DATA, info, (uint32_t)length);
+                      XCM_RESPONSE_DARKIN_DATA, information, information_size);
         return;
     }
 
