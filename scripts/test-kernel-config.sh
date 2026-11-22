@@ -12,7 +12,7 @@ for option in \
   CONFIG_NVME_CORE CONFIG_BLK_DEV_NVME CONFIG_SATA_AHCI \
   CONFIG_HP_WMI CONFIG_HP_ACCEL CONFIG_RTW88_8821CE CONFIG_RTW88_8822BE
 do
-  printf '%s=y\\n' "$option" >> "$CONFIG"
+  echo "$option=y" >> "$CONFIG"
 done
 sh scripts/verify-kernel-config.sh "$CONFIG" hp-probook-450-g6 >/dev/null
 sed -i '/^CONFIG_MODULE_SIG_FORCE=y$/d' "$CONFIG"
@@ -20,7 +20,7 @@ if sh scripts/verify-kernel-config.sh "$CONFIG" >/dev/null 2>&1; then
   echo "Kernel config verifier accepted a missing required option." >&2
   exit 1
 fi
-printf '%s=y\\n' CONFIG_MODULE_SIG_FORCE >> "$CONFIG"
+echo "CONFIG_MODULE_SIG_FORCE=y" >> "$CONFIG"
 sed -i '/^CONFIG_RTW88_8821CE=y$/d' "$CONFIG"
 if sh scripts/verify-kernel-config.sh "$CONFIG" hp-probook-450-g6 >/dev/null 2>&1; then
   echo "Kernel config verifier accepted a missing ProBook Wi-Fi driver." >&2
