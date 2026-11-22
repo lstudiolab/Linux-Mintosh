@@ -13,6 +13,7 @@ the Linux kernel's EFI stub.
 - Supplies `initrd=\\boot\\initramfs.cpio.gz` through the EFI load options.
 - Uses firmware `LoadImage` policy, so firmware Secure Boot policy applies
   when the platform enforces image authentication.
+- Rejects missing, empty, oversized, or non-gzip initramfs files before handoff; the current check validates the gzip header, not the complete compressed payload or its checksum.
 - Fails closed when the boot volume, kernel, or initramfs is unavailable.
 
 ## Security and limitations
