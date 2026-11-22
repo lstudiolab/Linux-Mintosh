@@ -44,7 +44,7 @@ static int parse_start_order(const char *value, unsigned int *order) {
     errno = 0;
     char *end = NULL;
     unsigned long parsed = strtoul(value, &end, 10);
-    if (errno != 0 || end == value || *end != '\\0' || parsed > 9999UL)
+    if (errno != 0 || end == value || *end != '\0' || parsed > 9999UL)
         return -1;
     *order = (unsigned int)parsed;
     return 0;
