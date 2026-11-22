@@ -20,7 +20,7 @@ else
 KERNEL_IMAGE := bzImage
 endif
 
-.PHONY: help test-native-core test-kernel-config test-installer-safety check-host check-release check-scripts verify release-info host-deps kernel-fetch kernel-config kernel kernel-install rootfs initramfs iso image qemu test-qemu usb clean
+.PHONY: help check-makefiles test-native-core test-kernel-config test-installer-safety check-host check-release check-scripts verify release-info host-deps kernel-fetch kernel-config kernel kernel-install rootfs initramfs iso image qemu test-qemu usb clean
 
 help:
 	@printf '%s\n' \
@@ -48,6 +48,11 @@ check-release:
 	@python3 scripts/check-release.py
 	@python3 -m json.tool configs/release.json >/dev/null
 
+check-makefiles:
+	@$(MAKE) --no-print-directory -n help >/dev/null
+	@$(MAKE) --no-print-directory -C Sources/MintoshCore -n all test-foundation >/dev/null
+	@echo 'Root and native-core Makefiles parse and resolve all build prerequisites.'
+
 check-scripts:
 	@python3 -c 'import pathlib, subprocess; bash={"mintosh-installer.sh", "installer-disk-safety.sh", "installer-storage.sh", "test-installer-disk-safety.sh", "test-installer-partitioning.sh"}; [subprocess.run(["bash" if p.name in bash else "sh", "-n", str(p)], check=True) for p in pathlib.Path("scripts").glob("*.sh")]'
 	@python3 -c 'import ast,pathlib; ast.parse(pathlib.Path("scripts/check-release.py").read_text(encoding="utf-8"))'
@@ -64,7 +69,7 @@ test-installer-safety:
 	@bash scripts/test-installer-disk-safety.sh
 	@bash scripts/test-installer-partitioning.sh
 
-verify: check-release check-scripts test-kernel-config test-installer-safety test-native-core
+verify: check-release check-makefiles check-scripts test-kernel-config test-installer-safety test-native-core
 	@echo 'Mintosh validation and native core tests passed.'
 
 release-info: check-release
