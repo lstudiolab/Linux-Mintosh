@@ -1,7 +1,7 @@
-# XNV baseline Linux kernel configuration fragment
-# Linux remains the sole kernel; these options provide the XNV isolation,
+# XCU baseline Linux kernel configuration fragment
+# Linux remains the sole kernel; these options provide the XCU isolation,
 # compatibility and message-passing primitives.
-CONFIG_LOCALVERSION="-mintosh-xnv"
+CONFIG_LOCALVERSION="-mintosh-xcu"
 
 # Linux namespaces and resource controls.
 CONFIG_NAMESPACES=y
