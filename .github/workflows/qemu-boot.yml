@@ -36,10 +36,14 @@ jobs:
           make kernel-fetch
           make kernel-config MINTOSH_HARDWARE_PROFILE=generic
           make kernel-config MINTOSH_HARDWARE_PROFILE=hp-probook-450-g6
+          # Reconfigure the release image with the generic Intel/AMD profile.
+          make kernel-config MINTOSH_HARDWARE_PROFILE=generic
       - name: Build kernel and installer image
         run: |
           make kernel JOBS=2
           make iso JOBS=2
+      - name: Boot Linux through Mintosh mBoot under OVMF
+        run: make test-mboot-qemu
       - name: Boot installer image in QEMU
         run: make test-qemu
       - name: Package Rufus installer ZIP and SHA-256 checksum
