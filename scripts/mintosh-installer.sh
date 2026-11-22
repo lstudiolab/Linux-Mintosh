@@ -12,7 +12,14 @@ LOG=/var/log/mintosh-installer.log
 mkdir -p "$(dirname "$LOG")"
 
 fail() {
-  dialog --title "$TITLE" --msgbox "$1\n\nDetails: $LOG" 12 72 || true
+  dialog --title "$TITLE" --msgbox "$1\n\nDetails: $LOG\n\nMintosh will return to the firmware setup. Remove the installer USB before the next normal startup." 14 76 || true
+  cleanup
+  trap - EXIT
+  if [[ -d /sys/firmware/efi ]]; then
+    systemctl reboot --firmware-setup || reboot
+  else
+    reboot
+  fi
   exit 1
 }
 cleanup() {
