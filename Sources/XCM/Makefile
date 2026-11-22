@@ -9,7 +9,7 @@ INCLUDEDIR = $(DESTDIR)$(PREFIX)/include/xcm
 BUILD = build
 
 .PHONY: all test install clean
-all: $(BUILD)/xcmd $(BUILD)/libxcm.a
+all: $(BUILD)/xpu $(BUILD)/libxcm.a
 
 $(BUILD):
 	mkdir -p $@
@@ -20,8 +20,8 @@ $(BUILD)/policy.o: policy.c include/xcm/protocol.h | $(BUILD)
 $(BUILD)/client.o: client.c include/xcm/client.h include/xcm/protocol.h | $(BUILD)
 	$(CC) $(CFLAGS) -I. -c $< -o $@
 
-$(BUILD)/xcmd: xcmd.c policy.c darkin_client.c usi_token_validation.c include/xcm/protocol.h include/xcm/darkin_client.h include/xcm/usi_tokens.h ../Darkin/include/darkin/protocol.h | $(BUILD)
-	$(CC) $(CFLAGS) -I. -I../Darkin/include xcmd.c policy.c darkin_client.c usi_token_validation.c -o $@
+$(BUILD)/xpu: xpu.c policy.c darkin_client.c usi_token_validation.c include/xcm/protocol.h include/xcm/darkin_client.h include/xcm/usi_tokens.h ../Darkin/include/darkin/protocol.h | $(BUILD)
+	$(CC) $(CFLAGS) -I. -I../Darkin/include xpu.c policy.c darkin_client.c usi_token_validation.c -o $@
 
 $(BUILD)/libxcm.a: $(BUILD)/client.o $(BUILD)/policy.o
 	$(AR) rcs $@ $^
@@ -35,15 +35,15 @@ $(BUILD)/client-tests: tests/client_tests.c client.c include/xcm/client.h includ
 $(BUILD)/usi-token-tests: tests/usi_token_tests.c usi_token_validation.c include/xcm/usi_tokens.h include/xcm/protocol.h | $(BUILD)
 	$(CC) $(CFLAGS) -I. tests/usi_token_tests.c usi_token_validation.c -o $@
 
-test: $(BUILD)/policy-tests $(BUILD)/client-tests $(BUILD)/usi-token-tests $(BUILD)/xcmd
+test: $(BUILD)/policy-tests $(BUILD)/client-tests $(BUILD)/usi-token-tests $(BUILD)/xpu
 	./$(BUILD)/policy-tests
 	./$(BUILD)/client-tests
 	./$(BUILD)/usi-token-tests
-	./$(BUILD)/xcmd --version
+	./$(BUILD)/xpu --version
 
 install: all
 	install -d $(BINDIR) $(LIBDIR) $(INCLUDEDIR)
-	install -m 0755 $(BUILD)/xcmd $(BINDIR)/xcmd
+	install -m 0755 $(BUILD)/xpu $(BINDIR)/xpu
 	install -m 0644 $(BUILD)/libxcm.a $(LIBDIR)/libxcm.a
 	install -m 0644 include/xcm/protocol.h include/xcm/client.h include/xcm/usi_tokens.h $(INCLUDEDIR)/
 
