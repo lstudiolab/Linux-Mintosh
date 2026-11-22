@@ -32,7 +32,7 @@ int main(void)
 
     write_service(directory, "xpu",
         "ExecStart=/usr/bin/xpu\nEnabled=yes\nRestart=always\n"
-        "Group=mintosh-services\nOrder=20\n");
+        "Group=root\nOrder=20\n");
     write_service(directory, "tarts",
         "ExecStart=/usr/bin/tarts-system\nEnabled=yes\nRestart=always\n"
         "Order=10\n");
@@ -52,7 +52,7 @@ int main(void)
     assert(manager.services[1].start_order == 20);
     assert(manager.services[2].start_order == 30);
 
-    struct group *services = getgrnam("mintosh-services");
+    struct group *services = getgrnam("root");
     assert(services != NULL);
     assert(manager.services[1].has_group == 1);
     assert(manager.services[1].group_id == services->gr_gid);
