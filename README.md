@@ -9,7 +9,7 @@ The release manifest is the source of truth:
     make check-release
     make release-info
 
-The first Developer Preview targets x86_64 bootable media. ARM64 is supported by the kernel build configuration; ARM64 live images and installation are not yet implemented.
+The first Developer Preview targets x86_64 bootable media. ARM64 can be cross-compiled at the kernel stage; ARM64 root filesystems, live images and installation are not implemented. RISC-V is planned.
 
 **Hardware safety:** this is still a Developer Preview, not a hardware-certified installer. Do not install it on your daily-use laptop or overwrite an internal disk yet. Require a successful QEMU boot test and a disposable-disk installation test before physical installation.
 

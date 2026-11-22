@@ -40,7 +40,7 @@ set -e
 [ "$LAUNCH511_STATUS" -eq 64 ]
 [ "$KEXT_INVALID_STATUS" -eq 64 ]
 "$B/hp-compat" --version | grep -q '0.1.0'
-"$B/hp-compat" --json | python3 -c 'import json,sys; value=json.load(sys.stdin); assert {"vendor","product","board","bios_version","is_hp","is_probook"} <= value.keys()'
+"$B/hp-compat" --json | python3 -c 'import json,sys; value=json.load(sys.stdin); assert {"vendor","product","board","bios_version","cpu_vendor","is_hp","is_probook"} <= value.keys() and value["cpu_vendor"]'
 "$B/ioplus" --version | grep -q '0.2.0'
 "$B/gvdctl" --version | grep -q '0.1.0'
 "$B/gvdctl" list --json | python3 -c 'import json,sys; value=json.load(sys.stdin); assert isinstance(value,list) and value'

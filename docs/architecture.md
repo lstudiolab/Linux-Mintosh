@@ -26,7 +26,7 @@ Native source code lives under `Sources/`. The current core is compiled inside t
 - **IOPS**: power-supply and thermal inventory, CPU frequency governor inspection/control and ACPI platform-profile management.
 - **I/O+**: structured kernel, CPU, memory, DMI, block, network, USB, graphics and power inventory, plus a read-only kernel uevent monitor.
 - **Platform baseline**: x86-64 builds enable a generic Intel/AMD desktop and laptop driver profile covering ACPI, CPU power management, PCI-era storage, NVMe, SATA/AHCI, USB, common wired and wireless networking, Bluetooth, graphics, audio, input, webcams and Thunderbolt/USB-C. Device-specific drivers remain modules so missing hardware does not block boot.
-- **HP Compatibility**: optional DMI-based HP/ProBook identification and diagnostics. The HP-specific kernel profile is opt-in with `MINTOSH_HARDWARE_PROFILE=hp-probook`; it is not the default hardware target.
+- **HP Compatibility**: C++ platform diagnostics backed by an x86-64 assembly CPUID routine, plus DMI-based HP/ProBook identification. The HP-specific kernel profile is opt-in with `MINTOSH_HARDWARE_PROFILE=hp-probook`; it is not the default hardware target.
 - **Kexts**: kernel module operations delegated to Linux modprobe/kmod.
 - **Security**: basic permissions audit for critical account files.
 - **System Logging**: syslog client utility.
