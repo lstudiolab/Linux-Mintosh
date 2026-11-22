@@ -1,14 +1,10 @@
 name: Mintosh QEMU boot verification
 
 on:
-  push:
+  workflow_run:
+    workflows: ["Mintosh verification"]
+    types: [completed]
     branches: [main]
-    paths:
-      - '.github/workflows/qemu-boot.yml'
-      - 'Makefile'
-      - 'configs/**'
-      - 'Sources/**'
-      - 'scripts/**'
   workflow_dispatch:
 
 permissions:
@@ -16,12 +12,15 @@ permissions:
 
 jobs:
   qemu-boot:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
     name: Build image and verify live boot
     runs-on: ubuntu-24.04
     timeout-minutes: 120
     steps:
       - name: Check out source
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
       - name: Install build dependencies
         run: make host-deps
       - name: Verify native foundation
