@@ -27,7 +27,7 @@ LockPersonality=true
 MemoryDenyWriteExecute=true
 RestrictAddressFamilies=AF_UNIX
 SystemCallArchitectures=native
-CapabilityBoundingSet=CAP_CHOWN
+CapabilityBoundingSet=
 ReadWritePaths=/run/mintosh
 ReadOnlyPaths=/run/mintosh-darkin
 
