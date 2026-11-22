@@ -10,5 +10,5 @@ void xnv_serial_write(const char *text);
 void xnv_serial_hex(xnv_u64 value);
 void xnv_halt(void) __attribute__((noreturn));
 void xnv_interrupts_init(void);
-int xnv_paging_init(void);
+int xnv_paging_init(const struct xnv_memory_region *regions,xnv_u64 count);
 #endif
