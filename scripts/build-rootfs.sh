@@ -63,7 +63,7 @@ mkdir -p "$ROOTFS/usr/src/mintosh" "$ROOTFS/etc/mintosh/services"
 cp -a "$ROOT/Sources" "$ROOTFS/usr/src/mintosh/"
 chroot "$ROOTFS" make -C /usr/src/mintosh/Sources/CoreServices install
 chroot "$ROOTFS" make -C /usr/src/mintosh/Sources/Sean install
-chroot "$ROOTFS" make -C /usr/src/mintosh/Sources/XPU install
+chroot "$ROOTFS" make -C /usr/src/mintosh/Sources/XUM install
 chroot "$ROOTFS" make -C /usr/src/mintosh/Sources/XCU install
 rm -rf "$ROOTFS/usr/src/mintosh"
 chroot "$ROOTFS" apt-mark manual libsqlite3-0 libstdc++6
@@ -73,6 +73,7 @@ chroot "$ROOTFS" apt-get clean
 install -m 0644 "$ROOT/Sources/Services/launch7762.service" "$ROOTFS/etc/systemd/system/launch7762.service"
 install -m 0644 "$ROOT/Sources/Services/mintosh-ready.service" "$ROOTFS/etc/systemd/system/mintosh-ready.service"
 install -m 0644 "$ROOT/Sources/Services/sean-system.service" "$ROOTFS/etc/systemd/system/sean-system.service"
+install -m 0644 "$ROOT/Sources/Services/xum.service" "$ROOTFS/etc/systemd/system/xum.service"
 install -m 0644 "$ROOT/Sources/Services/xpu.service" "$ROOTFS/etc/systemd/system/xpu.service"
 install -m 0644 "$ROOT/Sources/Services/ioplus-events.service" "$ROOTFS/etc/systemd/system/ioplus-events.service"
 install -m 0644 "$ROOT/Sources/Services/launch-client.service" "$ROOTFS/usr/lib/systemd/user/launch-client.service"
@@ -120,7 +121,7 @@ ln -snf /usr/share/zoneinfo/UTC "$ROOTFS/etc/localtime"
 : > "$ROOTFS/etc/machine-id"
 mkdir -p "$ROOTFS/var/lib/dbus"
 ln -snf /etc/machine-id "$ROOTFS/var/lib/dbus/machine-id"
-systemctl --root="$ROOTFS" enable NetworkManager.service systemd-resolved.service serial-getty@ttyS0.service launch7762.service mintosh-ready.service sean-system.service xpu.service mintosh-installer.service ioplus-events.service
+systemctl --root="$ROOTFS" enable NetworkManager.service systemd-resolved.service serial-getty@ttyS0.service launch7762.service mintosh-ready.service sean-system.service xum.service mintosh-installer.service ioplus-events.service
 ln -snf /run/systemd/resolve/stub-resolv.conf "$ROOTFS/etc/resolv.conf"
 rm -rf "$ROOTFS/var/lib/apt/lists/"*
 echo "Mintosh root filesystem created at out/rootfs."
