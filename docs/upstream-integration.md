@@ -1,6 +1,8 @@
 # Lenix upstream source integration
 
-This document records the trusted upstream projects selected for Lenix and how their code is used. The source list is machine-readable in [../configs/upstream-sources.json](../configs/upstream-sources.json).
+This document records the trusted upstream projects selected for Lenix and how their code is used. The source list is machine-readable in [../configs/upstream-sources.json](../configs/upstream-sources.json). Full FreeBSD and XNU reference trees are pinned as Git submodules under `third_party/`; the complete Linux source is fetched at the release-pinned version into `kernel/linux`.
+
+Run `make upstream-fetch` to initialize the FreeBSD/XNU submodules and fetch the exact Linux release archive. Run `make upstream-status` to inspect checkout state. Linux is fetched by `scripts/fetch-kernel.sh` and verified against the SHA-256 in `configs/release.json`.
 
 ## Integration rules
 
@@ -42,6 +44,8 @@ The XCU fragment enables Linux's existing Unix-domain socket and event facilitie
 - Linux POSIX/System V IPC configuration, including message queues.
 
 **Reference-only or future work:**
+- Full FreeBSD source is available at the pinned `third_party/freebsd-src` submodule; selected files are for behavioral comparison only.
+- Full XNU source is available at the pinned `third_party/xnu` submodule; Mach sources are for architectural study only and remain subject to APSL-2.0.
 - FreeBSD source is not compiled into XCU.
 - U-Boot is not part of the current GRUB/mBoot boot path.
 - systemd is a transitional runtime dependency, not copied into Lenix's native service manager.
