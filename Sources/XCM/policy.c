@@ -1,4 +1,5 @@
 #include "include/xcm/protocol.h"
+#include <stddef.h>
 
 #define XCM_KNOWN_FLAGS XCM_FLAG_USER_CONFIRMED
 #define XCM_MAX_PAYLOAD_SIZE (XCM_MAX_MESSAGE_SIZE - sizeof(struct xcm_request))
