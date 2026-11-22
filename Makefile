@@ -49,7 +49,7 @@ check-release:
 	@python3 -m json.tool configs/release.json >/dev/null
 
 check-scripts:
-	@python3 -c 'import pathlib, subprocess; bash={"mintosh-installer.sh", "installer-disk-safety.sh", "installer-storage.sh", "test-installer-disk-safety.sh", "test-installer-partitioning.sh"}; [subprocess.run(["bash" if p.name in bash else "sh", "-n", str(p)], check=True) for p in pathlib.Path("scripts").glob("*.sh")]
+	@python3 -c 'import pathlib, subprocess; bash={"mintosh-installer.sh", "installer-disk-safety.sh", "installer-storage.sh", "test-installer-disk-safety.sh", "test-installer-partitioning.sh"}; [subprocess.run(["bash" if p.name in bash else "sh", "-n", str(p)], check=True) for p in pathlib.Path("scripts").glob("*.sh")]'
 	@python3 -c 'import ast,pathlib; ast.parse(pathlib.Path("scripts/check-release.py").read_text(encoding="utf-8"))'
 	@sh -n scripts/configure-hp-probook.sh
 	@echo 'Shell and Python scripts are syntactically valid.'
