@@ -1,6 +1,7 @@
 #define _GNU_SOURCE
 #include "include/xcm/protocol.h"
 #include "include/xcm/darkin_client.h"
+#include "include/xcm/usi_tokens.h"
 
 #include <errno.h>
 #include <grp.h>
@@ -170,6 +171,16 @@ static void handle_client(int client, gid_t service_gid) {
         .confirmation_operation = 0
     };
     enum xcm_policy_result decision = xcm_policy_authorize(&request, &context);
+    if (decision == XCM_POLICY_ALLOW &&
+        request.operation == XCM_OP_PRESENT_TOKENS &&
+        xcm_usi_validate(packet + sizeof(request), request.payload_size) != 0) {
+        audit_event(LOG_WARNING, "invalid USI token stream uid=%lu request=%llu",
+                    (unsigned long)credentials.uid,
+                    (unsigned long long)request.request_id);
+        send_response(client, request.request_id, XCM_RESPONSE_INVALID,
+                      XCM_RESPONSE_PAYLOAD_NONE, NULL, 0);
+        return;
+    }
     if (decision != XCM_POLICY_ALLOW) {
         audit_event(LOG_WARNING,
                     "policy denied uid=%lu pid=%ld request=%llu operation=%u target=%u reason=%u",
