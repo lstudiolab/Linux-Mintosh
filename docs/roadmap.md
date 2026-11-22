@@ -65,7 +65,7 @@ This roadmap separates implemented source from verified release behavior. A dire
 - [~] Installer storage safety tests (live USB exclusion, alongside partition preservation, minimum erase capacity, exact ERASE confirmation and partition layouts are tested; full local-build-to-install test remains)
 - [~] Initial mBoot x86-64 UEFI application and PE/COFF build validation (firmware runtime and kernel/initramfs handoff tests pending)
 - [ ] Integrate mBoot as the ISO's direct UEFI boot application; retain GRUB for legacy BIOS
-- [ ] OVMF normal boot, missing-kernel, missing-initramfs and invalid-image tests
+- [~] OVMF UEFI boot test is implemented in the installer gate; missing-kernel, missing-initramfs and invalid-image tests remain
 - [ ] UEFI Secure Boot signing and trusted-key enrollment
 - [ ] TPM 2.0 measured-boot event logging for mBoot, kernel and initramfs
 - [ ] QEMU boot test on the current release commit (must pass before physical installation is considered safe)
