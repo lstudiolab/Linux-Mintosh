@@ -98,6 +98,9 @@ $(BUILD)/gvd-dispatch-tests: ../GVD/tests/gvd_tests.c ../GVD/dispatch_queue.c | 
 $(BUILD)/foundation-tests: ../Foundation/tests/foundation_tests.c ../Foundation/string.c ../Foundation/path.c ../Foundation/data.c ../Foundation/array.c ../Foundation/dictionary.c ../Foundation/url.c ../Foundation/error.c ../Foundation/filesystem.c | $(BUILD)
 	$(CC) $(CPPFLAGS) $(CFLAGS) $^ -o $@
 
+$(BUILD)/foundation-tests-sanitize: ../Foundation/tests/foundation_tests.c ../Foundation/string.c ../Foundation/path.c ../Foundation/data.c ../Foundation/array.c ../Foundation/dictionary.c ../Foundation/url.c ../Foundation/error.c ../Foundation/filesystem.c | $(BUILD)
+	$(CC) $(CPPFLAGS) -O1 -g -std=c17 -Wall -Wextra -Wpedantic -Wformat=2 -Werror -fsanitize=address,undefined -fno-omit-frame-pointer $^ -o $@
+
 $(BUILD)/libsys-tests: ../LibSys/tests/line_reader_tests.c ../LibSys/line_reader.c | $(BUILD)
 	$(CC) $(CPPFLAGS) $(CFLAGS) $^ -o $@
 
@@ -128,8 +131,9 @@ $(BUILD)/security-tests: ../Security/tests/security_tests.c ../Security/permissi
 $(BUILD)/service-control-tests: ../Launch7762/tests/service_control_tests.c ../Launch7762/service_control.c ../LibSys/file_descriptor.c | $(BUILD)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -I../Launch7762 $^ -o $@
 
-test-foundation: $(BUILD)/foundation-tests $(BUILD)/package-validation-tests $(BUILD)/service-control-tests $(BUILD)/libsys-tests $(BUILD)/libsys-filesystem-tests $(BUILD)/darl-protocol-tests $(BUILD)/ioplus-uevent-tests $(BUILD)/gvd-tests $(BUILD)/iops-tests $(BUILD)/gvd-dispatch-tests $(BUILD)/csf-tests $(BUILD)/kext-policy-tests $(BUILD)/security-tests
+test-foundation: $(BUILD)/foundation-tests $(BUILD)/foundation-tests-sanitize $(BUILD)/package-validation-tests $(BUILD)/service-control-tests $(BUILD)/libsys-tests $(BUILD)/libsys-filesystem-tests $(BUILD)/darl-protocol-tests $(BUILD)/ioplus-uevent-tests $(BUILD)/gvd-tests $(BUILD)/iops-tests $(BUILD)/gvd-dispatch-tests $(BUILD)/csf-tests $(BUILD)/kext-policy-tests $(BUILD)/security-tests
 	$(BUILD)/foundation-tests
+	ASAN_OPTIONS=detect_leaks=1 UBSAN_OPTIONS=halt_on_error=1 $(BUILD)/foundation-tests-sanitize
 	$(BUILD)/package-validation-tests
 	$(BUILD)/service-control-tests
 	$(BUILD)/libsys-tests
