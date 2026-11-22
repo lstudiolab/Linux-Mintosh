@@ -134,7 +134,7 @@ The repository currently contains a working first milestone under earlier names.
 
 | Current prototype | Target architecture | Migration rule |
 |---|---|---|
-| `Sources/Darkin/XNV/ (legacy path)` and `kernel/xnv/` | XCU Kernel | Retain Linux-backed pidfd, port, memory and event primitives; update public naming/contracts after compatibility tests |
+| `Sources/Darkin/XNV/` (legacy path) and `kernel/xnv/` | XCU Kernel | Retain Linux-backed pidfd, port, memory and event primitives; update public naming/contracts after compatibility tests |
 | `Sources/XCM/` | XPU | Evolve the broker into a typed, authenticated IPC/security service; preserve deny-by-default policy |
 | Tarts backend service prototypes | Tarts and Core Services | Migrate the complete backend foundation to Tarts; organize stable shared APIs as Core Services |
 | Cacao graphical platform plan | Window Server and Cacao | Separate the window/compositor service from the public application framework |
