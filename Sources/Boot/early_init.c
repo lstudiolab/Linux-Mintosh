@@ -38,15 +38,14 @@ int main(void)
     };
 
     if (ensure_directory("/dev") != 0 ||
-        ensure_directory("/dev/pts") != 0 ||
         ensure_directory("/proc") != 0 ||
         ensure_directory("/sys") != 0 ||
-        ensure_directory("/run") != 0 ||
-        ensure_directory("/run/lock") != 0)
+        ensure_directory("/run") != 0)
         return 1;
 
     if (mount_filesystem("devtmpfs", "/dev", "devtmpfs",
                          MS_NOSUID, "mode=0755") != 0 ||
+        ensure_directory("/dev/pts") != 0 ||
         mount_filesystem("devpts", "/dev/pts", "devpts",
                          MS_NOSUID | MS_NOEXEC, "mode=0620,ptmxmode=0666") != 0 ||
         mount_filesystem("proc", "/proc", "proc",
@@ -54,7 +53,8 @@ int main(void)
         mount_filesystem("sysfs", "/sys", "sysfs",
                          MS_NOSUID | MS_NOEXEC | MS_NODEV, NULL) != 0 ||
         mount_filesystem("tmpfs", "/run", "tmpfs",
-                         MS_NOSUID | MS_NODEV, "mode=0755") != 0)
+                         MS_NOSUID | MS_NODEV, "mode=0755") != 0 ||
+        ensure_directory("/run/lock") != 0)
         return 1;
 
     execve("/sbin/init", arguments, environment);
