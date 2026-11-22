@@ -1,50 +1,32 @@
 # Mintosh Package Manager
 
-`mstore` is the native command-line interface for the system package database. Its current implementation uses APT and Debian's signed package repositories as its package transport; Mintosh does not need to operate a package-download server.
+Mintosh's package system is a first-party operating-system component. The installed OS must not depend on APT, dpkg, RPM tools, Flatpak, AppImage runtimes, or another distribution's package manager.
 
-## Package format direction
+## Native format
 
-Mintosh's primary native application and distribution package extension will be **`.pkg`**. This is a Mintosh-defined format inspired by the familiar macOS installer-package convention. It will have its own documented specification and implementation; it will not reuse Apple's proprietary package internals or assume that a macOS `.pkg` can be installed on Mintosh.
+Mintosh's only native installable package format is **`.pkg`**, a Mintosh-defined format. It will have a documented manifest, payload layout, dependency model, permission policy, lifecycle metadata, cryptographic signatures, a native package database, atomic transactions and rollback. It is not Apple's macOS package format and will not reuse proprietary Apple internals.
 
-The future Mintosh Application Manager and package tools are intended to accept supported packages from other Linux ecosystems as well as native `.pkg` packages. Compatibility will be explicit and format-specific:
+External Linux package extensions may be recognized for identification or future import planning, but recognition is not installation compatibility. Mintosh must not invoke third-party package managers or silently translate packages while losing dependency, ownership, script, signature or sandbox semantics.
 
-- **Mintosh `.pkg`**: first-class native format, with a manifest, payload, dependency declarations, permissions, install/remove lifecycle metadata and cryptographic signature.
-- **Debian `.deb`**: install through the Debian package database and APT/dpkg compatibility layer where dependencies and system integration are compatible.
-- **AppImage**: launch compatible portable Linux applications through a managed integration path; it is not treated as a system package transaction.
-- **Flatpak**: support through Flatpak's own runtime, repository and sandbox model when installed and enabled.
-- **RPM**: optional import or installation compatibility only where a safe RPM backend and dependency environment are available; no promise of universal cross-distribution compatibility.
+## Current implementation status
 
-The package manager must not silently convert formats in ways that lose dependency, ownership, script, signature or sandbox semantics. It must report unsupported features and reject packages that cannot be installed safely. Native `.pkg` signing, repository trust, transaction rollback and permission policy are release requirements, not optional decoration.
+`mstore` 0.3.0 is a native CLI shell, not yet a complete package manager:
 
-## Implemented local-file handling
+- `mstore format FILE` identifies known extensions.
+- `mstore run FILE.AppImage` can directly execute an explicitly selected AppImage as an unprivileged user. This is an application compatibility path, not a Mintosh system dependency or managed package transaction.
+- `mstore install-file FILE` rejects external package formats and reports that the native transaction engine is not ready.
+- Search, package inspection, installed-package listing, install, removal, repository update and upgrade report that their native backend is not implemented.
 
-The CLI recognizes package extensions without treating the extension alone as proof that a package is safe:
+The previous APT/dpkg/Flatpak dispatch has been removed. No external package manager is invoked by mstore. The native `.pkg` installer is deliberately unavailable until signature verification, path and ownership validation, dependency resolution, transaction journaling, rollback and recovery are implemented and tested.
 
-- `mstore format FILE`: identify the file extension and report the corresponding package family.
-- `sudo mstore install FILE.deb` or `sudo mstore install-file FILE.deb`: install a local Debian package through APT/dpkg, preserving dependency resolution and the Debian package database.
-- `sudo mstore install FILE.flatpak` or `sudo mstore install-file FILE.flatpak`: install a Flatpak bundle through Flatpak's system installation and sandbox model. Flatpak must be installed and configured.
-- `mstore run FILE.AppImage`: launch an executable AppImage as the current unprivileged user. The command refuses to launch it as root.
-- `.pkg` and `.rpm` are recognized but are not installable yet. The native `.pkg` installer is blocked until its signed format specification, validation and transaction implementation exist. RPM installation remains disabled until dependency and script compatibility can be guaranteed.
+## System integration
 
-Local file inputs are resolved to canonical paths and must be regular files. The manager dispatches only to fixed system executable paths. It does not unpack arbitrary archives itself or silently convert package formats.
-
-## Current commands
-
-- `mstore search QUERY`: search package names.
-- `mstore info PACKAGE`: show package metadata.
-- `mstore list`: list installed packages.
-- `mstore run FILE.AppImage`: launch an executable AppImage as the current unprivileged user; root execution is refused.
-- `sudo mstore install PACKAGE...`: install repository packages without recommended extras; a supported local file path selects its format-specific backend.
-- `sudo mstore remove PACKAGE...`: remove packages.
-- `sudo mstore update`: refresh signed repository metadata.
-- `sudo mstore upgrade`: upgrade installed packages.
-
-Package arguments are validated before they reach APT. Mutating operations require root privileges; use `sudo` explicitly. The frontend invokes fixed system utility paths rather than resolving package tools through the caller's `PATH`. Package downloads, dependency resolution, signature verification and installation are currently handled by APT/dpkg.
+The native package manager must own its repository metadata, trust roots, package database, dependency solver, download transport, signature verifier, extraction rules, install/remove lifecycle, permissions and rollback logic. Network access uses kernel-provided sockets and Mintosh-owned networking services. Package installation must never execute package-provided scripts as root without a separately designed, constrained lifecycle mechanism.
 
 ## Developer tooling
 
-A Mintosh SDK and an Xcode-like integrated development environment are planned for a later phase. They are not part of the current unstable system foundation and will not be started now. The SDK/IDE should eventually let developers build, test, sign and publish native `.pkg` applications while also supporting supported Linux application toolchains. Its native-language integration depends on the user's programming language, compiler, runtime and standard library being ready.
+The Mintosh SDK and IDE remain deferred until the system foundation and the user's programming language are complete. They will build and sign native `.pkg` applications using Mintosh-owned tools.
 
-## Current scope
+## Compatibility policy
 
-The initial catalog remains the configured Debian Trixie repository. The Mintosh-native `.pkg` specification, repository, signing infrastructure, multi-format application manager, graphical catalog, SDK and IDE are future work. The current APT frontend is not yet a complete implementation of those goals.
+Compatibility with `.deb`, `.rpm`, `.flatpak` or `.AppImage` is not a dependency requirement. Any future import or launch compatibility must be implemented by Mintosh-owned code, remain optional, and not introduce a third-party package manager or runtime into the installed base system.
