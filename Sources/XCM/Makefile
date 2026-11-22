@@ -42,7 +42,7 @@ $(BUILD)/usi-token-tests: tests/usi_token_tests.c usi_token_validation.c include
 $(BUILD)/xpu-api-tests: tests/xpu_api_tests.c include/xpu/xpu.h include/xcm/client.h include/xcm/protocol.h | $(BUILD)
 	$(CC) $(CFLAGS) -Iinclude tests/xpu_api_tests.c -o $@
 
-test: $(BUILD)/policy-tests $(BUILD)/client-tests $(BUILD)/usi-token-tests $(BUILD)/xpu-api-tests $(BUILD)/xpu
+test: all $(BUILD)/policy-tests $(BUILD)/client-tests $(BUILD)/usi-token-tests $(BUILD)/xpu-api-tests $(BUILD)/xpu
 	./$(BUILD)/policy-tests
 	./$(BUILD)/client-tests
 	./$(BUILD)/usi-token-tests
