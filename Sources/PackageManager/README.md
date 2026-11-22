@@ -16,12 +16,24 @@ The future Mintosh Application Manager and package tools are intended to accept 
 
 The package manager must not silently convert formats in ways that lose dependency, ownership, script, signature or sandbox semantics. It must report unsupported features and reject packages that cannot be installed safely. Native `.pkg` signing, repository trust, transaction rollback and permission policy are release requirements, not optional decoration.
 
+## Implemented local-file handling
+
+The CLI recognizes package extensions without treating the extension alone as proof that a package is safe:
+
+- `mstore format FILE`: identify the file extension and report the corresponding package family.
+- `sudo mstore install FILE.deb` or `sudo mstore install-file FILE.deb`: install a local Debian package through APT/dpkg, preserving dependency resolution and the Debian package database.
+- `sudo mstore install FILE.flatpak` or `sudo mstore install-file FILE.flatpak`: install a Flatpak bundle through Flatpak's system installation and sandbox model. Flatpak must be installed and configured.
+- `mstore run FILE.AppImage`: launch an executable AppImage as the current unprivileged user. The command refuses to launch it as root.
+- `.pkg` and `.rpm` are recognized but are not installable yet. The native `.pkg` installer is blocked until its signed format specification, validation and transaction implementation exist. RPM installation remains disabled until dependency and script compatibility can be guaranteed.
+
+Local file inputs are resolved to canonical paths and must be regular files. The manager dispatches only to fixed system executable paths. It does not unpack arbitrary archives itself or silently convert package formats.
+
 ## Current commands
 
 - `mstore search QUERY`: search package names.
 - `mstore info PACKAGE`: show package metadata.
 - `mstore list`: list installed packages.
-- `sudo mstore install PACKAGE...`: install packages without recommended extras.
+- `sudo mstore install PACKAGE...`: install repository packages without recommended extras; a supported local file path selects its format-specific backend.
 - `sudo mstore remove PACKAGE...`: remove packages.
 - `sudo mstore update`: refresh signed repository metadata.
 - `sudo mstore upgrade`: upgrade installed packages.
