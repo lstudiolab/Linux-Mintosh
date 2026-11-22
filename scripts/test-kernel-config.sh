@@ -21,7 +21,7 @@ for option in \
 do
   echo "$option=y" >> "$CONFIG"
 done
-printf '%s\n' 'CONFIG_LOCALVERSION="-mintosh-xnv"' >> "$CONFIG"
+printf '%s\n' 'CONFIG_LOCALVERSION="-mintosh-xcu"' >> "$CONFIG"
 sh scripts/verify-kernel-config.sh "$CONFIG" hp-probook-450-g6 x86_64 >/dev/null
 sed -i '/^CONFIG_MODULE_SIG_FORCE=y$/d' "$CONFIG"
 if sh scripts/verify-kernel-config.sh "$CONFIG" >/dev/null 2>&1; then
@@ -35,6 +35,6 @@ if sh scripts/verify-kernel-config.sh "$CONFIG" hp-probook-450-g6 x86_64 >/dev/n
   exit 1
 fi
 cp "$CONFIG" "$ARM_CONFIG"
-printf '%s\n' 'CONFIG_LOCALVERSION="-mintosh-xnv"' >> "$ARM_CONFIG"
+printf '%s\n' 'CONFIG_LOCALVERSION="-mintosh-xcu"' >> "$ARM_CONFIG"
 sh scripts/verify-kernel-config.sh "$ARM_CONFIG" generic arm64 >/dev/null
 echo "Kernel configuration verification tests passed."
