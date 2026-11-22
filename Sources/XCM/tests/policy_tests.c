@@ -69,8 +69,8 @@ int main(void)
     assert(xcm_policy_authorize(&request, &choca) == XCM_POLICY_CONFIRMATION_REQUIRED);
     request.object_id = 42;
 
-    /* Choca cannot mutate Darkin, even when its context has every capability. */
-    request = make_request(XCM_OP_UPDATE_DARKIN, XCM_TARGET_DARKIN_CORE,
+    /* Choca cannot mutate Sean, even when its context has every capability. */
+    request = make_request(XCM_OP_UPDATE_SEAN, XCM_TARGET_SEAN_CORE,
                            XCM_PAYLOAD_TYPED_DATA, 8);
     assert(xcm_policy_authorize(&request, &choca) == XCM_POLICY_PROTECTED_TARGET);
     request = make_request(XCM_OP_DELETE_USER_DATA, XCM_TARGET_SECURITY_POLICY,
@@ -86,7 +86,7 @@ int main(void)
                            XCM_PAYLOAD_NONE, 0);
     request.object_id = 1;
     assert(xcm_policy_authorize(&request, &choca) == XCM_POLICY_PROTECTED_TARGET);
-    request = make_request(XCM_OP_DELETE_USER_DATA, XCM_TARGET_DARKIN_BOOT,
+    request = make_request(XCM_OP_DELETE_USER_DATA, XCM_TARGET_SEAN_BOOT,
                            XCM_PAYLOAD_NONE, 0);
     request.object_id = 1;
     assert(xcm_policy_authorize(&request, &choca) == XCM_POLICY_PROTECTED_TARGET);
@@ -118,7 +118,7 @@ int main(void)
     struct xcm_policy_context updater = {
         XCM_PEER_UPDATE_SERVICE, XCM_CAP_FOUNDATION_UPDATE, 4096, true, false, false, 0, 0
     };
-    request = make_request(XCM_OP_UPDATE_DARKIN, XCM_TARGET_DARKIN_CORE,
+    request = make_request(XCM_OP_UPDATE_SEAN, XCM_TARGET_SEAN_CORE,
                            XCM_PAYLOAD_TYPED_DATA, 8);
     assert(xcm_policy_authorize(&request, &updater) == XCM_POLICY_UNVERIFIED_UPDATE);
     updater.verified_update_bundle = true;
