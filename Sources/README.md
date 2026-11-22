@@ -1,18 +1,19 @@
 # Mintosh native source tree
 
-Mintosh's native foundation is implemented in C, C++ and architecture-specific assembly. **Darkin** owns the backend foundation, including the Linux-based XNV kernel integration and non-graphical system services. **XCM** and **Choca** are separate top-level components.
+Mintosh's native foundation is implemented in C, C++ and architecture-specific assembly. The target component ownership is defined in [docs/platform-architecture.md](../docs/platform-architecture.md).
 
-## Ownership
+## Target ownership and current paths
 
-- `kernel/linux/`: upstream Linux kernel source used as the primary kernel for XNV.
-- `kernel/xnv/`: XNV Linux integration policy, configuration and architecture documentation.
-- `Sources/Darkin/`: Darkin ownership map, backend contracts and the XNV Linux-backed task/port/memory/event API (`Sources/Darkin/XNV/`).
-- `Sources/XCM/`: external request broker, message validation and security policy.
-- `Sources/Choca/`: graphical platform ownership and UI-token contract.
-- `Sources/XNV/`: retained standalone EFI bootstrap experiment; not the selected XNV kernel. The actual XNV kernel is upstream Linux plus the integration configuration under `kernel/xnv/`.
-- Existing backend prototypes such as Launch7762, Launch511, LibSys, Foundation, GVD, IOPS, Security and SystemLogging are Darkin-owned candidates and require migration to stable service contracts.
+- **XCU Kernel** — upstream Linux plus Mintosh's kernel integration and BSD-derived/Mach-inspired interfaces. Current paths: `kernel/linux/`, `kernel/xnv/`, and Linux-backed primitives in `Sources/Darkin/XNV/`.
+- **XPU** — authenticated IPC and security broker. Current prototype: `Sources/XCM/`.
+- **Tarts** — complete backend foundation, including kernel integration, boot/runtime, hardware, security, system services, service launch and supervision. Current prototype root: `Sources/Darkin/`.
+- **Core Services** — stable system APIs and shared user-space services. Existing candidates include `Sources/Foundation`, `Sources/LibSys`, `Sources/GVD`, `Sources/IOPS`, `Sources/IOPlus`, `Sources/DM`, `Sources/FMS`, `Sources/Security` and `Sources/SystemLogging`. These are prototypes, not all completed services.
+- **Window Server** — planned display, window, surface, composition and input service. It is not yet implemented.
+- **Cacao** — graphical platform and native application framework. It will own the desktop-facing UI, application manager, application lifecycle APIs, controls, layout and public SDK. Current legacy design path: `Sources/Choca/`.
 
-Choca owns USI, the window server, graphical frameworks and app manager. None of these belong inside Darkin.
+`Sources/XNV/` is a retained standalone EFI bootstrap experiment and is not the selected kernel path. The actual kernel is upstream Linux plus `kernel/xnv/` integration and Linux-backed primitives.
+
+Do not rename implementation directories until the corresponding migration is complete, tested and reflected in build/CI integration.
 
 ## Build and test
 
