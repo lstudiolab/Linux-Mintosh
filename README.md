@@ -1,27 +1,36 @@
 # Mintosh
 
-Mintosh has three major system layers: **Darkin**, **XCM**, and **Choca**.
+Mintosh is a Linux-based operating system with a layered architecture inspired by the separation of kernel, system services, graphical infrastructure and application frameworks in macOS. Mintosh uses its own implementations and APIs; it does not copy Apple's proprietary code.
 
-- **Darkin** is the complete backend foundation. It owns the kernel, boot/runtime infrastructure, hardware access, memory and process management, storage, networking, security enforcement, system services and backend APIs.
-- **XNV** is the kernel architecture inside Darkin. Linux is the actual and primary kernel. First-party BSD-derived interfaces provide Unix/BSD compatibility, while Mach-inspired tasks, ports, message rights and IPC concepts provide a structured communication model. XNV is not a second kernel.
-- **XCM** is a separate system communication and security broker outside Darkin. It mediates every Choca-to-Darkin request, validates message schemas, checks capabilities and protects the foundation from unauthorized changes.
-- **Choca** is the graphical platform outside Darkin. It owns USI, the window server, graphical frameworks and the app manager. Choca produces typed UI-token streams; XCM validates and routes them to presentation services.
+## Platform architecture
 
-Dependency direction:
+The canonical target architecture is documented in [docs/platform-architecture.md](docs/platform-architecture.md).
 
-`Choca / USI → XCM → Darkin services → XNV → Linux kernel`
+- **XCU Kernel** — Mintosh's Linux-based hybrid-kernel architecture. Linux is the actual primary kernel; BSD-derived interfaces provide Unix compatibility; Mach-inspired task, port and messaging abstractions are implemented using Linux primitives.
+- **XPU** — authenticated inter-process communication, typed message routing, capability checks and security policy between components.
+- **Tarts** — the complete backend foundation, including service lifecycle, launch, supervision, boot/runtime services, hardware and device services, storage, networking, security and system services.
+- **Core Services** — stable shared user-space APIs and services for storage, networking, sessions, notifications, security clients, logging and application lifecycle.
+- **Window Server** — display management, windows, surfaces, composition, focus and input routing.
+- **Cacao** — the graphical platform and native application framework, including desktop UI, application manager, application lifecycle, controls, layout, accessibility and public application APIs.
 
-Darkin does not depend on Choca. It must boot and provide backend services without the graphical platform. XCM is the only supported bridge between Choca and Darkin.
+Conceptually, applications use Cacao; Cacao uses Window Server and Core Services; Tarts owns backend services; cross-component requests use XPU; XCU provides the kernel primitives beneath them. Not every operation is required to pass through one serial call chain.
 
-Linux supplies the real kernel execution foundation: scheduling, virtual memory, drivers, VFS, networking, security hooks and hardware support. The BSD contribution is a first-party compatibility layer, not a second FreeBSD kernel. Mach-inspired IPC/task abstractions are implemented using Linux primitives. Mintosh does not copy Apple's XNU source.
+## Linux kernel model
 
-## Current status
+Linux is the real kernel and provides scheduling, virtual memory, drivers, VFS, networking, hardware support and kernel security. BSD-derived functionality is a first-party compatibility layer, not a second FreeBSD kernel. Mach-inspired messaging and task/port abstractions are implemented over Linux primitives. Mintosh does not combine three independently booted kernels and does not copy XNU source.
 
-The Developer Preview boots upstream Linux with a transitional Debian userspace. The existing `Sources/XNV` UEFI code is an experimental standalone-kernel bootstrap and is **not** the selected XNV implementation; it is retained only as a reference prototype. Do not use its EFI image as the Mintosh kernel.
+## Current implementation and migration
 
-The first implementation milestones now include an XNV C library backed by Linux pidfds, sequenced-packet ports, sealed memory objects and epoll; an XCM C17 policy engine, local broker and Choca client library; and a protected Darkin system-information service. XCM forwards approved read-only system-information requests to Darkin over a root-only socket, and Darkin independently authenticates XCM and validates the request. Presentation token requests are policy-checked but remain unavailable until a Choca renderer endpoint is registered. Per-application capabilities, additional Darkin service endpoints, signed updates and destructive operations remain disabled until their backends are implemented. Kernel configuration enables the namespace, cgroup, IPC, seccomp and audit facilities needed for the target architecture.
+The repository contains an earlier implementation milestone under legacy source names:
+- `Sources/Darkin/` contains the initial backend foundation implementation and is being migrated to **Tarts**.
+- `Sources/Darkin/XNV/` and `kernel/xnv/` contain the Linux-backed kernel abstractions that are migrating to **XCU Kernel**.
+- `Sources/XCM/` contains the initial authenticated broker that is migrating to **XPU**.
+- `Sources/Choca/` contains the earlier graphical-platform design and is being migrated to **Cacao**; its window-management responsibilities belong to the separate **Window Server**.
+- Existing backend prototypes are being divided between **Tarts** and **Core Services**.
 
-Existing backend prototypes under `Sources/` still need migration to final Darkin service contracts. Choca/USI graphical implementation, window server, compositor and app manager are not yet implemented. The Developer Preview must not be described as a completed desktop or production-secure operating system.
+These implementation paths are retained until their replacements are tested. The current preview boots upstream Linux with a transitional Debian userspace. XCU/XPU have only their initial prototype capabilities; Tarts, Core Services, Window Server, Cacao, the desktop and native application SDK are not yet complete. Do not describe the current preview as a finished desktop or production-secure OS.
+
+The earlier standalone EFI bootstrap under `Sources/XNV` is a retained experiment, not the selected kernel path. The actual kernel path is upstream Linux plus the integration configuration under `kernel/xnv/`.
 
 ## Build and verification
 
@@ -32,4 +41,4 @@ Existing backend prototypes under `Sources/` still need migration to final Darki
     make iso
     make test-qemu
 
-The current bootable preview is transitional, not the completed Darkin foundation or final Mintosh release.
+The OS foundation uses C, C++ and architecture-specific assembly. Build configuration and CI scripts are tooling, not OS implementation languages.
