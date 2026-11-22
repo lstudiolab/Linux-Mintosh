@@ -271,7 +271,7 @@ int main(int argc, char **argv) {
         return 64;
     }
     if (geteuid() != 0) {
-        fputs("xpu must run as root; Choca clients remain unprivileged.\n", stderr);
+        fputs("xpu must run as root; Cacao clients remain unprivileged.\n", stderr);
         return 77;
     }
 
