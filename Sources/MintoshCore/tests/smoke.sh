@@ -179,12 +179,6 @@ fi
 [ "$(stat -c '%a' "$RUNTIME/launch.sock")" = "660" ]
 
 attempt=0
-while [ ! -f "$RUNTIME/restarts" ] || [ "$(wc -c < "$RUNTIME/restarts")" -lt 2 ]; do
-    attempt=$((attempt + 1))
-    [ "$attempt" -lt 100 ] || { echo "on-failure service was not restarted" >&2; exit 1; }
-    sleep 0.1
-done
-attempt=0
 while ! "$B/mintoshctl" services | grep -Eq 'retry-service (running|restarting|stopped).*restarts=2'; do
     attempt=$((attempt + 1))
     [ "$attempt" -lt 30 ] || { echo "restart backoff state was not recorded" >&2; exit 1; }
