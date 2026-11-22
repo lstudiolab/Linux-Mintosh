@@ -19,14 +19,14 @@ except (OSError, subprocess.CalledProcessError) as error:
 best = None
 for line in output.splitlines():
     fields = line.rstrip(";").split(":")
-    if len(fields) < 4 or fields[0] != "":
+    if len(fields) < 4 or fields[-1].strip().lower() != "free":
         continue
     try:
         start = float(fields[1].removesuffix("MiB"))
         end = float(fields[2].removesuffix("MiB"))
-        size = float(fields[3].removesuffix("MiB"))
-    except ValueError:
+    except (ValueError, IndexError):
         continue
+    size = end - start
     if best is None or size > best[0]:
         best = (size, start, end)
 
