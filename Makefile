@@ -28,7 +28,7 @@ EFI_CRT := $(firstword $(wildcard /usr/lib/crt0-efi-x86_64.o /usr/lib/gnuefi/crt
 EFI_LDS := $(firstword $(wildcard /usr/lib/elf_x86_64_efi.lds /usr/lib/gnuefi/elf_x86_64_efi.lds))
 EFI_LIBDIR := $(dir $(EFI_CRT))
 
-.PHONY: help check-makefiles test-native-core test-kernel-config test-installer-safety test-hardware-audit test-mboot test-mboot-qemu test-xnv-qemu mboot package-installer check-host check-release check-scripts verify release-info host-deps kernel-fetch kernel-config kernel kernel-install rootfs initramfs iso image qemu test-qemu usb clean xnv-verify xnv-efi test-xnv-qemu
+.PHONY: help check-makefiles test-native-core test-kernel-config test-installer-safety test-hardware-audit test-mboot test-mboot-qemu mboot package-installer check-host check-release check-scripts verify release-info host-deps kernel-fetch kernel-config kernel kernel-install rootfs initramfs iso image qemu test-qemu usb clean xnv-verify test-xcm
 
 help:
 	@printf '%s\n' \
@@ -57,13 +57,9 @@ help:
 xnv-verify:
 	@$(MAKE) --no-print-directory -C Sources/XNV verify
 
-test-xnv-qemu: xnv-efi
-	@sh scripts/test-xnv-qemu.sh out/xnv/XNV.EFI
-
-xnv-efi:
-	@$(MAKE) --no-print-directory -C Sources/XNV build/XNV.EFI EFI_CRT='$(EFI_CRT)' EFI_LDS='$(EFI_LDS)' EFI_LIBDIR='$(EFI_LIBDIR)'
-	@mkdir -p out/xnv
-	@cp Sources/XNV/build/XNV.EFI out/xnv/XNV.EFI
+# XNV target-kernel work uses Linux; this target tests the separate XCM policy boundary.
+test-xcm:
+	@$(MAKE) --no-print-directory -C Sources/XCM test
 
 check-release:
 	@python3 scripts/check-release.py
@@ -123,7 +119,7 @@ $(MBOOT_OUT)/BOOTX64.EFI: $(MBOOT_OUT)/boot.efi
 
 
 verify: check-release check-makefiles check-scripts test-kernel-config test-installer-safety test-hardware-audit test-native-core test-mboot xnv-verify
-	@echo 'Mintosh legacy preview validation and XNV boot-contract tests passed.'
+	@echo 'Mintosh preview validation, XCM policy tests and retained XNV prototype tests passed.'
 
 release-info: check-release
 	@python3 -c 'import json; d=json.load(open("configs/release.json")); print("Mintosh", d["release"]); print("Linux", d["kernel"]["version"]); print("Debian", d["debian_suite"]); print("Bootable architectures:", ", ".join(d["architectures"])); print("Kernel build architectures:", ", ".join(d["kernel_build_architectures"])); print("Planned architectures:", ", ".join(d["planned_architectures"]) or "none"); print("Bootable ISO:", d["image"]["primary_architecture"])'

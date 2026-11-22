@@ -15,7 +15,7 @@ concurrency:
 
 jobs:
   native-foundation:
-    name: Native foundation and XNV UEFI boot
+    name: Native foundation and XCM security policy
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
@@ -27,7 +27,5 @@ jobs:
           sudo apt-get install -y build-essential gnu-efi libsqlite3-dev make parted python3 util-linux qemu-system-x86 ovmf
       - name: Verify release metadata, scripts, native builds and tests
         run: make verify
-      - name: Build the freestanding XNV EFI kernel
-        run: make xnv-efi
-      - name: Boot XNV under OVMF
-        run: make test-xnv-qemu
+      - name: Verify XCM policy boundary independently
+        run: make test-xcm
