@@ -41,7 +41,7 @@ enum xcm_operation {
 
 enum xcm_response_payload_type {
     XCM_RESPONSE_PAYLOAD_NONE = 0,
-    XCM_RESPONSE_DARKIN_DATA = 1,
+    XCM_RESPONSE_SEAN_DATA = 1,
     XCM_RESPONSE_DARKIN_EVENT = 2,
     XCM_RESPONSE_SERVICE_STATUS = 3,
     XCM_RESPONSE_APP_EVENT = 4
