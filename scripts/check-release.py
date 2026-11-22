@@ -34,11 +34,23 @@ if not isinstance(suite, str) or not suite:
 
 architectures = data.get("architectures")
 if not isinstance(architectures, list) or not architectures:
-    fail("architectures must be a non-empty list")
+    fail("architectures must list at least one bootable installer target")
 if len(set(architectures)) != len(architectures):
     fail("architectures contains duplicates")
 if not set(architectures).issubset({"x86_64", "arm64"}):
-    fail("only x86_64 and arm64 are currently supported")
+    fail("unknown bootable architecture")
+
+kernel_build_architectures = data.get("kernel_build_architectures")
+if not isinstance(kernel_build_architectures, list) or not set(architectures).issubset(set(kernel_build_architectures)):
+    fail("kernel_build_architectures must include every bootable architecture")
+if len(set(kernel_build_architectures)) != len(kernel_build_architectures):
+    fail("kernel_build_architectures contains duplicates")
+if not set(kernel_build_architectures).issubset({"x86_64", "arm64"}):
+    fail("unknown kernel build architecture")
+
+planned_architectures = data.get("planned_architectures", [])
+if not isinstance(planned_architectures, list) or set(planned_architectures) & set(kernel_build_architectures):
+    fail("planned_architectures must be separate from current kernel build targets")
 
 kernel = data.get("kernel", {})
 kernel_version = kernel.get("version", "")
@@ -59,8 +71,11 @@ if kernel.get("license") != "GPL-2.0-only":
     fail("kernel.license must identify the upstream kernel license")
 
 image = data.get("image", {})
-if image.get("primary_architecture") not in architectures:
-    fail("image.primary_architecture must be listed in architectures")
+bootable_architectures = image.get("bootable_architectures")
+if bootable_architectures != architectures:
+    fail("image.bootable_architectures must exactly match verified installer architectures")
+if image.get("primary_architecture") not in bootable_architectures:
+    fail("image.primary_architecture must be a verified bootable architecture")
 if image.get("bootloader") != "GRUB":
     fail("the initial bootloader must be GRUB")
 if not {"BIOS", "UEFI"}.issubset(set(image.get("firmware", []))):
@@ -68,4 +83,6 @@ if not {"BIOS", "UEFI"}.issubset(set(image.get("firmware", []))):
 
 print(f"Mintosh {version}: manifest valid")
 print(f"Linux {kernel_version}: SHA-256 pin present")
-print(f"Architectures: {', '.join(architectures)}")
+print(f"Bootable architectures: {', '.join(architectures)}")
+print(f"Kernel build architectures: {', '.join(kernel_build_architectures)}")
+print(f"Planned architectures: {', '.join(planned_architectures) or 'none'}")
