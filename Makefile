@@ -2,6 +2,7 @@ SHELL := /bin/sh
 ARCH ?= x86_64
 MINTOSH_HARDWARE_PROFILE ?= generic
 QEMU_MEMORY ?= 4096
+QEMU_TIMEOUT ?= 180
 export ARCH MINTOSH_USER MINTOSH_PASSWORD
 JOBS ?= $(shell getconf _NPROCESSORS_ONLN 2>/dev/null || echo 2)
 KERNEL_DIR := kernel/linux
@@ -176,10 +177,12 @@ image: iso
 qemu: iso
 	qemu-system-x86_64 -m $(QEMU_MEMORY) -smp 2 -netdev user,id=net0 -device virtio-net-pci,netdev=net0 -cdrom "$(ISO)" -boot d
 
-test-qemu: iso
-	@QEMU_MEMORY="$(QEMU_MEMORY)" sh ./scripts/test-qemu.sh "$(ISO)"
+test-qemu:
+	@test -s "$(ISO)" || $(MAKE) iso
+	@QEMU_MEMORY="$(QEMU_MEMORY)" QEMU_TIMEOUT="$(QEMU_TIMEOUT)" sh ./scripts/test-qemu.sh "$(ISO)"
 
-package-installer: iso
+package-installer:
+	@test -s "$(ISO)" || $(MAKE) iso
 	@sh scripts/package-installer.sh
 
 usb: iso
