@@ -69,10 +69,14 @@ int xcm_call(const char *socket_path,
     }
     memcpy(response, reply, sizeof(*response));
     if (response->version != XCM_PROTOCOL_VERSION ||
+        response->status > XCM_RESPONSE_INTERNAL_ERROR ||
+        response->payload_type > XCM_RESPONSE_APP_EVENT ||
         response->size != (uint32_t)received ||
         response->payload_size != (uint32_t)received - sizeof(*response) ||
         response->request_id != request->request_id ||
-        response->payload_size > response_capacity) {
+        response->payload_size > response_capacity ||
+        ((response->payload_size == 0) !=
+         (response->payload_type == XCM_RESPONSE_PAYLOAD_NONE))) {
         errno = EPROTO;
         return -1;
     }
