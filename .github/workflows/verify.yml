@@ -21,11 +21,9 @@ jobs:
     steps:
       - name: Check out source
         uses: actions/checkout@v4
-      - name: Install native and firmware test tools
+      - name: Install native build tools
         run: |
           sudo apt-get update
           sudo apt-get install -y build-essential libsqlite3-dev make parted python3 util-linux
       - name: Verify release metadata, scripts, native builds and tests
         run: make verify
-      - name: Verify XCM policy boundary independently
-        run: make test-xcm
