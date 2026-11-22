@@ -1,6 +1,6 @@
 #define _GNU_SOURCE
 #include "include/xcm/protocol.h"
-#include "include/xcm/darkin_client.h"
+#include "include/xcm/sean_client.h"
 #include "include/xcm/usi_tokens.h"
 
 #include <errno.h>
@@ -195,9 +195,9 @@ static void handle_client(int client, gid_t service_gid) {
     if (request.operation == XCM_OP_READ_SYSTEM_INFO) {
         char information[512];
         uint32_t information_size = 0;
-        if (xcm_darkin_system_info(request.request_id, information,
+        if (xcm_sean_system_info(request.request_id, information,
                                    sizeof(information), &information_size) < 0) {
-            audit_event(LOG_ERR, "Tarts system-info endpoint unavailable: %s",
+            audit_event(LOG_ERR, "Sean system-info endpoint unavailable: %s",
                         strerror(errno));
             send_response(client, request.request_id, XCM_RESPONSE_UNAVAILABLE,
                           XCM_RESPONSE_PAYLOAD_NONE, NULL, 0);
@@ -207,7 +207,7 @@ static void handle_client(int client, gid_t service_gid) {
                     (unsigned long)credentials.uid,
                     (unsigned long long)request.request_id);
         send_response(client, request.request_id, XCM_RESPONSE_OK,
-                      XCM_RESPONSE_DARKIN_DATA, information, information_size);
+                      XCM_RESPONSE_SEAN_DATA, information, information_size);
         return;
     }
 
