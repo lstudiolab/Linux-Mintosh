@@ -10,6 +10,7 @@ truncate -s 50G "$IMAGE"
 parted -s "$IMAGE" mklabel gpt
 parted -s "$IMAGE" mkpart primary ext4 1MiB 8GiB
 parted -s "$IMAGE" mkpart primary ext4 9GiB 16GiB
+mintosh_disk_meets_erase_minimum "$IMAGE"
 SENTINEL="MINTOSH-KEEP-THIS"
 printf '%s' "$SENTINEL" | dd of="$IMAGE" bs=1 seek=2097152 conv=notrunc status=none
 BEFORE=$(python3 - "$IMAGE" <<'PY'
@@ -59,6 +60,10 @@ AFTER_HASH=$(sha256sum "$NO_CONFIRM_IMAGE" | cut -d' ' -f1)
 
 UEFI_IMAGE="$TMP/uefi.img"
 truncate -s 8G "$UEFI_IMAGE"
+if mintosh_disk_meets_erase_minimum "$UEFI_IMAGE"; then
+    echo "Installer accepted a disk smaller than the 24 GiB erase minimum." >&2
+    exit 1
+fi
 mintosh_prepare_erase_layout "$UEFI_IMAGE" 1 ERASE
 python3 - "$UEFI_IMAGE" <<'PY'
 import subprocess, sys
