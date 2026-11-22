@@ -28,7 +28,7 @@ EFI_CRT := $(firstword $(wildcard /usr/lib/crt0-efi-x86_64.o /usr/lib/gnuefi/crt
 EFI_LDS := $(firstword $(wildcard /usr/lib/elf_x86_64_efi.lds /usr/lib/gnuefi/elf_x86_64_efi.lds))
 EFI_LIBDIR := $(dir $(EFI_CRT))
 
-.PHONY: help check-makefiles test-native-core test-kernel-config test-installer-safety test-hardware-audit test-mboot test-mboot-qemu mboot package-installer check-host check-release check-scripts verify release-info host-deps kernel-fetch kernel-config kernel kernel-install rootfs initramfs iso image qemu test-qemu usb clean test-xcm test-xnv test-sean-legacy test-xpu test-xcu test-sean test-core-services
+.PHONY: help check-makefiles test-native-core test-kernel-config test-installer-safety test-hardware-audit test-mboot test-mboot-qemu mboot package-installer check-host check-release check-scripts verify release-info host-deps kernel-fetch kernel-config kernel kernel-install rootfs initramfs iso image qemu test-qemu usb clean test-xum test-xnv test-sean-legacy test-xum test-xpu test-xcm test-xcu test-sean test-core-services
 
 help:
 	@printf '%s\\n' \\
@@ -37,7 +37,7 @@ help:
 	  '  make check-scripts  Validate shell scripts' \\
 	  '  make verify         Run all offline validation' \\
 	  '  make test-sean     Test the Sean backend foundation' \\
-	  '  make test-xpu       Test the XUM communication broker' \\
+	  '  make test-xum       Test the XUM communication broker' \\
 	  '  make test-xcu       Test XCU Linux kernel primitives' \\
 	  '  make test-core-services  Test shared native system libraries' \\
 	  '  make package-installer  Package ISO and checksum for Rufus' \\
@@ -61,8 +61,8 @@ help:
 test-sean:
 	@$(MAKE) --no-print-directory -C Sources/Sean test
 
-test-xpu:
-	@$(MAKE) --no-print-directory -C Sources/XPU test
+test-xum:
+	@$(MAKE) --no-print-directory -C Sources/XUM test
 
 test-xcu:
 	@$(MAKE) --no-print-directory -C Sources/XCU test
@@ -74,8 +74,7 @@ test-core-services:
 test-sean-legacy:
 	@$(MAKE) --no-print-directory -C Sources/Sean test
 
-test-xcm:
-	@$(MAKE) --no-print-directory -C Sources/XCM test
+test-xcm: test-xum
 
 test-xnv:
 	@$(MAKE) --no-print-directory -C Sources/Sean/XNV test
@@ -87,7 +86,7 @@ check-release:
 check-makefiles:
 	@$(MAKE) --no-print-directory -n help >/dev/null
 	@$(MAKE) --no-print-directory -C Sources/MintoshCore -n all test-foundation >/dev/null
-	@$(MAKE) --no-print-directory -C Sources/XCM -n test >/dev/null
+	@$(MAKE) --no-print-directory -C Sources/XUM -n test >/dev/null
 	@$(MAKE) --no-print-directory -C Sources/Sean -n test >/dev/null
 	@$(MAKE) --no-print-directory -C Sources/Sean/XNV -n test >/dev/null
 	@$(MAKE) --no-print-directory -C Sources/XPU -n test >/dev/null
@@ -142,7 +141,7 @@ $(MBOOT_OUT)/BOOTX64.EFI: $(MBOOT_OUT)/boot.efi
 	cp $< $@
 
 
-verify: check-release check-makefiles check-scripts test-kernel-config test-installer-safety test-hardware-audit test-native-core test-mboot test-sean test-xpu test-xcu test-core-services
+verify: check-release check-makefiles check-scripts test-kernel-config test-installer-safety test-hardware-audit test-native-core test-mboot test-sean test-xum test-xcu test-core-services
 	@echo 'Lenix preview validation, Sean backend, XUM broker and XCU Linux primitive tests passed.'
 
 release-info: check-release
