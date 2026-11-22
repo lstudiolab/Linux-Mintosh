@@ -10,6 +10,8 @@
 int xnv_task_open(pid_t pid, xnv_task *task)
 {
     if (pid <= 0 || task == NULL) { errno = EINVAL; return -1; }
+    task->pid = -1;
+    task->pidfd = -1;
 #ifdef SYS_pidfd_open
     int descriptor = (int)syscall(SYS_pidfd_open, pid, 0U);
     if (descriptor < 0) return -1;
