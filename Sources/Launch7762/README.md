@@ -1,28 +1,31 @@
-# launch7762
+# Tarts service supervisor — launch7762 (legacy executable name)
 
-launch7762 is Mintosh's native userspace service supervisor. It loads root-owned service definitions from `/etc/mintosh/services`, starts enabled services, reaps child processes, applies restart policies with capped exponential backoff, and exposes a local Unix-socket control API.
+launch7762 is Mintosh's native userspace service supervisor and the initial Tarts service-lifecycle implementation. It loads trusted service definitions, starts enabled services in deterministic order, reaps child processes, applies restart policies with capped exponential backoff, and exposes a local Unix-socket control API.
 
 ## Service definition
 
 A service definition is a root-owned regular `.service` file in a directory that is not group- or world-writable:
 
 ```ini
-ExecStart=/usr/bin/darl
+ExecStart=/usr/bin/xpu
 Enabled=yes
 Restart=always
+Group=mintosh-services
+Order=20
 ```
 
-`ExecStart` is a whitespace-separated argument vector. The executable must be an absolute path. launch7762 does not interpret shell syntax, quotes, variable expansion, pipes, redirects, or command substitutions. Service definitions are restricted to native executable programs; script interpreters are rejected so user-writable script files cannot be executed with service-manager privileges.
+- `ExecStart` is a whitespace-separated argument vector. It must begin with an absolute executable path. No shell syntax, quoting, variable expansion, pipes, redirects or command substitutions are interpreted.
+- `Enabled` is `yes` or `no`.
+- `Restart` is `no`, `on-failure` or `always`.
+- `Group` optionally selects a primary group for the service. A root supervisor clears inherited supplementary groups and applies the configured GID before executing the service.
+- `Order` optionally selects startup order from 0 through 9999. Lower values start first; ties are sorted by service name. The default is 10000.
 
-Supported restart policies are `no`, `on-failure`, and `always`. Repeated failures use exponential restart delays capped at 60 seconds.
+The executable and every parent directory are validated component-by-component with `openat(O_NOFOLLOW)`. Parent directories and the final executable must be trusted and not group/world writable. Common shell and scripting interpreters are rejected; privileged services must be native executables.
+
+Restart delays use capped exponential backoff. Repeated failures eventually disable a service rather than restarting forever.
 
 ## Control API
 
-`mintoshctl services` lists service states. `start`, `stop`, and `restart` require the local daemon owner or root; the socket's group permission grants listing access, not service-control authority.
+`mintoshctl services` lists service states. `start`, `stop` and `restart` require the local daemon owner or root; the socket's group permission grants listing access, not service-control authority.
 
-
-## Executable trust boundary
-
-Before forking a service, launch7762 validates the executable path component-by-component using openat with O_NOFOLLOW. Every parent directory must be a trusted, non-group/world-writable directory, and the final target must be a trusted regular executable that is not group/world-writable. This prevents service definitions from launching binaries out of user-writable paths such as /tmp. The service executable is still executed by absolute path; trusted directory ownership and write permissions are therefore part of the security boundary.
-
-The executable policy rejects common shell and scripting interpreters. Mintosh system services are expected to be native programs; scripts are not a supported privileged service format.
+The Tarts service manager is an early native implementation. It still needs explicit dependency graphs, readiness notifications, resource accounting, structured logs and per-service capability profiles before it can replace all system service-management responsibilities.
