@@ -36,10 +36,10 @@ static int failures;
 
 #define CHECK(condition, label) do { \
     if (!(condition)) { \
-        fprintf(stderr, "FAIL: %s (%s:%d): %s\\n", label, __FILE__, __LINE__, strerror(errno)); \
+        fprintf(stderr, "FAIL: %s (%s:%d): %s\n", label, __FILE__, __LINE__, strerror(errno)); \
         ++failures; \
     } else { \
-        printf("PASS: %s\\n", label); \
+        printf("PASS: %s\n", label); \
     } \
 } while (0)
 
@@ -182,7 +182,7 @@ static void test_pidfd_task_identity(void) {
     CHECK(pidfd >= 0, "obtain Linux pidfd for Mach-style task identity");
     if (pidfd >= 0) close(pidfd);
 #else
-    fprintf(stderr, "SKIP: pidfd_open syscall number unavailable at build time\\n");
+    fprintf(stderr, "SKIP: pidfd_open syscall number unavailable at build time\n");
 #endif
 }
 
@@ -193,7 +193,7 @@ int main(void) {
     test_posix_and_system_v_queues();
     test_pidfd_task_identity();
     if (failures != 0) {
-        fprintf(stderr, "%d XCU upstream-compatibility checks failed\\n", failures);
+        fprintf(stderr, "%d XCU upstream-compatibility checks failed\n", failures);
         return EXIT_FAILURE;
     }
     puts("All XCU Linux/BSD-POSIX/Mach-concept compatibility checks passed.");
