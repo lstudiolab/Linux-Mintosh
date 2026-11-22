@@ -1,5 +1,5 @@
-#!/bin/sh
-set -eux
+#!/usr/bin/dash
+set -eu
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../../.." && pwd)
 make -C "$ROOT/Sources/MintoshCore" clean all test-foundation
 B="$ROOT/Sources/MintoshCore/build"
@@ -132,40 +132,40 @@ done
 [ "$(stat -c '%a' "$RUNTIME/darl.sock")" = "660" ]
 
 cat > "$MINTOSH_SERVICE_DIR/test-service.service" <<EOF
-ExecStart=/bin/sleep 30
+ExecStart=/usr/bin/sleep 30
 Enabled=yes
 Restart=no
 EOF
 cat > "$RUNTIME/environment-service.sh" <<EOF
-#!/bin/sh
+#!/usr/bin/dash
 printf '%s' "\${MINTOSH_TEST_ENV:-missing}" > "$RUNTIME/inherited-environment"
 EOF
 chmod 0755 "$RUNTIME/environment-service.sh"
 export MINTOSH_TEST_ENV="mintosh-user-environment"
 cat > "$RUNTIME/retry-service.sh" <<EOF
-#!/bin/sh
+#!/usr/bin/dash
 echo x >> "$RUNTIME/restarts"
 exit 1
 EOF
 chmod 0755 "$RUNTIME/retry-service.sh"
 cat > "$MINTOSH_SERVICE_DIR/environment-service.service" <<EOF
-ExecStart=/bin/sh $RUNTIME/environment-service.sh
+ExecStart=/usr/bin/dash $RUNTIME/environment-service.sh
 Enabled=yes
 Restart=no
 EOF
 cat > "$MINTOSH_SERVICE_DIR/retry-service.service" <<EOF
-ExecStart=/bin/sh $RUNTIME/retry-service.sh
+ExecStart=/usr/bin/dash $RUNTIME/retry-service.sh
 Enabled=yes
 Restart=on-failure
 EOF
 cat > "$MINTOSH_SERVICE_DIR/unsafe.service" <<EOF
-ExecStart=/bin/sleep 30
+ExecStart=/usr/bin/sleep 30
 Enabled=yes
 Restart=always
 EOF
 chmod 0666 "$MINTOSH_SERVICE_DIR/unsafe.service"
 cat > "$MINTOSH_SERVICE_DIR/shell-string.service" <<EOF
-ExecStart=echo x; /bin/sh -c id
+ExecStart=echo x; /usr/bin/dash -c id
 Enabled=yes
 Restart=no
 EOF
