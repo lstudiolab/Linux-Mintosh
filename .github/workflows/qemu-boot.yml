@@ -41,11 +41,9 @@ jobs:
           make iso JOBS=2
       - name: Boot installer image in QEMU
         run: make test-qemu
-      - name: Package ISO and SHA-256 checksum
+      - name: Package Rufus installer ZIP and SHA-256 checksum
         if: success()
-        run: |
-          sha256sum out/mintosh-x86_64.iso > out/SHA256SUMS
-          (cd out && zip -q mintosh-x86_64.zip mintosh-x86_64.iso SHA256SUMS)
+        run: make package-installer
       - name: Upload boot image, installer package and serial log
         if: always()
         uses: actions/upload-artifact@v4
@@ -53,7 +51,7 @@ jobs:
           name: mintosh-qemu-boot-${{ github.run_number }}
           path: |
             out/mintosh-x86_64.iso
-            out/mintosh-x86_64.zip
+            out/mintosh-installer.zip
             out/SHA256SUMS
             out/qemu-boot.log
           if-no-files-found: warn
