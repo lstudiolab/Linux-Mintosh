@@ -16,7 +16,7 @@ int main(void) {
 
     const char bad_action[] = "explode@/devices/x\0ACTION=explode\0DEVPATH=/devices/x\0";
     assert(ioplus_parse_uevent(bad_action, sizeof bad_action - 1, &event) < 0);
-    const char missing_path[] = "add@/devices/x\0ACTION=add\0";
+    const char missing_path[] = "add@\0ACTION=add\0";
     assert(ioplus_parse_uevent(missing_path, sizeof missing_path - 1, &event) < 0);
     assert(ioplus_parse_uevent(NULL, 0, &event) < 0);
     char oversized[1024];
