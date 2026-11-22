@@ -168,8 +168,12 @@ while [ ! -S "$RUNTIME/launch.sock" ]; do
 done
 sleep 0.3
 "$B/mintoshctl" services | grep -q 'test-service running'
-if "$B/mintoshctl" services | grep -Eq '^(unsafe|shell-string|interpreter) '; then
-    echo "launch7762 loaded an unsafe service definition" >&2
+if "$B/mintoshctl" services | grep -Eq '^(unsafe|shell-string) '; then
+    echo "launch7762 loaded an invalid service definition" >&2
+    exit 1
+fi
+if "$B/mintoshctl" services | grep -Eq '^interpreter running'; then
+    echo "launch7762 executed a script interpreter as a privileged service" >&2
     exit 1
 fi
 [ "$(stat -c '%a' "$RUNTIME/launch.sock")" = "660" ]
