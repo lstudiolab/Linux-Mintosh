@@ -4,7 +4,7 @@
 #define MBOOT_KERNEL_PATH L"\\boot\\vmlinuz"
 static CHAR16 mboot_kernel_options[] =
     L"console=tty0 console=ttyS0,115200n8 loglevel=4 rdinit=/init "
-    L"initrd=\\\\boot\\\\initramfs.cpio.gz";
+    L"initrd=\\boot\\initramfs.cpio.gz";
 
 static EFI_STATUS read_file(EFI_FILE_HANDLE root, CHAR16 *path,
                             VOID **buffer, UINTN *size) {
