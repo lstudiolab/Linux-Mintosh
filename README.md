@@ -1,6 +1,6 @@
 # Mintosh
 
-Mintosh is a Linux-based operating system built around the upstream Linux kernel and systemd. Mintosh-owned native userspace components are developed under `Sources/` and installed into the base image.
+Mintosh is a Linux-based operating system built around the upstream Linux kernel and systemd. Mintosh-owned native userspace components are developed under `Sources/` and installed into the base image. The native x86-64 UEFI bootloader, mBoot, is developed under `Sources/mBoot/`.
 
 ## Current release
 
@@ -78,4 +78,4 @@ See [installation](docs/installation.md), [architecture](docs/architecture.md), 
 
 ## Current limitations
 
-The graphical desktop (AppKit, Tarts, GT, Window Server, Dock and Finder), graphical application catalog, Mintosh update service, Secure Boot, disk encryption, automatic partition resizing and ARM64 installer are not implemented yet. The QEMU boot script and manual CI workflow exist, but a successful run on the current release commit is still required before calling the image boot-verified.
+mBoot currently builds as a standalone x86-64 UEFI application, but it is not yet wired into the ISO's firmware boot path; GRUB remains the active BIOS/UEFI loader. OVMF runtime boot tests, firmware Secure Boot signing, TPM measured boot and kernel/initramfs measurement are pending. The graphical desktop (AppKit, Tarts, GT, Window Server, Dock and Finder), graphical application catalog, Mintosh update service, disk encryption, automatic partition resizing and ARM64 installer are also not implemented yet. The QEMU boot script and manual CI workflow exist, but a successful run on the current release commit is still required before calling the image boot-verified.
